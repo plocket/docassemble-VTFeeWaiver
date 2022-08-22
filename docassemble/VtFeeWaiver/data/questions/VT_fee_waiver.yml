@@ -1,0 +1,971 @@
+#############KRIS TO-DO LIST#############
+
+
+
+
+####################################################
+---
+id: Court
+question: |
+  What court is your case in?
+subquestion: |
+  Look at the top of your court papers.
+fields:
+  - County: trial_court_county
+    choices:
+      - Bennington
+      - Chittenden
+      - Essex
+  - Court Division:  court_division
+    choices:
+      - Civil
+      - Environmental
+      - Probate
+---
+
+
+
+
+
+######################################################
+
+
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.ALAnyState:any_state.yml
+---
+metadata:
+  title: |
+    Fee waiver - Vermont - Form 600-00228
+  short title: |
+    Fee waiver - Vermont
+  tags:
+    - FA-00-00-00-00
+    - HO-00-00-00-00
+    - MO-00-00-00-00
+  authors:
+    - Guided interview by Legal Services Vermont / VTLawHelp.org website
+---
+mandatory: True
+comment: |
+  Global interview metadata
+variable name: interview_metadata["VT_fee_waiver"]
+data:
+  al_weaver_version: "1.7.0"
+  generated on: "2022-08-19"
+  title: >-
+    Fee waiver - Vermont - Form 600-00228
+  short title: >-
+    Fee waiver - Vermont
+  description: |-
+    Fee waiver
+  original_form: >-
+    https://www.vermontjudiciary.org/sites/default/files/documents/600-00228_6.pdf
+  allowed courts: 
+    - "Superior Court"
+  categories:
+    - "FA-00-00-00-00"
+    - "HO-00-00-00-00"
+    - "MO-00-00-00-00"
+  typical role: "unknown"
+  generate download screen: True
+---
+code: |
+  interview_metadata['main_interview_key'] =  'VT_fee_waiver'
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "VT"
+---
+code: |
+  github_repo_name =  'docassemble-VtFeeWaiver'
+---
+code: |
+  interview_short_title = "Ask the court to waive the court filing fees"
+---
+code: |
+  al_form_type = "existing_case" 
+---
+---
+code: |
+  AL_ORGANIZATION_TITLE = "VTCourtForms"
+---
+code: |
+  AL_ORGANIZATION_HOMEPAGE = "https://vtlawhelp.org/"
+---
+objects:
+  - al_logo: DAStaticFile.using(filename="LSV_bug.png")
+---
+objects:
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+---
+sections:
+  - review_VT_fee_waiver: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_VT_fee_waiver
+code: |
+  nav.set_section('review_VT_fee_waiver')
+  # Below sets the user_role by asking a question.
+  # You can set user_role directly instead to either 'plaintiff' or 'defendant'
+  user_ask_role
+  Welcome
+  Get_ready
+  case_name
+  docket_number
+  trial_court_county
+  set_progress(16)
+  court_division
+  household_size
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].address.address
+  set_progress(33)
+  users[0].mailing_address.address
+  users[0].phone_number
+  users[0].email
+  employed
+  users1_income_employment_monthly_amount
+  set_progress(50)
+  sers1_income_unemployment_monthly_amount
+  assets
+  other_reasons_why_cannot_afford
+  User_signature
+  signature_date
+  set_progress(66)
+  denied
+  interview_order_VT_fee_waiver = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  VT_fee_waiver_intro
+  interview_order_VT_fee_waiver
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  VT_fee_waiver_preview_question
+  basic_questions_signature_flow    
+  users[0].signature
+  VT_fee_waiver_download
+---
+comment: |
+  This question is used to introduce your interview. Please customize
+id: Fee_waiver__Vermont__Form_60000228
+continue button field: VT_fee_waiver_intro
+question: |
+  Fee waiver - Vermont - Form 600-00228
+subquestion: |
+  To use this program you will need to know: 
+    * The public benefits that you get,
+    * Your income in the past month,
+    * Your income over the past 12 months,
+    * Your monthly expenses, and
+    * The value of your belongings.
+    If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
+    You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
+    Set aside :stopwatch: 10 to 15 minutes to finish this program. You can login and save your work to return to later. 
+    Click on **{green words :question-circle:}** to learn what they mean. Click **Help** to learn more about a question.
+---
+id: Welcome
+question: |
+  Welcome
+subquestion: |
+  Welcome to VTCourtForm's **Fee waiver** form. This program creates a form that asks to participate in a court case for free.
+  
+  Learn about [filing court papers for free] (link to Judiciary).
+  
+  This program does not file your Fee waiver form with the court. You will need to do this yourself.
+  
+  This website cannot tell you if you qualify for sure. The court clerk will consider all of the information you provided.
+continue button field: Welcome
+---
+id: Get ready
+question: |
+  Get ready
+subquestion: |
+  To use this program you will need to know: 
+    * The public benefits that you get,
+    * Your income in the past month,
+    * Your income over the past 12 months,
+    * Your monthly expenses, and
+    * The value of your belongings.
+  
+  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
+  
+  You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
+  
+  Set aside :stopwatch: 15 to 30 minutes to finish this program. You can login and save your work to return to later. 
+  
+  Click on **{green words :question-circle:}** to learn what they mean. Click **Help** to learn more about a question.
+continue button field: Get_ready
+---
+id: Court case information
+question: |
+  Court case information
+subquestion: |
+  What is the name of the court case you are involved in?
+fields:
+  - "Case name, as seen on your court papers (example: Kramer vs. Kramer)": case_name
+    maxlength: 80
+---
+id: About you
+question: |
+  About you
+fields:
+  - "Household size": household_size
+    datatype: integer
+    min: 0
+  - "Receives benefits": receives_benefits
+    datatype: yesno
+  - "Type of benefits / assistance (Examples: Reach Up, SSI, SSDI, General Assistance, etc.)": users1_benefits
+    maxlength: 34
+  - "The amount you get every month": users1_benefits_monthly_amount
+    datatype: currency
+    min: 0
+---
+id: Work
+question: |
+  Work
+subquestion: |
+  If you work, tell us about where you work.
+fields:
+  - "Employed": employed
+    datatype: yesno
+  - "Employer's name / Company name": users1_employer_0_name
+    maxlength: 25
+  - "Employer's address": users1_employer_0_address_one_line
+    maxlength: 44
+  - "2nd Employer's name / Company name (if you have a second job)": users1_employer_1_name
+    maxlength: 25
+  - "Employer's address": users1_employer_1_address_one_line
+    maxlength: 44
+---
+id: Income
+question: |
+  Income
+subquestion: |
+  Tell us about how much income you get every month.
+fields:
+  - "Wages": users1_income_employment_monthly_amount
+    datatype: currency
+    min: 0
+  - "Self employment": users1_income_self_employment_monthly_amount
+    datatype: currency
+    min: 0
+  - "Other": users1_income_other_monthly_amount
+    datatype: currency
+    min: 0
+  - "Total income each month": users1_income_monthly_total
+    datatype: currency
+    min: 0
+  - "Total income each year": users1_income_annual_total
+    datatype: currency
+    min: 0
+---
+id: Expenses
+question: |
+  Expenses
+subquestion: |
+  Tell us about your expenses each month.
+fields:
+  - "Unemployment benefits": sers1_income_unemployment_monthly_amount
+    datatype: currency
+    min: 0
+  - "Child support": users1_income_child_support_monthly_amount
+    datatype: currency
+    min: 0
+  - "Rent or mortgage": users1_expenses_rent_mortgage_monthly_amount
+    datatype: currency
+    min: 0
+  - "Electric": users1_expenses_electric_monthly_amount
+    datatype: currency
+    min: 0
+  - "Phone": users1_expenses_phone_monthly_amount
+    datatype: currency
+    min: 0
+  - "Fuel": users1_expenses_fuel_monthly_amount
+    datatype: currency
+    min: 0
+  - "Food": users1_expenses_food_monthly_amount
+    datatype: currency
+    min: 0
+  - "Clothes": users1_expenses_clothes_monthly_amount
+    datatype: currency
+    min: 0
+  - "Medical / medicine": users1_expenses_medical_monthly_amount
+    datatype: currency
+    min: 0
+  - "Child support": users1_expenses_child_support_monthly_amount
+    datatype: currency
+    min: 0
+  - "Auto loan": users1_expenses_auto_loan_monthly_amount
+    datatype: currency
+    min: 0
+  - "Property taxes": users1_expenses_property_tax_monthly_amount
+    datatype: currency
+    min: 0
+  - "All kinds of insurance": users1_expenses_all_insurance_monthly_amount
+    datatype: currency
+    min: 0
+  - "Other": users1_expenses_other_monthly_amount
+    datatype: currency
+    min: 0
+  - "Total expenses each month": users1_expenses_monthly_total
+    datatype: currency
+    min: 0
+---
+id: Other Assets
+question: |
+  Other Assets
+subquestion: |
+  Tell us about things that you own.
+fields:
+  - "Assets or property": assets
+    datatype: yesno
+  - "Car / truck / vehicle - description": users1_assets_vehicle_0_description
+    maxlength: 17
+  - "Car / truck / vehicle - market value": users1_assets_vehicle_0_market_value
+    datatype: currency
+    min: 0
+  - "Car / truck / vehicle - amount owed": users1_assets_vehicle_0_amount_owed
+    datatype: currency
+    min: 0
+  - "Car / truck / vehicle - net value": users1_assets_vehicle_0_net_value
+    datatype: currency
+    min: 0
+  - "2nd Car / truck / vehicle - description": users1_assets_vehicle_1_description
+    maxlength: 17
+  - "2nd Car / truck / vehicle - market value": users1_assets_vehicle_1_market_value
+    datatype: currency
+    min: 0
+  - "2nd Car / truck / vehicle - amount owed": users1_assets_vehicle_1_amount_owed
+    datatype: currency
+    min: 0
+  - "2nd Car / truck / vehicle - net value": users1_assets_vehicle_1_net_value
+    datatype: currency
+    min: 0
+  - "3rd Car / truck / vehicle - description": users1_assets_vehicle_2_description
+    maxlength: 17
+  - "3rd Car / truck / vehicle - market value": users1_assets_vehicle_2_market_value
+    datatype: currency
+    min: 0
+  - "3rd Car / truck / vehicle - amount owed": users1_assets_vehicle_2_amount_owed
+    datatype: currency
+    min: 0
+  - "3rd Car / truck / vehicle - net value": users1_assets_vehicle_2_net_value
+    datatype: currency
+    min: 0
+  - "4th Car / truck / vehicle - description": users1_assets_vehicle_3_description
+    maxlength: 17
+  - "4th Car / truck / vehicle - market value": users1_assets_vehicle_3_market_value
+    datatype: currency
+    min: 0
+  - "4th Car / truck / vehicle - amount owed": users1_assets_vehicle_3_amount_owed
+    datatype: currency
+    min: 0
+  - "4th Car / truck / vehicle - net value": users1_assets_vehicle_3_net_value
+    datatype: currency
+    min: 0
+  - "Real estate - description": users1_assets_real_estate_0_description
+    maxlength: 17
+  - "Real estate - market value": users1_assets_real_estate_0_market_value
+    datatype: currency
+    min: 0
+  - "Real estate - amount owed": users1_assets_real_estate_0_amount_owed
+    datatype: currency
+    min: 0
+  - "Real estate - net value": users1_assets_real_estate_0_net_value
+    datatype: currency
+    min: 0
+  - "2nd Real estate - description": users1_assets_real_estate_1_description
+    maxlength: 17
+  - "2nd Real estate - market value": users1_assets_real_estate_1_market_value
+    datatype: currency
+    min: 0
+  - "2nd Real estate - amount owed": users1_assets_real_estate_1_amount_owed
+    datatype: currency
+    min: 0
+  - "2nd Real estate - net value": users1_assets_real_estate_1_net_value
+    datatype: currency
+    min: 0
+  - "Checking accounts": users1_assets_checking_accounts
+    datatype: currency
+    min: 0
+  - "Cash on hand": users1_assets_cash_on_hand
+    datatype: currency
+    min: 0
+  - "Savings accounts": users1_assets_savings_accounts
+    datatype: currency
+    min: 0
+  - "Total cash assets": users1_assets_cash_total
+    datatype: currency
+    min: 0
+  - "Other asset - description": users1_assets_other_0_description
+    maxlength: 17
+  - "Other asset - market value": users1_assets_other_0_market_value
+    datatype: currency
+    min: 0
+  - "2nd Other asset - description": users1_assets_other_1_description
+    maxlength: 17
+---
+id: More information
+question: |
+  More information
+subquestion: |
+  Tell us about other reasons why you cannot afford the court fees.
+fields:
+  - "Why you cannot afford": other_reasons_why_cannot_afford
+    input type: area
+---
+id: User signature
+question: |
+  User signature
+continue button field: User_signature
+---
+id: For court clerk to fill in
+question: |
+  For court clerk to fill in
+subquestion: |
+  Don't fill in this information. The court clerk will fill it in.
+fields:
+  - "Waiver denied": denied
+    datatype: yesno
+  - "Must pay fee": denied_must_pay_fee
+    maxlength: 10
+  - "Waiver granted": granted
+    datatype: yesno
+  - "Granted due to getting public assistance": granted_assistance
+    datatype: yesno
+  - "Granted due to income": granted_fpl
+    datatype: yesno
+  - "Granted due to being unable to pay": granted_unable_to_pay
+    datatype: yesno
+  - "Date": date
+    datatype: date
+  - "Clerk signature": clerk_signature
+    maxlength: 39
+---
+id: preview VT_fee_waiver
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: VT_fee_waiver_preview_question    
+---
+code: |
+  signature_fields = ['users[0].signature']
+---
+code: |
+  # This is a placeholder for the addresses that will be searched
+  # for matching address to court. Edit if court venue is based on 
+  # a different address than the user's
+  addresses_to_search = [user.address for user in users]
+---
+id: VT fee waiver review screen
+event: review_VT_fee_waiver
+question: |
+  Review your answers
+review:
+  - Edit: courts.revisit
+    button: |
+      **Courts**
+
+      % for item in courts:
+        * ${ item }
+      % endfor
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: trial_court_county
+    button: |
+      **Court county**
+      ${ trial_court_county }
+  - Edit: case_name
+    button: |
+      **Case name, as seen on your court papers (example: Kramer vs. Kramer)**:
+      ${ case_name }
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: household_size
+    button: |
+      **Household size**:
+      ${ household_size }
+  - Edit: employed
+    button: |
+      **Employed**:
+      ${ word(yesno(employed)) }
+  - Edit: users1_employer_0_address_one_line
+    button: |
+      **Employer\'s address**:
+      ${ users1_employer_0_address_one_line }
+  - Edit: users1_employer_0_name
+    button: |
+      **Employer\'s name / Company name**:
+      ${ users1_employer_0_name }
+  - Edit: users1_employer_1_name
+    button: |
+      **2nd Employer\'s name / Company name (if you have a second job)**:
+      ${ users1_employer_1_name }
+  - Edit: users1_employer_1_address_one_line
+    button: |
+      **Employer\'s address**:
+      ${ users1_employer_1_address_one_line }
+  - Edit: receives_benefits
+    button: |
+      **Receives benefits**:
+      ${ word(yesno(receives_benefits)) }
+  - Edit: users1_benefits
+    button: |
+      **Type of benefits / assistance (Examples: Reach Up, SSI, SSDI, General Assistance, etc.)**:
+      ${ users1_benefits }
+  - Edit: users1_benefits_monthly_amount
+    button: |
+      **The amount you get every month**:
+      ${ currency(users1_benefits_monthly_amount) }
+  - Edit: users1_expenses_rent_mortgage_monthly_amount
+    button: |
+      **Rent or mortgage**:
+      ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
+  - Edit: users1_expenses_electric_monthly_amount
+    button: |
+      **Electric**:
+      ${ currency(users1_expenses_electric_monthly_amount) }
+  - Edit: users1_income_employment_monthly_amount
+    button: |
+      **Wages**:
+      ${ currency(users1_income_employment_monthly_amount) }
+  - Edit: users1_expenses_phone_monthly_amount
+    button: |
+      **Phone**:
+      ${ currency(users1_expenses_phone_monthly_amount) }
+  - Edit: sers1_income_unemployment_monthly_amount
+    button: |
+      **Unemployment benefits**:
+      ${ currency(sers1_income_unemployment_monthly_amount) }
+  - Edit: users1_expenses_fuel_monthly_amount
+    button: |
+      **Fuel**:
+      ${ currency(users1_expenses_fuel_monthly_amount) }
+  - Edit: users1_income_child_support_monthly_amount
+    button: |
+      **Child support**:
+      ${ currency(users1_income_child_support_monthly_amount) }
+  - Edit: users1_expenses_food_monthly_amount
+    button: |
+      **Food**:
+      ${ currency(users1_expenses_food_monthly_amount) }
+  - Edit: users1_income_other_monthly_amount
+    button: |
+      **Other**:
+      ${ currency(users1_income_other_monthly_amount) }
+  - Edit: users1_expenses_clothes_monthly_amount
+    button: |
+      **Clothes**:
+      ${ currency(users1_expenses_clothes_monthly_amount) }
+  - Edit: users1_expenses_medical_monthly_amount
+    button: |
+      **Medical / medicine**:
+      ${ currency(users1_expenses_medical_monthly_amount) }
+  - Edit: users1_income_self_employment_monthly_amount
+    button: |
+      **Self employment**:
+      ${ currency(users1_income_self_employment_monthly_amount) }
+  - Edit: users1_expenses_child_support_monthly_amount
+    button: |
+      **Child support**:
+      ${ currency(users1_expenses_child_support_monthly_amount) }
+  - Edit: users1_income_monthly_total
+    button: |
+      **Total income each month**:
+      ${ currency(users1_income_monthly_total) }
+  - Edit: users1_expenses_auto_loan_monthly_amount
+    button: |
+      **Auto loan**:
+      ${ currency(users1_expenses_auto_loan_monthly_amount) }
+  - Edit: users1_income_annual_total
+    button: |
+      **Total income each year**:
+      ${ currency(users1_income_annual_total) }
+  - Edit: users1_expenses_property_tax_monthly_amount
+    button: |
+      **Property taxes**:
+      ${ currency(users1_expenses_property_tax_monthly_amount) }
+  - Edit: users1_expenses_all_insurance_monthly_amount
+    button: |
+      **All kinds of insurance**:
+      ${ currency(users1_expenses_all_insurance_monthly_amount) }
+  - Edit: users1_expenses_other_monthly_amount
+    button: |
+      **Other**:
+      ${ currency(users1_expenses_other_monthly_amount) }
+  - Edit: users1_expenses_monthly_total
+    button: |
+      **Total expenses each month**:
+      ${ currency(users1_expenses_monthly_total) }
+  - Edit: assets
+    button: |
+      **Assets or property**:
+      ${ word(yesno(assets)) }
+  - Edit: users1_assets_vehicle_0_amount_owed
+    button: |
+      **Car / truck / vehicle - amount owed**:
+      ${ currency(users1_assets_vehicle_0_amount_owed) }
+  - Edit: users1_assets_vehicle_0_description
+    button: |
+      **Car / truck / vehicle - description**:
+      ${ users1_assets_vehicle_0_description }
+  - Edit: users1_assets_vehicle_0_net_value
+    button: |
+      **Car / truck / vehicle - net value**:
+      ${ currency(users1_assets_vehicle_0_net_value) }
+  - Edit: users1_assets_vehicle_0_market_value
+    button: |
+      **Car / truck / vehicle - market value**:
+      ${ currency(users1_assets_vehicle_0_market_value) }
+  - Edit: users1_assets_vehicle_1_description
+    button: |
+      **2nd Car / truck / vehicle - description**:
+      ${ users1_assets_vehicle_1_description }
+  - Edit: users1_assets_vehicle_1_market_value
+    button: |
+      **2nd Car / truck / vehicle - market value**:
+      ${ currency(users1_assets_vehicle_1_market_value) }
+  - Edit: users1_assets_vehicle_1_amount_owed
+    button: |
+      **2nd Car / truck / vehicle - amount owed**:
+      ${ currency(users1_assets_vehicle_1_amount_owed) }
+  - Edit: users1_assets_vehicle_1_net_value
+    button: |
+      **2nd Car / truck / vehicle - net value**:
+      ${ currency(users1_assets_vehicle_1_net_value) }
+  - Edit: users1_assets_vehicle_2_description
+    button: |
+      **3rd Car / truck / vehicle - description**:
+      ${ users1_assets_vehicle_2_description }
+  - Edit: users1_assets_vehicle_2_amount_owed
+    button: |
+      **3rd Car / truck / vehicle - amount owed**:
+      ${ currency(users1_assets_vehicle_2_amount_owed) }
+  - Edit: users1_assets_vehicle_2_net_value
+    button: |
+      **3rd Car / truck / vehicle - net value**:
+      ${ currency(users1_assets_vehicle_2_net_value) }
+  - Edit: users1_assets_vehicle_2_market_value
+    button: |
+      **3rd Car / truck / vehicle - market value**:
+      ${ currency(users1_assets_vehicle_2_market_value) }
+  - Edit: users1_assets_vehicle_3_description
+    button: |
+      **4th Car / truck / vehicle - description**:
+      ${ users1_assets_vehicle_3_description }
+  - Edit: users1_assets_vehicle_3_market_value
+    button: |
+      **4th Car / truck / vehicle - market value**:
+      ${ currency(users1_assets_vehicle_3_market_value) }
+  - Edit: users1_assets_vehicle_3_amount_owed
+    button: |
+      **4th Car / truck / vehicle - amount owed**:
+      ${ currency(users1_assets_vehicle_3_amount_owed) }
+  - Edit: users1_assets_vehicle_3_net_value
+    button: |
+      **4th Car / truck / vehicle - net value**:
+      ${ currency(users1_assets_vehicle_3_net_value) }
+  - Edit: users1_assets_real_estate_0_description
+    button: |
+      **Real estate - description**:
+      ${ users1_assets_real_estate_0_description }
+  - Edit: users1_assets_real_estate_0_amount_owed
+    button: |
+      **Real estate - amount owed**:
+      ${ currency(users1_assets_real_estate_0_amount_owed) }
+  - Edit: users1_assets_real_estate_0_net_value
+    button: |
+      **Real estate - net value**:
+      ${ currency(users1_assets_real_estate_0_net_value) }
+  - Edit: users1_assets_real_estate_0_market_value
+    button: |
+      **Real estate - market value**:
+      ${ currency(users1_assets_real_estate_0_market_value) }
+  - Edit: users1_assets_real_estate_1_description
+    button: |
+      **2nd Real estate - description**:
+      ${ users1_assets_real_estate_1_description }
+  - Edit: users1_assets_real_estate_1_market_value
+    button: |
+      **2nd Real estate - market value**:
+      ${ currency(users1_assets_real_estate_1_market_value) }
+  - Edit: users1_assets_real_estate_1_amount_owed
+    button: |
+      **2nd Real estate - amount owed**:
+      ${ currency(users1_assets_real_estate_1_amount_owed) }
+  - Edit: users1_assets_real_estate_1_net_value
+    button: |
+      **2nd Real estate - net value**:
+      ${ currency(users1_assets_real_estate_1_net_value) }
+  - Edit: users1_assets_checking_accounts
+    button: |
+      **Checking accounts**:
+      ${ currency(users1_assets_checking_accounts) }
+  - Edit: users1_assets_cash_on_hand
+    button: |
+      **Cash on hand**:
+      ${ currency(users1_assets_cash_on_hand) }
+  - Edit: users1_assets_savings_accounts
+    button: |
+      **Savings accounts**:
+      ${ currency(users1_assets_savings_accounts) }
+  - Edit: users1_assets_cash_total
+    button: |
+      **Total cash assets**:
+      ${ currency(users1_assets_cash_total) }
+  - Edit: users1_assets_other_0_market_value
+    button: |
+      **Other asset - market value**:
+      ${ currency(users1_assets_other_0_market_value) }
+  - Edit: users1_assets_other_0_description
+    button: |
+      **Other asset - description**:
+      ${ users1_assets_other_0_description }
+  - Edit: users1_assets_other_1_description
+    button: |
+      **2nd Other asset - description**:
+      ${ users1_assets_other_1_description }
+  - Edit: other_reasons_why_cannot_afford
+    button: |
+      **Why you cannot afford**:
+      > ${ single_paragraph(other_reasons_why_cannot_afford) }
+  - Edit: signature_date
+    button: |
+      **Date of signature**:
+      ${ signature_date }
+  - Edit: denied
+    button: |
+      **Waiver denied**:
+      ${ word(yesno(denied)) }
+  - Edit: denied_must_pay_fee
+    button: |
+      **Must pay fee**:
+      ${ denied_must_pay_fee }
+  - Edit: granted
+    button: |
+      **Waiver granted**:
+      ${ word(yesno(granted)) }
+  - Edit: granted_assistance
+    button: |
+      **Granted due to getting public assistance**:
+      ${ word(yesno(granted_assistance)) }
+  - Edit: granted_fpl
+    button: |
+      **Granted due to income**:
+      ${ word(yesno(granted_fpl)) }
+  - Edit: granted_unable_to_pay
+    button: |
+      **Granted due to being unable to pay**:
+      ${ word(yesno(granted_unable_to_pay)) }
+  - Edit: date
+    button: |
+      **Date**:
+      ${ date }
+  - Edit: clerk_signature
+    button: |
+      **Clerk signature**:
+      ${ clerk_signature }
+
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Mailing address: |
+      row_item.mailing_address.block() if defined("row_item.mailing_address.address") else ""
+  - Email: |
+      row_item.email if defined("row_item.email") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+edit:
+  - name.first
+  - address.address
+  - mailing_address.address
+  - email
+  - phone_number
+  - signature
+confirm: True
+
+---
+id: download VT_fee_waiver
+event: VT_fee_waiver_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+
+progress: 100
+---
+objects:
+  - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Instructions", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_attachment: ALDocument.using(title="Fee waiver - Vermont - Form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[VT_fee_waiver_post_interview_instructions,VT_fee_waiver_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[VT_fee_waiver_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+---
+attachments:
+  - name: VT fee waiver post interview instructions
+    filename: Post-interview-instructions     
+    variable name: VT_fee_waiver_post_interview_instructions[i]        
+    skip undefined: True
+    docx template file: VT_fee_waiver_next_steps.docx
+  - name: VT fee waiver attachment
+    filename: VT_fee_waiver.pdf     
+    variable name: VT_fee_waiver_attachment[i]        
+    skip undefined: True
+    pdf template file: VT_fee_waiver.pdf
+    fields:
+      - "court_division": ${ court_division }
+      - "docket_number": ${ docket_number }
+      - "trial_court_county": ${ trial_court_county }
+      - "case_name": ${ case_name }
+      - "users1_name_full": ${ users[0] }
+      - "users1_name_full__1": ${ users[0] }
+      - "users1_address_line_one": ${ users[0].address.line_one() }
+      - "users1_address_line_two": ${ users[0].address.line_two() }
+      - "users1_mailing_address_on_one_line": ${ users[0].mailing_address.on_one_line() }
+      - "users1_email": ${ users[0].email }
+      - "users1_phone_number": ${ users[0].phone_number }
+      - "household_size": ${ household_size }
+      - "employed_yes": ${ employed }
+      - "employed_no": ${ not employed }
+      - "users1_employer_0_address_one_line": ${ users1_employer_0_address_one_line }
+      - "users1_employer_0_name": ${ users1_employer_0_name }
+      - "users1_employer_1_name": ${ users1_employer_1_name }
+      - "users1_employer_1_address_one_line": ${ users1_employer_1_address_one_line }
+      - "receives_benefits_yes": ${ receives_benefits }
+      - "receives_benefits_no": ${ not receives_benefits }
+      - "users1_benefits": ${ users1_benefits }
+      - "users1_benefits_monthly_amount": ${ currency(users1_benefits_monthly_amount) }
+      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
+      - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }
+      - "users1_income_employment_monthly_amount": ${ currency(users1_income_employment_monthly_amount) }
+      - "users1_expenses_phone_monthly_amount": ${ currency(users1_expenses_phone_monthly_amount) }
+      - "sers1_income_unemployment_monthly_amount": ${ currency(sers1_income_unemployment_monthly_amount) }
+      - "users1_expenses_fuel_monthly_amount": ${ currency(users1_expenses_fuel_monthly_amount) }
+      - "users1_income_child_support_monthly_amount": ${ currency(users1_income_child_support_monthly_amount) }
+      - "users1_expenses_food_monthly_amount": ${ currency(users1_expenses_food_monthly_amount) }
+      - "users1_income_other_monthly_amount": ${ currency(users1_income_other_monthly_amount) }
+      - "users1_expenses_clothes_monthly_amount": ${ currency(users1_expenses_clothes_monthly_amount) }
+      - "users1_expenses_medical_monthly_amount": ${ currency(users1_expenses_medical_monthly_amount) }
+      - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
+      - "users1_expenses_child_support_monthly_amount": ${ currency(users1_expenses_child_support_monthly_amount) }
+      - "users1_income_monthly_total": ${ currency(users1_income_monthly_total) }
+      - "users1_expenses_auto_loan_monthly_amount": ${ currency(users1_expenses_auto_loan_monthly_amount) }
+      - "users1_income_annual_total": ${ currency(users1_income_annual_total) }
+      - "users1_expenses_property_tax_monthly_amount": ${ currency(users1_expenses_property_tax_monthly_amount) }
+      - "users1_expenses_all_insurance_monthly_amount": ${ currency(users1_expenses_all_insurance_monthly_amount) }
+      - "users1_expenses_other_monthly_amount": ${ currency(users1_expenses_other_monthly_amount) }
+      - "users1_expenses_monthly_total": ${ currency(users1_expenses_monthly_total) }
+      - "assets_yes": ${ assets }
+      - "assets_no": ${ not assets }
+      - "users1_assets_vehicle_0_amount_owed": ${ currency(users1_assets_vehicle_0_amount_owed) }
+      - "users1_assets_vehicle_0_description": ${ users1_assets_vehicle_0_description }
+      - "users1_assets_vehicle_0_net_value": ${ currency(users1_assets_vehicle_0_net_value) }
+      - "users1_assets_vehicle_0_market_value": ${ currency(users1_assets_vehicle_0_market_value) }
+      - "users1_assets_vehicle_1_description": ${ users1_assets_vehicle_1_description }
+      - "users1_assets_vehicle_1_market_value": ${ currency(users1_assets_vehicle_1_market_value) }
+      - "users1_assets_vehicle_1_amount_owed": ${ currency(users1_assets_vehicle_1_amount_owed) }
+      - "users1_assets_vehicle_1_net_value": ${ currency(users1_assets_vehicle_1_net_value) }
+      - "users1_assets_vehicle_2_description": ${ users1_assets_vehicle_2_description }
+      - "users1_assets_vehicle_2_amount_owed": ${ currency(users1_assets_vehicle_2_amount_owed) }
+      - "users1_assets_vehicle_2_net_value": ${ currency(users1_assets_vehicle_2_net_value) }
+      - "users1_assets_vehicle_2_market_value": ${ currency(users1_assets_vehicle_2_market_value) }
+      - "users1_assets_vehicle_3_description": ${ users1_assets_vehicle_3_description }
+      - "users1_assets_vehicle_3_market_value": ${ currency(users1_assets_vehicle_3_market_value) }
+      - "users1_assets_vehicle_3_amount_owed": ${ currency(users1_assets_vehicle_3_amount_owed) }
+      - "users1_assets_vehicle_3_net_value": ${ currency(users1_assets_vehicle_3_net_value) }
+      - "users1_assets_real_estate_0_description": ${ users1_assets_real_estate_0_description }
+      - "users1_assets_real_estate_0_amount_owed": ${ currency(users1_assets_real_estate_0_amount_owed) }
+      - "users1_assets_real_estate_0_net_value": ${ currency(users1_assets_real_estate_0_net_value) }
+      - "users1_assets_real_estate_0_market_value": ${ currency(users1_assets_real_estate_0_market_value) }
+      - "users1_assets_real_estate_1_description": ${ users1_assets_real_estate_1_description }
+      - "users1_assets_real_estate_1_market_value": ${ currency(users1_assets_real_estate_1_market_value) }
+      - "users1_assets_real_estate_1_amount_owed": ${ currency(users1_assets_real_estate_1_amount_owed) }
+      - "users1_assets_real_estate_1_net_value": ${ currency(users1_assets_real_estate_1_net_value) }
+      - "users1_assets_checking_accounts": ${ currency(users1_assets_checking_accounts) }
+      - "users1_assets_cash_on_hand": ${ currency(users1_assets_cash_on_hand) }
+      - "users1_assets_savings_accounts": ${ currency(users1_assets_savings_accounts) }
+      - "users1_assets_cash_total": ${ currency(users1_assets_cash_total) }
+      - "users1_assets_other_0_market_value": ${ currency(users1_assets_other_0_market_value) }
+      - "users1_assets_other_0_market_value": ${ currency(users1_assets_other_0_market_value) }
+      - "users1_assets_other_0_description": ${ users1_assets_other_0_description }
+      - "users1_assets_other_1_description": ${ users1_assets_other_1_description }
+      - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
+      - "signature_date": ${ signature_date }
+      - "users1_signature": ${ users[0].signature_if_final(i) }
+      - "denied": ${ denied }
+      - "denied_must_pay_fee": ${ denied_must_pay_fee }
+      - "granted": ${ granted }
+      - "granted_assistance": ${ granted_assistance }
+      - "granted_fpl": ${ granted_fpl }
+      - "granted_unable_to_pay": ${ granted_unable_to_pay }
+      - "date": ${ date }
+      - "clerk_signature": ${ clerk_signature }
+---
+code: |
+  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
+  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Why you cannot afford"
+  VT_fee_waiver_attachment.overflow_fields.gathered = True
