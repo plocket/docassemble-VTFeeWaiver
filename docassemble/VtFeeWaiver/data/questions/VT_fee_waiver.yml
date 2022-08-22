@@ -4,25 +4,6 @@
 
 
 ####################################################
----
-id: Court
-question: |
-  What court is your case in?
-subquestion: |
-  Look at the top of your court papers.
-fields:
-  - County: trial_court_county
-    choices:
-      - Bennington
-      - Chittenden
-      - Essex
-  - Court Division:  court_division
-    choices:
-      - Civil
-      - Environmental
-      - Probate
----
-
 
 
 
@@ -121,9 +102,10 @@ code: |
   case_name
   docket_number
   trial_court_county
-  set_progress(16)
   court_division
+  set_progress(16)
   household_size
+  receives_benefits
   users.gather()
   set_parts(subtitle=str(users))
   users[0].address.address
@@ -134,7 +116,7 @@ code: |
   employed
   users1_income_employment_monthly_amount
   set_progress(50)
-  sers1_income_unemployment_monthly_amount
+  users1_income_unemployment_monthly_amount
   assets
   other_reasons_why_cannot_afford
   User_signature
@@ -216,6 +198,24 @@ subquestion: |
   
   Click on **{green words :question-circle:}** to learn what they mean. Click **Help** to learn more about a question.
 continue button field: Get_ready
+
+---
+id: Court
+question: |
+  What court is your case in?
+subquestion: |
+  Look at the top of your court papers.
+fields:
+  - County: trial_court_county
+    choices:
+      - Bennington
+      - Chittenden
+      - Essex
+  - Court Division:  court_division
+    choices:
+      - Civil
+      - Environmental
+      - Probate
 ---
 id: Court case information
 question: |
@@ -229,23 +229,32 @@ fields:
 id: About you
 question: |
   About you
+subquestion: |
+  How many people live in your household?
 fields:
   - "Household size": household_size
     datatype: integer
     min: 0
-  - "Receives benefits": receives_benefits
-    datatype: yesno
-  - "Type of benefits / assistance (Examples: Reach Up, SSI, SSDI, General Assistance, etc.)": users1_benefits
+---
+id: Benefits
+question: |
+  Does anyone get public benefits like Reach Up, SSI, SSDI and General Assistance?
+fields:
+  - "Public benefits?": receives_benefits
+    datatype: yesnoradio
+  - "Type of benefits / assistance": users1_benefits
+    show if: receives_benefits
     maxlength: 34
-  - "The amount you get every month": users1_benefits_monthly_amount
+  - "Amount every month": users1_benefits_monthly_amount
     datatype: currency
+    show if: receives_benefits
     min: 0
 ---
 id: Work
 question: |
   Work
 subquestion: |
-  If you work, tell us about where you work.
+  If you work, enter information about where you work.
 fields:
   - "Employed": employed
     datatype: yesno
@@ -262,12 +271,18 @@ id: Income
 question: |
   Income
 subquestion: |
-  Tell us about how much income you get every month.
+  How much income do you get every month?
 fields:
   - "Wages": users1_income_employment_monthly_amount
     datatype: currency
     min: 0
   - "Self employment": users1_income_self_employment_monthly_amount
+    datatype: currency
+    min: 0
+  - "Unemployment benefits": users1_income_unemployment_monthly_amount
+    datatype: currency
+    min: 0
+  - "Child support": users1_income_child_support_monthly_amount
     datatype: currency
     min: 0
   - "Other": users1_income_other_monthly_amount
@@ -286,12 +301,6 @@ question: |
 subquestion: |
   Tell us about your expenses each month.
 fields:
-  - "Unemployment benefits": sers1_income_unemployment_monthly_amount
-    datatype: currency
-    min: 0
-  - "Child support": users1_income_child_support_monthly_amount
-    datatype: currency
-    min: 0
   - "Rent or mortgage": users1_expenses_rent_mortgage_monthly_amount
     datatype: currency
     min: 0
@@ -571,10 +580,10 @@ review:
     button: |
       **Phone**:
       ${ currency(users1_expenses_phone_monthly_amount) }
-  - Edit: sers1_income_unemployment_monthly_amount
+  - Edit: users1_income_unemployment_monthly_amount
     button: |
       **Unemployment benefits**:
-      ${ currency(sers1_income_unemployment_monthly_amount) }
+      ${ currency(users1_income_unemployment_monthly_amount) }
   - Edit: users1_expenses_fuel_monthly_amount
     button: |
       **Fuel**:
@@ -903,7 +912,7 @@ attachments:
       - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }
       - "users1_income_employment_monthly_amount": ${ currency(users1_income_employment_monthly_amount) }
       - "users1_expenses_phone_monthly_amount": ${ currency(users1_expenses_phone_monthly_amount) }
-      - "sers1_income_unemployment_monthly_amount": ${ currency(sers1_income_unemployment_monthly_amount) }
+      - "users1_income_unemployment_monthly_amount": ${ currency(users1_income_unemployment_monthly_amount) }
       - "users1_expenses_fuel_monthly_amount": ${ currency(users1_expenses_fuel_monthly_amount) }
       - "users1_income_child_support_monthly_amount": ${ currency(users1_income_child_support_monthly_amount) }
       - "users1_expenses_food_monthly_amount": ${ currency(users1_expenses_food_monthly_amount) }
