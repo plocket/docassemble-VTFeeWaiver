@@ -1,5 +1,5 @@
-#############KRIS TO-DO LIST#############
-
+#############TO-DO LIST#############
+# Start at Do you work. Make a yes/no. If yes, show questions.
 
 
 
@@ -88,7 +88,7 @@ objects:
 sections:
   - review_VT_fee_waiver: Review your answers
 ---
-#################### Interview order #####################
+#################### INTERVIEW ORDER #####################
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VT_fee_waiver
@@ -104,24 +104,27 @@ code: |
   trial_court_county
   court_division
   set_progress(16)
+  #  users.gather()
+  #  set_parts(subtitle=str(users))
+  #  users[0].address.address
+  #  users[0].mailing_address.address
+  #  users[0].phone_number
+  #  users[0].email
   household_size
   receives_benefits
-  users.gather()
-  set_parts(subtitle=str(users))
-  users[0].address.address
   set_progress(33)
-  users[0].mailing_address.address
-  users[0].phone_number
-  users[0].email
   employed
-  users1_income_employment_monthly_amount
+  users1_income_monthly_total
   set_progress(50)
-  users1_income_unemployment_monthly_amount
+  users1_expenses_monthly_total
+  set_progress(65)
   assets
+  set_progress(85)
+  users1_assets_cash_total
   other_reasons_why_cannot_afford
+  set_progress(98)
   User_signature
   signature_date
-  set_progress(66)
   denied
   interview_order_VT_fee_waiver = True
 ---
@@ -254,18 +257,24 @@ id: Work
 question: |
   Work
 subquestion: |
-  If you work, enter information about where you work.
+  Do you work?
 fields:
   - "Employed": employed
-    datatype: yesno
+    datatype: yesnoradio
   - "Employer's name / Company name": users1_employer_0_name
     maxlength: 25
+    show if: employed
   - "Employer's address": users1_employer_0_address_one_line
     maxlength: 44
+    show if: employed
   - "2nd Employer's name / Company name (if you have a second job)": users1_employer_1_name
     maxlength: 25
+    show if: employed
+    required: False
   - "Employer's address": users1_employer_1_address_one_line
     maxlength: 44
+    show if: employed
+    required: False
 ---
 id: Income
 question: |
