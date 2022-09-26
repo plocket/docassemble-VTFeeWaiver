@@ -1,6 +1,6 @@
 #############TO-DO LIST#############
-# Start at Do you work. Make a yes/no. If yes, show questions.
-
+# Work on showing the monthly and annual income (get rid of the total field that user fills out)
+# users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
 
 
 ####################################################
@@ -115,6 +115,9 @@ code: |
   set_progress(33)
   employed
   users1_income_monthly_total
+  users1_income_monthly_total_FROM_CODE
+  income_monthly_total_FROM_CODE
+  users1_income_annual_total_FROM_CODE
   set_progress(50)
   users1_expenses_monthly_total
   set_progress(65)
@@ -280,7 +283,7 @@ id: Income
 question: |
   Income
 subquestion: |
-  How much income do you get every month?
+  How much income do you get every month? Enter 0s if you don't get income. 
 fields:
   - "Wages": users1_income_employment_monthly_amount
     datatype: currency
@@ -300,9 +303,29 @@ fields:
   - "Total income each month": users1_income_monthly_total
     datatype: currency
     min: 0
-  - "Total income each year": users1_income_annual_total
-    datatype: currency
-    min: 0
+#  - "Total income each year": users1_income_annual_total
+#    datatype: currency
+#    min: 0
+---
+id: income_monthly_total_FROM_CODE
+continue button field: income_monthly_total_FROM_CODE
+question: |
+  Monthly total from my code
+    ${ users1_income_monthly_total_FROM_CODE }
+  Annual total from my code
+    ${ users1_income_annual_total_FROM_CODE }
+---
+###Borrowed from IL code to add up the monthly income###
+code: |   
+  users1_income_monthly_total_FROM_CODE = sum_if_defined('users1_income_employment_monthly_amount', 
+      'users1_income_self_employment_monthly_amount',
+      'users1_income_unemployment_monthly_amount',
+      'users1_income_child_support_monthly_amount',
+      'users1_income_other_monthly_amount')   
+---
+###To multiply for annual income###
+code: |
+  users1_income_annual_total_FROM_CODE = sum_if_defined('users1_income_monthly_total_FROM_CODE') * 12
 ---
 id: Expenses
 question: |
@@ -625,10 +648,10 @@ review:
     button: |
       **Child support**:
       ${ currency(users1_expenses_child_support_monthly_amount) }
-  - Edit: users1_income_monthly_total
-    button: |
-      **Total income each month**:
-      ${ currency(users1_income_monthly_total) }
+#  - Edit: users1_income_monthly_total
+#    button: |
+#      **Total income each month**:
+#      ${ currency(users1_income_monthly_total) }
   - Edit: users1_expenses_auto_loan_monthly_amount
     button: |
       **Auto loan**:
