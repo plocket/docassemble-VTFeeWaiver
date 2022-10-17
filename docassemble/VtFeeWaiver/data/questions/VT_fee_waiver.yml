@@ -1,5 +1,4 @@
 #############TO-DO LIST#############
-# Work on showing the monthly and annual income (get rid of the total field that user fills out)
 # users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
 
 
@@ -114,10 +113,10 @@ code: |
   receives_benefits
   set_progress(33)
   employed
+  users1_income_employment_monthly_amount
   users1_income_monthly_total
-  users1_income_monthly_total_FROM_CODE
-  income_monthly_total_FROM_CODE
-  users1_income_annual_total_FROM_CODE
+  users1_income_annual_total
+  user_sees_income_total
   set_progress(50)
   users1_expenses_monthly_total
   set_progress(65)
@@ -274,7 +273,7 @@ fields:
     maxlength: 25
     show if: employed
     required: False
-  - "Employer's address": users1_employer_1_address_one_line
+  - "2nd Employer's address": users1_employer_1_address_one_line
     maxlength: 44
     show if: employed
     required: False
@@ -300,38 +299,43 @@ fields:
   - "Other": users1_income_other_monthly_amount
     datatype: currency
     min: 0
-  - "Total income each month": users1_income_monthly_total
-    datatype: currency
-    min: 0
+#  - "Total income each month": users1_income_monthly_total
 #  - "Total income each year": users1_income_annual_total
-#    datatype: currency
-#    min: 0
----
-id: income_monthly_total_FROM_CODE
-continue button field: income_monthly_total_FROM_CODE
-question: |
-  Monthly total from my code
-    ${ users1_income_monthly_total_FROM_CODE }
-  Annual total from my code
-    ${ users1_income_annual_total_FROM_CODE }
+
 ---
 ###Borrowed from IL code to add up the monthly income###
-code: |   
-  users1_income_monthly_total_FROM_CODE = sum_if_defined('users1_income_employment_monthly_amount', 
+mandatory: True
+code: | 
+  users1_income_monthly_total = sum_if_defined('users1_income_employment_monthly_amount', 
       'users1_income_self_employment_monthly_amount',
       'users1_income_unemployment_monthly_amount',
       'users1_income_child_support_monthly_amount',
       'users1_income_other_monthly_amount')   
 ---
 ###To multiply for annual income###
+mandatory: True
 code: |
-  users1_income_annual_total_FROM_CODE = sum_if_defined('users1_income_monthly_total_FROM_CODE') * 12
+  users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
+---
+id: Income monthly and annual totals
+mandatory: True
+continue button field: user_sees_income_total
+question: |
+  Total income
+subquestion: |
+  You said that your monthly total income is:
+    ${ users1_income_monthly_total }
+    
+  Therefore, your annual total income is:
+    ${ users1_income_annual_total }
+    
+  If this is incorrect, go back one screen.
 ---
 id: Expenses
 question: |
   Expenses
 subquestion: |
-  Tell us about your expenses each month.
+  What expenses do you have each month?
 fields:
   - "Rent or mortgage": users1_expenses_rent_mortgage_monthly_amount
     datatype: currency
