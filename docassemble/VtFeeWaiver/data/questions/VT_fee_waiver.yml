@@ -1,5 +1,6 @@
 #############TO-DO LIST#############
-# users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
+
+# work on assets questions
 
 
 ####################################################
@@ -118,11 +119,14 @@ code: |
   users1_income_annual_total
   user_sees_income_total
   set_progress(50)
+  users1_expenses_rent_mortgage_monthly_amount
   users1_expenses_monthly_total
-  set_progress(65)
+  users1_expenses_annual_total
+  user_sees_expenses_total
+  set_progress(70)
   assets
-  set_progress(85)
   users1_assets_cash_total
+  set_progress(85)
   other_reasons_why_cannot_afford
   set_progress(98)
   User_signature
@@ -299,8 +303,6 @@ fields:
   - "Other": users1_income_other_monthly_amount
     datatype: currency
     min: 0
-#  - "Total income each month": users1_income_monthly_total
-#  - "Total income each year": users1_income_annual_total
 
 ---
 ###Borrowed from IL code to add up the monthly income###
@@ -316,6 +318,7 @@ code: |
 mandatory: True
 code: |
   users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
+  datatype: currency
 ---
 id: Income monthly and annual totals
 mandatory: True
@@ -324,10 +327,10 @@ question: |
   Total income
 subquestion: |
   You said that your monthly total income is:
-    ${ users1_income_monthly_total }
+    ${ currency(users1_income_monthly_total) }
     
   Therefore, your annual total income is:
-    ${ users1_income_annual_total }
+    ${ currency(users1_income_annual_total) }
     
   If this is incorrect, go back one screen.
 ---
@@ -373,9 +376,42 @@ fields:
   - "Other": users1_expenses_other_monthly_amount
     datatype: currency
     min: 0
-  - "Total expenses each month": users1_expenses_monthly_total
-    datatype: currency
-    min: 0
+    
+---
+mandatory: True
+code: | 
+  users1_expenses_monthly_total = sum_if_defined('users1_expenses_rent_mortgage_monthly_amount', 
+      'users1_expenses_electric_monthly_amount',
+      'users1_expenses_phone_monthly_amount',
+      'users1_expenses_fuel_monthly_amount',
+      'users1_expenses_food_monthly_amount',
+      'users1_expenses_clothes_monthly_amount',
+      'users1_expenses_medical_monthly_amount',
+      'users1_expenses_child_support_monthly_amount',
+      'users1_expenses_auto_loan_monthly_amount',
+      'users1_expenses_property_tax_monthly_amount',
+      'users1_expenses_all_insurance_monthly_amount',    
+      'users1_expenses_other_monthly_amount')
+---
+###To multiply for annual income###
+mandatory: True
+code: |
+  users1_expenses_annual_total = sum_if_defined('users1_expenses_monthly_total') * 12
+---
+id: Expenses monthly and annual totals
+mandatory: True
+continue button field: user_sees_expenses_total
+question: |
+  Total expenses
+subquestion: |
+  You said that your monthly total expenses are:
+    ${ currency(users1_expenses_monthly_total) }
+    
+  Therefore, your annual total expenses are:
+    ${ currency(users1_expenses_annual_total) }
+    
+  If this is incorrect, go back one screen.
+  
 ---
 id: Other Assets
 question: |
