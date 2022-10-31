@@ -1,6 +1,7 @@
 #############TO-DO LIST#############
 
-# work on assets questions
+# work on real estate questions
+# need to do the math for each net value for car, etc.
 
 
 ####################################################
@@ -125,6 +126,11 @@ code: |
   user_sees_expenses_total
   set_progress(70)
   assets
+  vehicles
+  vehicles_more
+  real_estate
+  accounts_cash
+  other_assets
   users1_assets_cash_total
   set_progress(85)
   other_reasons_why_cannot_afford
@@ -237,7 +243,7 @@ fields:
 ---
 id: About you
 question: |
-  About you
+  About you and your household
 subquestion: |
   How many people live in your household?
 fields:
@@ -247,9 +253,9 @@ fields:
 ---
 id: Benefits
 question: |
-  Does anyone get public benefits like Reach Up, SSI, SSDI and General Assistance?
+  Public benefits
 fields:
-  - "Public benefits?": receives_benefits
+  - "Does anyone get public benefits like Reach Up, SSI, SSDI and General Assistance?": receives_benefits
     datatype: yesnoradio
   - "Type of benefits / assistance": users1_benefits
     show if: receives_benefits
@@ -262,10 +268,8 @@ fields:
 id: Work
 question: |
   Work
-subquestion: |
-  Do you work?
 fields:
-  - "Employed": employed
+  - "Do you work?": employed
     datatype: yesnoradio
   - "Employer's name / Company name": users1_employer_0_name
     maxlength: 25
@@ -318,7 +322,6 @@ code: |
 mandatory: True
 code: |
   users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
-  datatype: currency
 ---
 id: Income monthly and annual totals
 mandatory: True
@@ -326,19 +329,19 @@ continue button field: user_sees_income_total
 question: |
   Total income
 subquestion: |
-  You said that your monthly total income is:
+  You said that your total income each month is:
     ${ currency(users1_income_monthly_total) }
     
-  Therefore, your annual total income is:
+  Therefore, your total income each year is:
     ${ currency(users1_income_annual_total) }
     
-  If this is incorrect, go back one screen.
+  If this is not correct, go back one screen.
 ---
 id: Expenses
 question: |
   Expenses
 subquestion: |
-  What expenses do you have each month?
+  What expenses do you have each month? Enter 0 if you don't have that expense. 
 fields:
   - "Rent or mortgage": users1_expenses_rent_mortgage_monthly_amount
     datatype: currency
@@ -393,7 +396,7 @@ code: |
       'users1_expenses_all_insurance_monthly_amount',    
       'users1_expenses_other_monthly_amount')
 ---
-###To multiply for annual income###
+###To multiply for annual expenses###
 mandatory: True
 code: |
   users1_expenses_annual_total = sum_if_defined('users1_expenses_monthly_total') * 12
@@ -404,69 +407,112 @@ continue button field: user_sees_expenses_total
 question: |
   Total expenses
 subquestion: |
-  You said that your monthly total expenses are:
+  You said that your total expenses each month are:
     ${ currency(users1_expenses_monthly_total) }
     
-  Therefore, your annual total expenses are:
+  Therefore, your total expenses each year are:
     ${ currency(users1_expenses_annual_total) }
     
-  If this is incorrect, go back one screen.
+  If this is not correct, go back one screen.
   
 ---
-id: Other Assets
+#Check the box on form if they answer any of the asset questions??? Or put this question last?
+id: Assets
 question: |
-  Other Assets
+  Assets
 subquestion: |
   Tell us about things that you own.
 fields:
-  - "Assets or property": assets
+  - "Do you have assets or property?": assets
     datatype: yesno
+---
+id: Vehicles
+question: |
+  Vehicles
+fields:
+  - "Do you have a car, truck or other vehicle?": vehicles
+    datatype: yesnoradio
   - "Car / truck / vehicle - description": users1_assets_vehicle_0_description
     maxlength: 17
+    show if: vehicles
   - "Car / truck / vehicle - market value": users1_assets_vehicle_0_market_value
     datatype: currency
     min: 0
+    show if: vehicles
   - "Car / truck / vehicle - amount owed": users1_assets_vehicle_0_amount_owed
     datatype: currency
+    show if: vehicles
     min: 0
   - "Car / truck / vehicle - net value": users1_assets_vehicle_0_net_value
     datatype: currency
+    show if: vehicles
     min: 0
   - "2nd Car / truck / vehicle - description": users1_assets_vehicle_1_description
     maxlength: 17
+    show if: vehicles
   - "2nd Car / truck / vehicle - market value": users1_assets_vehicle_1_market_value
     datatype: currency
     min: 0
+    show if: vehicles
   - "2nd Car / truck / vehicle - amount owed": users1_assets_vehicle_1_amount_owed
     datatype: currency
+    show if: vehicles
     min: 0
   - "2nd Car / truck / vehicle - net value": users1_assets_vehicle_1_net_value
     datatype: currency
+    show if: vehicles
     min: 0
+---
+id: More cars
+mandatory: True
+continue button field: more_cars
+question: |
+  More vehicles
+fields:
+  - "Do you have more cars, trucks or other vehicles?": vehicles_more
+    datatype: yesnoradio
   - "3rd Car / truck / vehicle - description": users1_assets_vehicle_2_description
+    show if: vehicles_more
     maxlength: 17
   - "3rd Car / truck / vehicle - market value": users1_assets_vehicle_2_market_value
     datatype: currency
+    show if: vehicles_more
     min: 0
   - "3rd Car / truck / vehicle - amount owed": users1_assets_vehicle_2_amount_owed
     datatype: currency
+    show if: vehicles_more
     min: 0
   - "3rd Car / truck / vehicle - net value": users1_assets_vehicle_2_net_value
     datatype: currency
+    show if: vehicles_more
     min: 0
   - "4th Car / truck / vehicle - description": users1_assets_vehicle_3_description
+    show if: vehicles_more
     maxlength: 17
   - "4th Car / truck / vehicle - market value": users1_assets_vehicle_3_market_value
+    show if: vehicles_more
     datatype: currency
     min: 0
   - "4th Car / truck / vehicle - amount owed": users1_assets_vehicle_3_amount_owed
     datatype: currency
+    show if: vehicles_more
     min: 0
   - "4th Car / truck / vehicle - net value": users1_assets_vehicle_3_net_value
     datatype: currency
+    show if: vehicles_more
     min: 0
+---
+id: Real estate
+question: |
+  Real estate
+subquestion: |
+  Do you own a house or other real estate?
+fields:
+  - "Do you own a house or other real estate?": real_estate
+    datatype: yesno
   - "Real estate - description": users1_assets_real_estate_0_description
     maxlength: 17
+    show if: real_estate
   - "Real estate - market value": users1_assets_real_estate_0_market_value
     datatype: currency
     min: 0
@@ -487,9 +533,17 @@ fields:
   - "2nd Real estate - net value": users1_assets_real_estate_1_net_value
     datatype: currency
     min: 0
+---
+id: Bank accounts and cash
+question: |
+  Bank accounts and cash
+fields:
+  - "Do you have bank accounts or cash on hand?": accounts_cash
+    datatype: yesno
   - "Checking accounts": users1_assets_checking_accounts
     datatype: currency
     min: 0
+    show if: accounts_cash
   - "Cash on hand": users1_assets_cash_on_hand
     datatype: currency
     min: 0
@@ -506,6 +560,7 @@ fields:
     min: 0
   - "2nd Other asset - description": users1_assets_other_1_description
     maxlength: 17
+
 ---
 id: More information
 question: |
