@@ -1,7 +1,7 @@
 #############TO-DO LIST#############
 
-# work on real estate questions
-# need to do the math for each net value for car, etc.
+# work on additional assets
+# need to do the math for each net value for car, real estate, etc.
 
 
 ####################################################
@@ -129,9 +129,11 @@ code: |
   vehicles
   vehicles_more
   real_estate
+  real_estate_more
   accounts_cash
-  other_assets
   users1_assets_cash_total
+  user_sees_cash_assets_total
+  assets_other
   set_progress(85)
   other_reasons_why_cannot_afford
   set_progress(98)
@@ -505,41 +507,53 @@ fields:
 id: Real estate
 question: |
   Real estate
-subquestion: |
-  Do you own a house or other real estate?
 fields:
   - "Do you own a house or other real estate?": real_estate
-    datatype: yesno
-  - "Real estate - description": users1_assets_real_estate_0_description
+    datatype: yesnoradio
+  - "Description of the real estate - house I live in / condo I live in / mobile home I live in / vacation home / home I rent out / etc.": users1_assets_real_estate_0_description
     maxlength: 17
     show if: real_estate
-  - "Real estate - market value": users1_assets_real_estate_0_market_value
+  - "Market value": users1_assets_real_estate_0_market_value
     datatype: currency
     min: 0
-  - "Real estate - amount owed": users1_assets_real_estate_0_amount_owed
+    show if: real_estate
+  - "Amount owed on the property": users1_assets_real_estate_0_amount_owed
     datatype: currency
     min: 0
-  - "Real estate - net value": users1_assets_real_estate_0_net_value
+    show if: real_estate
+  - "Net value of the property": users1_assets_real_estate_0_net_value
     datatype: currency
     min: 0
-  - "2nd Real estate - description": users1_assets_real_estate_1_description
+    show if: real_estate
+---    
+id: More real estate
+question: |
+  More real estate
+fields:
+  - "Do you own more real estate?": real_estate_more
+    datatype: yesnoradio    
+  - "Description of the real estate - house I live in / condo I live in / mobile home I live in / vacation home / home I rent out / etc.": users1_assets_real_estate_1_description
     maxlength: 17
+    show if: real_estate_more
   - "2nd Real estate - market value": users1_assets_real_estate_1_market_value
     datatype: currency
     min: 0
+    show if: real_estate_more
   - "2nd Real estate - amount owed": users1_assets_real_estate_1_amount_owed
     datatype: currency
     min: 0
+    show if: real_estate_more
   - "2nd Real estate - net value": users1_assets_real_estate_1_net_value
     datatype: currency
     min: 0
+    show if: real_estate_more
 ---
 id: Bank accounts and cash
 question: |
   Bank accounts and cash
 fields:
   - "Do you have bank accounts or cash on hand?": accounts_cash
-    datatype: yesno
+    datatype: yesnoradio
   - "Checking accounts": users1_assets_checking_accounts
     datatype: currency
     min: 0
@@ -547,20 +561,52 @@ fields:
   - "Cash on hand": users1_assets_cash_on_hand
     datatype: currency
     min: 0
+    show if: accounts_cash
   - "Savings accounts": users1_assets_savings_accounts
     datatype: currency
     min: 0
-  - "Total cash assets": users1_assets_cash_total
-    datatype: currency
-    min: 0
-  - "Other asset - description": users1_assets_other_0_description
+    show if: accounts_cash
+---
+mandatory: True
+code: | 
+  users1_assets_cash_total = sum_if_defined('users1_assets_checking_accounts', 
+      'users1_assets_cash_on_hand',
+      'users1_assets_savings_accounts')
+---
+id: Total cash assets
+mandatory: True
+continue button field: user_sees_cash_assets_total
+question: |
+  Total cash assets
+subquestion: |
+  You said that your total cash assets are:
+    ${ currency(users1_assets_cash_total) }
+       
+  If this is not correct, go back one screen.
+---
+id: Other cash assets
+mandatory: True
+question: |
+  Other assets
+subquestion: |
+  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
+fields:
+  - "Do you have other assets?": assets_other
+    datatype: yesnoradio
+  - "Description of other asset": users1_assets_other_0_description
     maxlength: 17
+    show if: assets_other
   - "Other asset - market value": users1_assets_other_0_market_value
     datatype: currency
     min: 0
-  - "2nd Other asset - description": users1_assets_other_1_description
+    show if: assets_other
+  - "Description of 2nd other asset": users1_assets_other_1_description
     maxlength: 17
-
+    show if: assets_other
+  - "2nd Other asset - market value": users1_assets_other_1_market_value
+    datatype: currency
+    min: 0
+    show if: assets_other
 ---
 id: More information
 question: |
@@ -1055,8 +1101,11 @@ attachments:
       - "users1_expenses_all_insurance_monthly_amount": ${ currency(users1_expenses_all_insurance_monthly_amount) }
       - "users1_expenses_other_monthly_amount": ${ currency(users1_expenses_other_monthly_amount) }
       - "users1_expenses_monthly_total": ${ currency(users1_expenses_monthly_total) }
-      - "assets_yes": ${ assets }
-      - "assets_no": ${ not assets }
+      
+      - "assets_yes": ${ (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }  
+      
+      - "assets_no": ${ not (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }
+      
       - "users1_assets_vehicle_0_amount_owed": ${ currency(users1_assets_vehicle_0_amount_owed) }
       - "users1_assets_vehicle_0_description": ${ users1_assets_vehicle_0_description }
       - "users1_assets_vehicle_0_net_value": ${ currency(users1_assets_vehicle_0_net_value) }
