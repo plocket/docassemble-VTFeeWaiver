@@ -1,7 +1,7 @@
 #############TO-DO LIST#############
 
 # need to do the math for each net value for car, real estate, etc.
-# do checkboxes to ask Do you pay rent? Do you have a checking account? Then immediately offer the field to fill in.
+# need to set up signature section 
 
 
 ####################################################
@@ -112,30 +112,33 @@ code: |
   #  users[0].phone_number
   #  users[0].email
   household_size
-  receives_benefits
-  set_progress(33)
-  employed
-  user_income_none
-  users1_income_monthly_total
-  users1_income_annual_total
-  user_sees_income_total
-  set_progress(50)
-  user_expense_rent_mortgage
-  users1_expenses_monthly_total
-  users1_expenses_annual_total
-  user_sees_expenses_total
-  set_progress(70)
-  assets
-  vehicles
-  vehicles_more
-  real_estate
-  real_estate_more
-  accounts_cash
-  users1_assets_cash_total
-  user_sees_cash_assets_total
-  assets_other
-  set_progress(85)
-  other_reasons_why_cannot_afford
+  user_receives_benefits
+  if user_receives_benefits:
+    user_qualifies_interstitial
+  else:
+    set_progress(33)
+    employed
+    user_income_none
+    users1_income_monthly_total
+    users1_income_annual_total
+    user_sees_income_total
+    set_progress(50)
+    user_expense_rent_mortgage
+    users1_expenses_monthly_total
+    users1_expenses_annual_total
+    user_sees_expenses_total
+    set_progress(70)
+    assets
+    vehicles
+    vehicles_more
+    real_estate
+    real_estate_more
+    accounts_cash
+    users1_assets_cash_total
+    user_sees_cash_assets_total
+    assets_other
+    set_progress(85)
+    other_reasons_why_cannot_afford
   set_progress(98)
   User_signature
   signature_date
@@ -261,15 +264,22 @@ id: Benefits
 question: |
   Public benefits
 fields:
-  - "Does anyone get public benefits like Reach Up, SSI, SSDI and General Assistance?": receives_benefits
+  - "Does anyone get public benefits like Reach Up, SSI, SSDI and General Assistance?": user_receives_benefits
     datatype: yesnoradio
   - "Type of benefits / assistance": users1_benefits
-    show if: receives_benefits
+    show if: user_receives_benefits
     maxlength: 34
   - "Amount every month": users1_benefits_monthly_amount
     datatype: currency
-    show if: receives_benefits
+    show if: user_receives_benefits
     min: 0
+---
+id: user qualifies due to benefits
+continue button field: user_qualifies_interstitial
+question: |
+  You should qualify
+subquestion: |
+  Because you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
 ---
 id: Work
 question: |
@@ -277,17 +287,17 @@ question: |
 fields:
   - "Do you get income from working?": employed
     datatype: yesnoradio
-  - "Employer's name / Company name": users1_employer_0_name
+  - "Your employer's name or company name": users1_employer_0_name
     maxlength: 25
     show if: employed
-  - "Employer's address": users1_employer_0_address_one_line
+  - "Your employer's address": users1_employer_0_address_one_line
     maxlength: 44
     show if: employed
-  - "2nd Employer's name / Company name (if you have a second job)": users1_employer_1_name
+  - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
     maxlength: 25
     show if: employed
     required: False
-  - "2nd Employer's address": users1_employer_1_address_one_line
+  - "Your 2nd employer's address": users1_employer_1_address_one_line
     maxlength: 44
     show if: employed
     required: False
@@ -808,10 +818,10 @@ review:
     button: |
       **Employer\'s address**:
       ${ users1_employer_1_address_one_line }
-  - Edit: receives_benefits
+  - Edit: user_receives_benefits
     button: |
       **Receives benefits**:
-      ${ word(yesno(receives_benefits)) }
+      ${ word(yesno(user_receives_benefits)) }
   - Edit: users1_benefits
     button: |
       **Type of benefits / assistance (Examples: Reach Up, SSI, SSDI, General Assistance, etc.)**:
@@ -1160,8 +1170,8 @@ attachments:
       - "users1_employer_0_name": ${ users1_employer_0_name }
       - "users1_employer_1_name": ${ users1_employer_1_name }
       - "users1_employer_1_address_one_line": ${ users1_employer_1_address_one_line }
-      - "receives_benefits_yes": ${ receives_benefits }
-      - "receives_benefits_no": ${ not receives_benefits }
+      - "user_receives_benefits_yes": ${ user_receives_benefits }
+      - "user_receives_benefits_no": ${ not user_receives_benefits }
       - "users1_benefits": ${ users1_benefits }
       - "users1_benefits_monthly_amount": ${ currency(users1_benefits_monthly_amount) }
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
