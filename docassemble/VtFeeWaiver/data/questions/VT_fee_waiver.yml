@@ -1,7 +1,7 @@
 #############TO-DO LIST#############
 
-# work on additional assets
 # need to do the math for each net value for car, real estate, etc.
+# do checkboxes to ask Do you pay rent? Do you have a checking account? Then immediately offer the field to fill in.
 
 
 ####################################################
@@ -115,12 +115,12 @@ code: |
   receives_benefits
   set_progress(33)
   employed
-  users1_income_employment_monthly_amount
+  user_income_none
   users1_income_monthly_total
   users1_income_annual_total
   user_sees_income_total
   set_progress(50)
-  users1_expenses_rent_mortgage_monthly_amount
+  user_expense_rent_mortgage
   users1_expenses_monthly_total
   users1_expenses_annual_total
   user_sees_expenses_total
@@ -166,22 +166,26 @@ code: |
   VT_fee_waiver_download
 ---
 comment: |
-  This question is used to introduce your interview. Please customize
+  This question is used to introduce your interview. 
 id: Fee_waiver__Vermont__Form_60000228
 continue button field: VT_fee_waiver_intro
 question: |
   Fee waiver - Vermont - Form 600-00228
 subquestion: |
-  To use this program you will need to know: 
-    * The public benefits that you get,
-    * Your income in the past month,
-    * Your income over the past 12 months,
-    * Your monthly expenses, and
-    * The value of your belongings.
-    If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
-    You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
-    Set aside :stopwatch: 10 to 15 minutes to finish this program. You can login and save your work to return to later. 
-    Click on **{green words :question-circle:}** to learn what they mean. Click **Help** to learn more about a question.
+  To use this program you will need to know:
+  * the public benefits that you get
+  * your income in the past month
+  * your income over the past 12 months
+  * your monthly expenses and
+  * the value of your belongings.
+
+  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
+
+  You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
+
+  Set aside :stopwatch: 10 to 15 minutes to finish this program. You can login and save your work to return to later. 
+
+  Select **{green words :question-circle:}** to learn what they mean. Select **Help** to learn more about a question.
 ---
 id: Welcome
 question: |
@@ -189,9 +193,9 @@ question: |
 subquestion: |
   Welcome to VTCourtForm's **Fee waiver** form. This program creates a form that asks to participate in a court case for free.
   
-  Learn about [filing court papers for free] (link to Judiciary).
+  Learn about [filing court papers for free] (https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
-  This program does not file your Fee waiver form with the court. You will need to do this yourself.
+  This program does **not** file your fee waiver form with the court. You will need to do this yourself.
   
   This website cannot tell you if you qualify for sure. The court clerk will consider all of the information you provided.
 continue button field: Welcome
@@ -271,7 +275,7 @@ id: Work
 question: |
   Work
 fields:
-  - "Do you work?": employed
+  - "Do you get income from working?": employed
     datatype: yesnoradio
   - "Employer's name / Company name": users1_employer_0_name
     maxlength: 25
@@ -292,24 +296,46 @@ id: Income
 question: |
   Income
 subquestion: |
-  How much income do you get every month? Enter 0s if you don't get income. 
+  Select any income you get right now. Then enter the amount of each **per month**. 
 fields:
-  - "Wages": users1_income_employment_monthly_amount
+  - "Wages": user_income_wages
+    datatype: yesno    
+    show if:
+      code: |
+        employed
+  - "Amount": users1_income_employment_monthly_amount
     datatype: currency
     min: 0
-  - "Self employment": users1_income_self_employment_monthly_amount
+    show if: user_income_wages
+  - "Self employment": user_income_self_employment
+    datatype: yesno    
+    show if:
+      code: |
+        employed
+  - "Amount": users1_income_self_employment_monthly_amount
     datatype: currency
     min: 0
-  - "Unemployment benefits": users1_income_unemployment_monthly_amount
+    show if: user_income_self_employment
+  - "Unemployment benefits": user_income_unemployment
+    datatype: yesno    
+  - "Amount": users1_income_unemployment_monthly_amount
     datatype: currency
     min: 0
-  - "Child support": users1_income_child_support_monthly_amount
+    show if: user_income_unemployment
+  - "Child support": user_income_child_support
+    datatype: yesno    
+  - "Amount": users1_income_child_support_monthly_amount
     datatype: currency
     min: 0
-  - "Other": users1_income_other_monthly_amount
+    show if: user_income_child_support
+  - "Other income": user_income_other
+    datatype: yesno    
+  - "Amount": users1_income_other_monthly_amount
     datatype: currency
     min: 0
-
+    show if: user_income_other
+  - "**I don't have any income**": user_income_none
+    datatype: yesno
 ---
 ###Borrowed from IL code to add up the monthly income###
 mandatory: True
@@ -343,45 +369,82 @@ id: Expenses
 question: |
   Expenses
 subquestion: |
-  What expenses do you have each month? Enter 0 if you don't have that expense. 
+  Select the expenses you have right now. Then enter the amount of each of those expenses **per month**.
 fields:
-  - "Rent or mortgage": users1_expenses_rent_mortgage_monthly_amount
+  - "Rent or mortgage": user_expense_rent_mortgage
+    datatype: yesno    
+  - "Amount": users1_expenses_rent_mortgage_monthly_amount
     datatype: currency
     min: 0
-  - "Electric": users1_expenses_electric_monthly_amount
+    show if: user_expense_rent_mortgage
+  - "Electric": user_expense_electric
+    datatype: yesno     
+  - "Amount": users1_expenses_electric_monthly_amount
     datatype: currency
     min: 0
-  - "Phone": users1_expenses_phone_monthly_amount
+    show if: user_expense_electric
+  - "Phone": user_expense_phone
+    datatype: yesno    
+  - "Amount": users1_expenses_phone_monthly_amount
     datatype: currency
     min: 0
-  - "Fuel": users1_expenses_fuel_monthly_amount
+    show if: user_expense_phone
+  - "Fuel": user_expense_fuel
+    datatype: yesno    
+  - "Amount": users1_expenses_fuel_monthly_amount
     datatype: currency
     min: 0
-  - "Food": users1_expenses_food_monthly_amount
+    show if: user_expense_fuel
+  - "Food": user_expense_food
+    datatype: yesno    
+  - "Amount": users1_expenses_food_monthly_amount
     datatype: currency
     min: 0
-  - "Clothes": users1_expenses_clothes_monthly_amount
+    show if: user_expense_food
+  - "Clothes": user_expense_clothes
+    datatype: yesno    
+  - "Amount": users1_expenses_clothes_monthly_amount
     datatype: currency
     min: 0
-  - "Medical / medicine": users1_expenses_medical_monthly_amount
+    show if: user_expense_clothes
+  - "Medical / medicine": user_expense_medicine
+    datatype: yesno
+  - "Amount": users1_expenses_medical_monthly_amount
     datatype: currency
     min: 0
-  - "Child support": users1_expenses_child_support_monthly_amount
+    show if: user_expense_medicine
+  - "Child support": user_expense_child_support
+    datatype: yesno    
+  - "Amount": users1_expenses_child_support_monthly_amount
     datatype: currency
     min: 0
-  - "Auto loan": users1_expenses_auto_loan_monthly_amount
+    show if: user_expense_child_support
+  - "Auto loan": user_expense_child_auto_loan
+    datatype: yesno    
+  - "Amount": users1_expenses_auto_loan_monthly_amount
     datatype: currency
     min: 0
-  - "Property taxes": users1_expenses_property_tax_monthly_amount
+    show if: user_expense_child_auto_loan
+  - "Property taxes": user_expense_property_tax
+    datatype: yesno  
+  - "Amount": users1_expenses_property_tax_monthly_amount
     datatype: currency
     min: 0
-  - "All kinds of insurance": users1_expenses_all_insurance_monthly_amount
+    show if: user_expense_property_tax
+  - "All kinds of insurance": user_expense_insurance
+    datatype: yesno    
+  - "Amount":  users1_expenses_all_insurance_monthly_amount
     datatype: currency
     min: 0
-  - "Other": users1_expenses_other_monthly_amount
+    show if: user_expense_insurance
+  - "Other": user_expense_other
+    datatype: yesno    
+  - "Amount": users1_expenses_other_monthly_amount
     datatype: currency
     min: 0
-    
+    show if: user_expense_other
+  - "**I don't have any expenses**": user_expense_none
+    datatype: yesno
 ---
 mandatory: True
 code: | 
@@ -575,11 +638,12 @@ code: |
 ---
 id: Total cash assets
 mandatory: True
+show if: accounts_cash
 continue button field: user_sees_cash_assets_total
 question: |
   Total cash assets
 subquestion: |
-  You said that your total cash assets are:
+  You said that your total bank accounts and cash assets are:
     ${ currency(users1_assets_cash_total) }
        
   If this is not correct, go back one screen.
@@ -596,17 +660,36 @@ fields:
   - "Description of other asset": users1_assets_other_0_description
     maxlength: 17
     show if: assets_other
-  - "Other asset - market value": users1_assets_other_0_market_value
+  - "Market value": users1_assets_other_0_market_value
     datatype: currency
     min: 0
     show if: assets_other
   - "Description of 2nd other asset": users1_assets_other_1_description
     maxlength: 17
     show if: assets_other
-  - "2nd Other asset - market value": users1_assets_other_1_market_value
+  - "Market value": users1_assets_other_1_market_value
     datatype: currency
     min: 0
     show if: assets_other
+---
+mandatory: True
+code: | 
+  users1_assets_other_total = sum_if_defined('users1_assets_other_0_market_value', 
+      'users1_assets_other_1_market_value')
+---
+id: Total other assets
+mandatory: True
+show if: assets_other
+continue button field: user_sees_other_assets_total
+question: |
+  Total other assets
+subquestion: |
+  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
+  
+  You said that your total other assets are worth:
+    ${ currency(users1_assets_other_total) }
+       
+  If this is not correct, go back one screen.
 ---
 id: More information
 question: |
@@ -1101,11 +1184,10 @@ attachments:
       - "users1_expenses_all_insurance_monthly_amount": ${ currency(users1_expenses_all_insurance_monthly_amount) }
       - "users1_expenses_other_monthly_amount": ${ currency(users1_expenses_other_monthly_amount) }
       - "users1_expenses_monthly_total": ${ currency(users1_expenses_monthly_total) }
-      
+######checkbox - test this
       - "assets_yes": ${ (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }  
-      
       - "assets_no": ${ not (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }
-      
+######   
       - "users1_assets_vehicle_0_amount_owed": ${ currency(users1_assets_vehicle_0_amount_owed) }
       - "users1_assets_vehicle_0_description": ${ users1_assets_vehicle_0_description }
       - "users1_assets_vehicle_0_net_value": ${ currency(users1_assets_vehicle_0_net_value) }
