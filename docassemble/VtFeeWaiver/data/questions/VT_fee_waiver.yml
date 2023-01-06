@@ -2,7 +2,15 @@
 
 # need to do the math for each net value for car, real estate, etc.
 # need to set up signature section 
-
+# need to add sections for side navigation:
+#Court case info
+#You and your household
+#Income
+#Expenses
+#Property / assets
+#Other reasons can't afford
+#Signature
+#Download
 
 ####################################################
 
@@ -19,7 +27,7 @@ include:
 ---
 metadata:
   title: |
-    Fee waiver - Vermont - Form 600-00228
+    Fee waiver - Vermont Court Form 600-00228
   short title: |
     Fee waiver - Vermont
   tags:
@@ -28,6 +36,7 @@ metadata:
     - MO-00-00-00-00
   authors:
     - Guided interview by Legal Services Vermont / VTLawHelp.org website
+    - Authored by Kris Surette in 2022
 ---
 mandatory: True
 comment: |
@@ -37,7 +46,7 @@ data:
   al_weaver_version: "1.7.0"
   generated on: "2022-08-19"
   title: >-
-    Fee waiver - Vermont - Form 600-00228
+    Fee waiver - Vermont Court Form 600-00228
   short title: >-
     Fee waiver - Vermont
   description: |-
@@ -173,14 +182,14 @@ comment: |
 id: Fee_waiver__Vermont__Form_60000228
 continue button field: VT_fee_waiver_intro
 question: |
-  Fee waiver - Vermont - Form 600-00228
+  Fee waiver - Vermont Court Form 600-00228
 subquestion: |
   To use this program you will need to know:
-  * the public benefits that you get
-  * your income in the past month
-  * your income over the past 12 months
-  * your monthly expenses and
-  * the value of your belongings.
+   * the public benefits that you get
+   * your income in the past month
+   * your income over the past 12 months
+   * your monthly expenses and
+   * the value of your belongings.
 
   If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
 
@@ -208,15 +217,15 @@ question: |
   Get ready
 subquestion: |
   To use this program you will need to know: 
-    * The public benefits that you get,
-    * Your income in the past month,
-    * Your income over the past 12 months,
-    * Your monthly expenses, and
-    * The value of your belongings.
+  * the public benefits that you get
+  * your income in the past month
+  * your income over the past 12 months
+  * your monthly expenses, and
+  * the value of your belongings.
   
   If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
   
-  You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
+  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
   
   Set aside :stopwatch: 15 to 30 minutes to finish this program. You can login and save your work to return to later. 
   
@@ -1134,7 +1143,7 @@ progress: 100
 ---
 objects:
   - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Instructions", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - VT_fee_waiver_attachment: ALDocument.using(title="Fee waiver - Vermont - Form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_attachment: ALDocument.using(title="Fee waiver - Vermont Court Form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[VT_fee_waiver_post_interview_instructions,VT_fee_waiver_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
