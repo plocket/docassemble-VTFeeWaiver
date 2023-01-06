@@ -36,7 +36,7 @@ metadata:
     - MO-00-00-00-00
   authors:
     - Guided interview by Legal Services Vermont / VTLawHelp.org website
-    - Authored by Kris Surette in 2022
+    - Authored by Kris Surette in 2023
 ---
 mandatory: True
 comment: |
@@ -106,13 +106,12 @@ code: |
   nav.set_section('review_VT_fee_waiver')
   # Below sets the user_role by asking a question.
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
+  important_notes_to_user
   user_ask_role
-  Welcome
-  Get_ready
   case_name
-  docket_number
   trial_court_county
   court_division
+  docket_number
   set_progress(16)
   #  users.gather()
   #  set_parts(subtitle=str(users))
@@ -139,7 +138,6 @@ code: |
     set_progress(70)
     assets
     vehicles
-    vehicles_more
     real_estate
     real_estate_more
     accounts_cash
@@ -177,6 +175,56 @@ code: |
   users[0].signature
   VT_fee_waiver_download
 ---
+id: basic questions intro screen
+decoration: form-lineal
+question: |
+  ${interview_short_title}: ${ AL_ORGANIZATION_TITLE}
+subquestion: |
+  This program creates a form that asks to participate in a court case for free. ${ AL_ORGANIZATION_TITLE } was created by Legal Services Vermont and it is free to use.
+  
+  % if form_approved_for_email_filing:
+  ${ AL_ORGANIZATION_TITLE } can help you complete and file court forms in 3 steps:
+  % else:
+  ${ AL_ORGANIZATION_TITLE } can help you complete and download forms in 3 steps:
+  % endif
+  
+  Step 1. Answer questions that will fill in your form for you.  
+  Step 2. Preview the completed form.
+  % if form_approved_for_email_filing:
+  Step 3. Email the form to the court using this secure website and save copies
+  for yourself for later reference.  
+  % elif al_form_type in ['starts_case','existing_case','appeal']:
+  Step 3. Download and print the final form. You will need to deliver it
+  to the court on your own.
+  % else:
+  Step 3. Download and print the final form. You will need to deliver it 
+  on your own.
+  % endif
+  
+  This site is not a lawyer. If you would like a lawyer:
+  * contact the [Vermont Bar Association Lawyer Referral Service](https://www.vtbar.org/find-a-lawyer/), or
+  * contact us at [Legal Services Vermont](https://vtlawhelp.org/how-we-can-help) to see if you are eligible for legal advice or help.
+  
+  % if chat_partners_available().help:
+  Live help is currently available in this interview. Click the speech bubble
+  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
+  % endif
+fields:
+  - To continue, you must accept our [terms of use](https://vtlawhelp.org/vlh-privacy): acknowledged_information_use
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use.        
+continue button field: al_intro_screen
+terms:
+  green words: |
+    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words
+    
+---    
 comment: |
   This question is used to introduce your interview. 
 id: Fee_waiver__Vermont__Form_60000228
@@ -184,54 +232,39 @@ continue button field: VT_fee_waiver_intro
 question: |
   Fee waiver - Vermont Court Form 600-00228
 subquestion: |
-  To use this program you will need to know:
-   * the public benefits that you get
-   * your income in the past month
-   * your income over the past 12 months
-   * your monthly expenses and
-   * the value of your belongings.
-
-  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
-
-  You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
-
-  Set aside :stopwatch: 10 to 15 minutes to finish this program. You can login and save your work to return to later. 
-
-  Select **{green words :question-circle:}** to learn what they mean. Select **Help** to learn more about a question.
----
-id: Welcome
-question: |
-  Welcome
-subquestion: |
-  Welcome to VTCourtForm's **Fee waiver** form. This program creates a form that asks to participate in a court case for free.
-  
-  Learn about [filing court papers for free] (https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
-  
-  This program does **not** file your fee waiver form with the court. You will need to do this yourself.
-  
-  This website cannot tell you if you qualify for sure. The court clerk will consider all of the information you provided.
-continue button field: Welcome
----
-id: Get ready
-question: |
-  Get ready
-subquestion: |
   To use this program you will need to know: 
-  * the public benefits that you get
+  * the public benefits that you get 
   * your income in the past month
   * your income over the past 12 months
   * your monthly expenses, and
   * the value of your belongings.
-  
-  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
-  
-  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
-  
-  Set aside :stopwatch: 15 to 30 minutes to finish this program. You can login and save your work to return to later. 
-  
-  Click on **{green words :question-circle:}** to learn what they mean. Click **Help** to learn more about a question.
-continue button field: Get_ready
 
+  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
+
+  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
+
+  Set aside :stopwatch: 15 minutes to finish this program. If you want, you can create an account and save your work to return to later.
+
+  Select **{green words :question-circle:}** to learn what they mean. Select **Help** to learn more about a question.
+  
+terms:
+  green words: |
+    Green words are legal terms or other words that may need more explanation. Information pops up when you tap the green words.
+---
+id: important_notes_to_user
+question: |
+  Important
+subquestion: |
+  This program creates a form that asks to participate in a court case for free.
+  
+  This program does **not** file your fee waiver form with the court. You will need to do this yourself.
+  
+  This program **cannot tell you if you qualify for sure**. The court clerk will consider all of the information you provide.
+  
+    Learn more about [filing court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+    
+    To start the program, click on the Next button.
+continue button field: important_notes_to_user
 ---
 id: Court
 question: |
@@ -502,13 +535,16 @@ subquestion: |
 ---
 #Check the box on form if they answer any of the asset questions??? Or put this question last?
 id: Assets
+mandatory: True
+continue button field: assets
 question: |
   Assets
 subquestion: |
-  Tell us about things that you own.
-fields:
-  - "Do you have assets or property?": assets
-    datatype: yesno
+  Now we will review the things that you own — your assets or property.
+  Click the Next button.
+#fields:
+#  - "Do you have assets or property?": assets
+#    datatype: yesno
 ---
 id: Vehicles
 question: |
@@ -546,15 +582,19 @@ fields:
     datatype: currency
     show if: vehicles
     min: 0
----
-id: More cars
-mandatory: True
-continue button field: more_cars
-question: |
-  More vehicles
-fields:
-  - "Do you have more cars, trucks or other vehicles?": vehicles_more
+  - "Do you have more vehicles?": vehicles_more
     datatype: yesnoradio
+    show if: vehicles
+#--
+#id: More cars
+#mandatory: True
+#continue button field: more_cars
+#question: |
+# More vehicles
+#ields:
+# - "Do you have more cars, trucks or other vehicles?": vehicles_more
+#   datatype: yesnoradio
+#   show if: vehicles
   - "3rd Car / truck / vehicle - description": users1_assets_vehicle_2_description
     show if: vehicles_more
     maxlength: 17
