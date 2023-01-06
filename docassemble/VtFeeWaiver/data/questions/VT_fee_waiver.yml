@@ -1,6 +1,9 @@
 #############TO-DO LIST#############
 
 # need to do the math for each net value for car, real estate, etc.
+
+# need help with ###To determine the net value for vehicles### and showing the net values, when someone entered the market value of a car
+
 # need to set up signature section 
 # need to add sections for side navigation:
 #Court case info
@@ -138,6 +141,9 @@ code: |
     set_progress(70)
     assets
     vehicles
+    if vehicles:
+      users1_assets_vehicle_0_net_value 
+      user_sees_vehicle_net_values
     real_estate
     real_estate_more
     accounts_cash
@@ -149,7 +155,6 @@ code: |
   set_progress(98)
   User_signature
   signature_date
-  denied
   interview_order_VT_fee_waiver = True
 ---
 ###################### Main order ######################
@@ -533,7 +538,7 @@ subquestion: |
   If this is not correct, go back one screen.
   
 ---
-#Check the box on form if they answer any of the asset questions??? Or put this question last?
+#How check the box on form if they answer any of the asset questions???
 id: Assets
 mandatory: True
 continue button field: assets
@@ -542,9 +547,7 @@ question: |
 subquestion: |
   Now we will review the things that you own — your assets or property.
   Click the Next button.
-#fields:
-#  - "Do you have assets or property?": assets
-#    datatype: yesno
+
 ---
 id: Vehicles
 question: |
@@ -563,38 +566,23 @@ fields:
     datatype: currency
     show if: vehicles
     min: 0
-  - "Car / truck / vehicle - net value": users1_assets_vehicle_0_net_value
-    datatype: currency
-    show if: vehicles
-    min: 0
   - "2nd Car / truck / vehicle - description": users1_assets_vehicle_1_description
     maxlength: 17
     show if: vehicles
+    required: False
   - "2nd Car / truck / vehicle - market value": users1_assets_vehicle_1_market_value
     datatype: currency
     min: 0
     show if: vehicles
+    required: False
   - "2nd Car / truck / vehicle - amount owed": users1_assets_vehicle_1_amount_owed
     datatype: currency
     show if: vehicles
     min: 0
-  - "2nd Car / truck / vehicle - net value": users1_assets_vehicle_1_net_value
-    datatype: currency
-    show if: vehicles
-    min: 0
+    required: False
   - "Do you have more vehicles?": vehicles_more
     datatype: yesnoradio
     show if: vehicles
-#--
-#id: More cars
-#mandatory: True
-#continue button field: more_cars
-#question: |
-# More vehicles
-#ields:
-# - "Do you have more cars, trucks or other vehicles?": vehicles_more
-#   datatype: yesnoradio
-#   show if: vehicles
   - "3rd Car / truck / vehicle - description": users1_assets_vehicle_2_description
     show if: vehicles_more
     maxlength: 17
@@ -606,25 +594,62 @@ fields:
     datatype: currency
     show if: vehicles_more
     min: 0
-  - "3rd Car / truck / vehicle - net value": users1_assets_vehicle_2_net_value
-    datatype: currency
-    show if: vehicles_more
-    min: 0
   - "4th Car / truck / vehicle - description": users1_assets_vehicle_3_description
     show if: vehicles_more
     maxlength: 17
+    required: False
   - "4th Car / truck / vehicle - market value": users1_assets_vehicle_3_market_value
     show if: vehicles_more
     datatype: currency
     min: 0
+    required: False
   - "4th Car / truck / vehicle - amount owed": users1_assets_vehicle_3_amount_owed
     datatype: currency
     show if: vehicles_more
     min: 0
-  - "4th Car / truck / vehicle - net value": users1_assets_vehicle_3_net_value
-    datatype: currency
-    show if: vehicles_more
-    min: 0
+    required: False
+---
+###To determine the net value for vehicles###
+id: Vehicle net values
+mandatory: True
+code: |
+  total = users1_assets_vehicle_0_market_value
+  if defined('users1_assets_vehicle_0_amount_owed'):
+    total -= users1_assets_vehicle_0_amount_owed
+  get_total = True
+  users1_assets_vehicle_0_net_value = total
+
+  total = users1_assets_vehicle_1_market_value
+  if defined('users1_assets_vehicle_0_amount_owed'):
+    total -= users1_assets_vehicle_1_amount_owed
+  get_total = True
+  users1_assets_vehicle_1_net_value = total
+  
+#users1_assets_vehicle_0_net_value = users1_assets_vehicle_0_market_value-users1_assets_vehicle_0_amount_owed
+#  if defined(users1_assets_vehicle_1_market_value):
+#    users1_assets_vehicle_1_net_value = users1_assets_vehicle_1_market_value-users1_assets_vehicle_1_amount_owed
+#  if defined(users1_assets_vehicle_2_market_value):
+#    users1_assets_vehicle_2_net_value = users1_assets_vehicle_2_market_value-users1_assets_vehicle_2_amount_owed
+#  if defined(users1_assets_vehicle_3_market_value):
+#    users1_assets_vehicle_3_net_value = users1_assets_vehicle_3_market_value-users1_assets_vehicle_3_amount_owed
+---
+id: Display vehicle net values
+mandatory: True
+continue button field: user_sees_vehicle_net_values
+question: |
+  Net value of your vehicles
+subquestion: |
+  With the numbers you entered, these are the **net** values of your vehicles. If any of these are not correct, go back one screen.
+
+  Vehicle #1 net value: ${ currency(users1_assets_vehicle_0_net_value) }
+  
+  if defined(users1_assets_vehicle_1_net_value):
+    Vehicle #2 net value: ${ currency(users1_assets_vehicle_1_net_value) }
+#  if defined(users1_assets_vehicle_2_net_value):
+#    Vehicle #3 net value: ${ currency(users1_assets_vehicle_2_net_value) }
+#  if defined(users1_assets_vehicle_1_net_value):
+#    Vehicle #4 net value: ${ currency(users1_assets_vehicle_3_net_value) }
+
 ---
 id: Real estate
 question: |
@@ -726,10 +751,12 @@ fields:
   - "Description of 2nd other asset": users1_assets_other_1_description
     maxlength: 17
     show if: assets_other
+    required: False
   - "Market value": users1_assets_other_1_market_value
     datatype: currency
     min: 0
     show if: assets_other
+    required: False
 ---
 mandatory: True
 code: | 
@@ -764,28 +791,28 @@ question: |
   User signature
 continue button field: User_signature
 ---
-id: For court clerk to fill in
-question: |
-  For court clerk to fill in
-subquestion: |
-  Don't fill in this information. The court clerk will fill it in.
-fields:
-  - "Waiver denied": denied
-    datatype: yesno
-  - "Must pay fee": denied_must_pay_fee
-    maxlength: 10
-  - "Waiver granted": granted
-    datatype: yesno
-  - "Granted due to getting public assistance": granted_assistance
-    datatype: yesno
-  - "Granted due to income": granted_fpl
-    datatype: yesno
-  - "Granted due to being unable to pay": granted_unable_to_pay
-    datatype: yesno
-  - "Date": date
-    datatype: date
-  - "Clerk signature": clerk_signature
-    maxlength: 39
+#id: For court clerk to fill in
+#uestion: |
+# For court clerk to fill in
+#ubquestion: |
+# Don't fill in this information. The court clerk will fill it in.
+#ields:
+# - "Waiver denied": denied
+#   datatype: yesno
+# - "Must pay fee": denied_must_pay_fee
+#   maxlength: 10
+# - "Waiver granted": granted
+#   datatype: yesno
+# - "Granted due to getting public assistance": granted_assistance
+#   datatype: yesno
+# - "Granted due to income": granted_fpl
+#   datatype: yesno
+# - "Granted due to being unable to pay": granted_unable_to_pay
+#   datatype: yesno
+# - "Date": date
+#   datatype: date
+# - "Clerk signature": clerk_signature
+#   maxlength: 39
 ---
 id: preview VT_fee_waiver
 question: |
@@ -1095,38 +1122,38 @@ review:
     button: |
       **Date of signature**:
       ${ signature_date }
-  - Edit: denied
-    button: |
-      **Waiver denied**:
-      ${ word(yesno(denied)) }
-  - Edit: denied_must_pay_fee
-    button: |
-      **Must pay fee**:
-      ${ denied_must_pay_fee }
-  - Edit: granted
-    button: |
-      **Waiver granted**:
-      ${ word(yesno(granted)) }
-  - Edit: granted_assistance
-    button: |
-      **Granted due to getting public assistance**:
-      ${ word(yesno(granted_assistance)) }
-  - Edit: granted_fpl
-    button: |
-      **Granted due to income**:
-      ${ word(yesno(granted_fpl)) }
-  - Edit: granted_unable_to_pay
-    button: |
-      **Granted due to being unable to pay**:
-      ${ word(yesno(granted_unable_to_pay)) }
-  - Edit: date
-    button: |
-      **Date**:
-      ${ date }
-  - Edit: clerk_signature
-    button: |
-      **Clerk signature**:
-      ${ clerk_signature }
+#  - Edit: denied
+#    button: |
+#      **Waiver denied**:
+#      ${ word(yesno(denied)) }
+#  - Edit: denied_must_pay_fee
+#    button: |
+#      **Must pay fee**:
+#      ${ denied_must_pay_fee }
+#  - Edit: granted
+#    button: |
+#      **Waiver granted**:
+#      ${ word(yesno(granted)) }
+#  - Edit: granted_assistance
+#    button: |
+#      **Granted due to getting public assistance**:
+#      ${ word(yesno(granted_assistance)) }
+#  - Edit: granted_fpl
+#    button: |
+#      **Granted due to income**:
+#      ${ word(yesno(granted_fpl)) }
+#  - Edit: granted_unable_to_pay
+#    button: |
+#      **Granted due to being unable to pay**:
+#      ${ word(yesno(granted_unable_to_pay)) }
+#  - Edit: date
+#    button: |
+#      **Date**:
+#      ${ date }
+#  - Edit: clerk_signature
+#    button: |
+#      **Clerk signature**:
+#      ${ clerk_signature }
 
 ---
 continue button field: users.revisit
@@ -1282,14 +1309,14 @@ attachments:
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
-      - "denied": ${ denied }
-      - "denied_must_pay_fee": ${ denied_must_pay_fee }
-      - "granted": ${ granted }
-      - "granted_assistance": ${ granted_assistance }
-      - "granted_fpl": ${ granted_fpl }
-      - "granted_unable_to_pay": ${ granted_unable_to_pay }
-      - "date": ${ date }
-      - "clerk_signature": ${ clerk_signature }
+#      - "denied": ${ denied }
+#      - "denied_must_pay_fee": ${ denied_must_pay_fee }
+#      - "granted": ${ granted }
+#      - "granted_assistance": ${ granted_assistance }
+#      - "granted_fpl": ${ granted_fpl }
+#      - "granted_unable_to_pay": ${ granted_unable_to_pay }
+#      - "date": ${ date }
+#      - "clerk_signature": ${ clerk_signature }
 ---
 code: |
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
