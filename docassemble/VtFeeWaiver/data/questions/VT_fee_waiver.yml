@@ -1,8 +1,14 @@
 #############TO-DO LIST#############
+# Get yes no checkboxes to work for get benefits question
 
-# need to do the math for each net value for car, real estate, etc.
+# need to do the math for each net value for car, real estate, etc. and cycle through "is there another"
 
-# need help with ###To determine the net value for vehicles### and showing the net values, when someone entered the market value of a car
+# If someone enters the market value of a car, determine the net value for vehicle(s) and show the net values
+
+# Offer overflow sheet for assets as needed
+
+# Only collect one phone number
+# Don't collect other ways to reach you
 
 # need to add sections for side navigation:
 #Court case info
@@ -37,7 +43,7 @@ metadata:
     - HO-00-00-00-00
     - MO-00-00-00-00
   authors:
-    - Guided interview by Legal Services Vermont / VTLawHelp.org website
+    - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
     - Authored by Kris Surette in 2023
 ---
 mandatory: True
@@ -103,6 +109,7 @@ objects:
 sections:
   - review_VT_fee_waiver: Review your answers
 ---
+###This adds the signature feature to the interview###
 code: |
   signature_fields = ['users[0].signature']
 ---
@@ -115,22 +122,23 @@ code: |
   # Below sets the user_role by asking a question.
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   important_notes_to_user
-  user_ask_role
+  #user_ask_role
   case_name
   trial_court_county
   court_division
   docket_number
   set_progress(16)
-  #  users.gather()
-  #  set_parts(subtitle=str(users))
-  #  users[0].address.address
-  #  users[0].mailing_address.address
-  #  users[0].phone_number
-  #  users[0].email
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].address.address
+  users[0].mailing_address.address
+  users[0].phone_number
+  users[0].email
   household_size
   user_receives_benefits
   if user_receives_benefits:
     user_qualifies_interstitial
+    employed
   else:
     set_progress(33)
     employed
@@ -150,6 +158,9 @@ code: |
       users1_assets_vehicle_0_net_value 
       user_sees_vehicle_net_values
     real_estate
+    if real_estate:
+      users1_assets_real_estate_0_net_value 
+      user_sees_real_estate_net_values
     real_estate_more
     accounts_cash
     users1_assets_cash_total
@@ -158,7 +169,7 @@ code: |
     set_progress(85)
     other_reasons_why_cannot_afford
   set_progress(98)
-  User_signature
+  #User_signature
   signature_date
   interview_order_VT_fee_waiver = True
 ---
@@ -290,8 +301,9 @@ fields:
     choices:
       - Family
       - Civil
-      - Environmental
       - Probate
+      - Criminal
+      - Environmental
 ---
 id: Court case information
 question: |
@@ -306,17 +318,18 @@ id: About you
 question: |
   About you and your household
 subquestion: |
-  How many people live in your household?
+  How many people live in your household? Include any spouse, partner, children and dependants.
 fields:
   - "Household size": household_size
     datatype: integer
     min: 0
 ---
+---
 id: Benefits
 question: |
   Public benefits
 fields:
-  - "Does anyone get public benefits like Reach Up, SSI, SSDI and General Assistance?": user_receives_benefits
+  - "Does anyone get public benefits like Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
     datatype: yesnoradio
   - "Type of benefits / assistance": users1_benefits
     show if: user_receives_benefits
@@ -332,6 +345,8 @@ question: |
   You should qualify
 subquestion: |
   Because you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
+  
+  Click Next to answer a few more questions.
 ---
 id: Work
 question: |
@@ -625,7 +640,7 @@ code: |
   users1_assets_vehicle_0_net_value = total
 
   total = users1_assets_vehicle_1_market_value
-  if defined('users1_assets_vehicle_0_amount_owed'):
+  if defined('users1_assets_vehicle_1_amount_owed'):
     total -= users1_assets_vehicle_1_amount_owed
   get_total = True
   users1_assets_vehicle_1_net_value = total
@@ -701,22 +716,33 @@ fields:
     show if: real_estate_more
 ---    
 ###To determine the net value for real estate###
-#id: Vehicle net values
-#mandatory: True
-#code: |
-#  total = users1_assets_vehicle_0_market_value
-#  if defined('users1_assets_vehicle_0_amount_owed'):
-#    total -= users1_assets_vehicle_0_amount_owed
-#  get_total = True
-#  users1_assets_vehicle_0_net_value = total
-#
-#  total = users1_assets_vehicle_1_market_value
-#  if defined('users1_assets_vehicle_0_amount_owed'):
-#    total -= users1_assets_vehicle_1_amount_owed
-#  get_total = True
-#  users1_assets_vehicle_1_net_value = total    
-    
-    
+id: Real estate net values
+mandatory: True
+code: |
+  total = users1_assets_real_estate_0_market_value
+  if defined('users1_assets_real_estate_0_amount_owed'):
+    total -= users1_assets_real_estate_0_amount_owed
+  get_total = True
+  users1_assets_real_estate_0_net_value = total
+
+  total = users1_assets_real_estate_1_market_value
+  if defined('users1_assets_real_estate_0_amount_owed'):
+    total -= users1_assets_real_estate_1_amount_owed
+  get_total = True
+  users1_assets_real_estate_1_net_value = total       
+---
+id: Display real estate net values
+mandatory: True
+continue button field: user_sees_vehicle_net_values
+question: |
+  Net value of your property / real estate
+subquestion: |
+  With the numbers you entered, these are the **net** values of your real estate. If any of these are not correct, go back one screen.
+
+  Real estate #1 net value: ${ currency(users1_assets_real_estate_0_net_value) }
+  
+  if defined(users1_assets_vehicle_1_net_value):
+    Real estate #2 net value: ${ currency(users1_assets_real_estate_1_net_value) }
     
 ---
 id: Bank accounts and cash
@@ -1270,8 +1296,8 @@ attachments:
       - "users1_employer_0_name": ${ users1_employer_0_name }
       - "users1_employer_1_name": ${ users1_employer_1_name }
       - "users1_employer_1_address_one_line": ${ users1_employer_1_address_one_line }
-      - "user_receives_benefits_yes": ${ user_receives_benefits }
-      - "user_receives_benefits_no": ${ not user_receives_benefits }
+      - "users1_receives_benefits_yes": ${ user_receives_benefits }
+      - "users1_receives_benefits_no": ${ not user_receives_benefits }
       - "users1_benefits": ${ users1_benefits }
       - "users1_benefits_monthly_amount": ${ currency(users1_benefits_monthly_amount) }
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
@@ -1333,6 +1359,8 @@ attachments:
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
+      
+###Below are fields that the court fills in
 #      - "denied": ${ denied }
 #      - "denied_must_pay_fee": ${ denied_must_pay_fee }
 #      - "granted": ${ granted }
