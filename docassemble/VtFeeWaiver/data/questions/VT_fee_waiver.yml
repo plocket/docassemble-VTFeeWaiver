@@ -7,9 +7,6 @@
 
 # Offer overflow sheet for assets as needed
 
-# Only collect one phone number
-# Don't collect other ways to reach you
-
 # need to add sections for side navigation:
 #Court case info
 #You and your household
@@ -324,6 +321,29 @@ fields:
     datatype: integer
     min: 0
 ---
+id: your contact information
+question: |
+  What is your contact information?
+subquestion: |
+  Include at least **one** way to reach you other than by mail.
+
+####${ collapse_template(why_contact_info_needed_template) }
+
+fields:  
+  - Phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+    help: |
+      If you do not have a phone number or email, use a trusted friend's phone number.
+      But the friend must be someone you can rely on to give you a
+      message.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
 id: Benefits
 question: |
