@@ -4,7 +4,6 @@
 
 # need help with ###To determine the net value for vehicles### and showing the net values, when someone entered the market value of a car
 
-# need to set up signature section 
 # need to add sections for side navigation:
 #Court case info
 #You and your household
@@ -30,7 +29,7 @@ include:
 ---
 metadata:
   title: |
-    Fee waiver - Vermont Court Form 600-00228
+    Fee Waiver — Vermont court form 600-00228
   short title: |
     Fee waiver - Vermont
   tags:
@@ -49,7 +48,7 @@ data:
   al_weaver_version: "1.7.0"
   generated on: "2022-08-19"
   title: >-
-    Fee waiver - Vermont Court Form 600-00228
+    Fee Waiver — Vermont court form 600-00228
   short title: >-
     Fee waiver - Vermont
   description: |-
@@ -95,11 +94,17 @@ code: |
 objects:
   - al_logo: DAStaticFile.using(filename="LSV_bug.png")
 ---
+images:
+  big_logo: LSV_logo.png 
+---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
 ---
 sections:
   - review_VT_fee_waiver: Review your answers
+---
+code: |
+  signature_fields = ['users[0].signature']
 ---
 #################### INTERVIEW ORDER #####################
 comment: |
@@ -185,35 +190,26 @@ decoration: form-lineal
 question: |
   ${interview_short_title}: ${ AL_ORGANIZATION_TITLE}
 subquestion: |
-  This program creates a form that asks to participate in a court case for free. ${ AL_ORGANIZATION_TITLE } was created by Legal Services Vermont and it is free to use.
+  [FILE big_logo, 30%, Legal Services Vermont logo]
   
-  % if form_approved_for_email_filing:
-  ${ AL_ORGANIZATION_TITLE } can help you complete and file court forms in 3 steps:
-  % else:
+  Welcome to VTCourtForms.
+  
   ${ AL_ORGANIZATION_TITLE } can help you complete and download forms in 3 steps:
-  % endif
   
-  Step 1. Answer questions that will fill in your form for you.  
-  Step 2. Preview the completed form.
-  % if form_approved_for_email_filing:
-  Step 3. Email the form to the court using this secure website and save copies
-  for yourself for later reference.  
-  % elif al_form_type in ['starts_case','existing_case','appeal']:
-  Step 3. Download and print the final form. You will need to deliver it
+  **Step 1:** Answer questions that will fill in court forms for you.  
+  **Step 2:** Preview the completed forms.  
+  **Step 3:** Download or print the final forms. You will need to mail, email, efile or deliver them
   to the court on your own.
-  % else:
-  Step 3. Download and print the final form. You will need to deliver it 
-  on your own.
-  % endif
   
-  This site is not a lawyer. If you would like a lawyer:
-  * contact the [Vermont Bar Association Lawyer Referral Service](https://www.vtbar.org/find-a-lawyer/), or
-  * contact us at [Legal Services Vermont](https://vtlawhelp.org/how-we-can-help) to see if you are eligible for legal advice or help.
+  <i class="fas fa-file fa-2x"></i> This interview will produce a completed fee waiver form — Vermont court form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action. 
   
-  % if chat_partners_available().help:
-  Live help is currently available in this interview. Click the speech bubble
-  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
-  % endif
+  Before you begin, check to be sure you actually need to pay a court filing fee. When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee. If you are submitting an Answer to a court action, you usually don't have a court filing fee. Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  
+    <i class="fas fa-stopwatch fa-2x"></i>  It will take you about 45 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
+
+  VTCourtForms was created by Legal Services Vermont, a nonprofit legal aid organization. It is **free** to use this tool.
+  
+  This site is not a lawyer. Visit the [VTLawHelp.org website](https://vtlawhelp.org) if you have legal questions. VTLawHelp.org is operated by Legal Services Vermont and Vermont Legal Aid.
 fields:
   - To continue, you must accept our [terms of use](https://vtlawhelp.org/vlh-privacy): acknowledged_information_use
     datatype: checkboxes
@@ -235,9 +231,10 @@ comment: |
 id: Fee_waiver__Vermont__Form_60000228
 continue button field: VT_fee_waiver_intro
 question: |
-  Fee waiver - Vermont Court Form 600-00228
+  Fee waiver — Vermont court form 600-00228
 subquestion: |
-  To use this program you will need to know: 
+  To use this program you will need to know:
+  
   * the public benefits that you get 
   * your income in the past month
   * your income over the past 12 months
@@ -247,8 +244,6 @@ subquestion: |
   If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
 
   You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
-
-  Set aside :stopwatch: 15 minutes to finish this program. If you want, you can create an account and save your work to return to later.
 
   Select **{green words :question-circle:}** to learn what they mean. Select **Help** to learn more about a question.
   
@@ -262,11 +257,9 @@ question: |
 subquestion: |
   This program creates a form that asks to participate in a court case for free.
   
-  This program does **not** file your fee waiver form with the court. You will need to do this yourself.
+  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to do this yourself. We will give you instructions when you finish the form.
   
-  This program **cannot tell you if you qualify for sure**. The court clerk will consider all of the information you provide.
-  
-    Learn more about [filing court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  <i class="fa fa-exclamation-circle fa-2x"></i>  This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
     
     To start the program, click on the Next button.
 continue button field: important_notes_to_user
@@ -279,11 +272,23 @@ subquestion: |
 fields:
   - County: trial_court_county
     choices:
+      - Addison
       - Bennington
+      - Caledonia
       - Chittenden
       - Essex
+      - Franklin
+      - Grand Isle
+      - Lamoille
+      - Orange
+      - Orleans
+      - Rutland
+      - Washington
+      - Windham
+      - Windsor
   - Court Division:  court_division
     choices:
+      - Family
       - Civil
       - Environmental
       - Probate
@@ -694,6 +699,25 @@ fields:
     datatype: currency
     min: 0
     show if: real_estate_more
+---    
+###To determine the net value for real estate###
+#id: Vehicle net values
+#mandatory: True
+#code: |
+#  total = users1_assets_vehicle_0_market_value
+#  if defined('users1_assets_vehicle_0_amount_owed'):
+#    total -= users1_assets_vehicle_0_amount_owed
+#  get_total = True
+#  users1_assets_vehicle_0_net_value = total
+#
+#  total = users1_assets_vehicle_1_market_value
+#  if defined('users1_assets_vehicle_0_amount_owed'):
+#    total -= users1_assets_vehicle_1_amount_owed
+#  get_total = True
+#  users1_assets_vehicle_1_net_value = total    
+    
+    
+    
 ---
 id: Bank accounts and cash
 question: |
@@ -1210,7 +1234,7 @@ progress: 100
 ---
 objects:
   - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Instructions", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - VT_fee_waiver_attachment: ALDocument.using(title="Fee waiver - Vermont Court Form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_attachment: ALDocument.using(title="Fee Waiver — Vermont court form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[VT_fee_waiver_post_interview_instructions,VT_fee_waiver_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
