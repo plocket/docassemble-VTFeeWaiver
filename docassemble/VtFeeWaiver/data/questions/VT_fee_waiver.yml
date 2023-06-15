@@ -1,11 +1,15 @@
 #############TO-DO LIST#############
-# Get yes no checkboxes to work for get benefits question
+# If someone says they don't have unemployment or other income, the interview stops
+
+# Need to figure out how to show user the Net value of your vehicles
 
 # need to do the math for each net value for car, real estate, etc. and cycle through "is there another"
 
 # If someone enters the market value of a car, determine the net value for vehicle(s) and show the net values
 
 # Offer overflow sheet for assets as needed
+
+# Finish entering in tooltip text in the PDF
 
 ####################################################
 
@@ -57,7 +61,7 @@ data:
     - "FA-00-00-00-00"
     - "HO-00-00-00-00"
     - "MO-00-00-00-00"
-  typical role: "unknown"
+  typical role: "plaintiff"
   generate download screen: True
 ---
 code: |
@@ -146,13 +150,13 @@ code: |
   else:
     set_progress(33)
     employed
-    user_income_none
+    list_income
     users1_income_monthly_total
     users1_income_annual_total
     user_sees_income_total
     set_progress(50)
     nav.set_section('expenses')
-    user_expense_rent_mortgage
+    list_expenses
     users1_expenses_monthly_total
     users1_expenses_annual_total
     user_sees_expenses_total
@@ -161,13 +165,12 @@ code: |
     assets
     vehicles
     if vehicles:
-      users1_assets_vehicle_0_net_value 
-      user_sees_vehicle_net_values
+      users1_assets_vehicle_0_net_value
+      #user_sees_vehicle_net_values
     real_estate
     if real_estate:
-      users1_assets_real_estate_0_net_value 
+      users1_assets_real_estate_0_net_value
       user_sees_real_estate_net_values
-    real_estate_more
     accounts_cash
     users1_assets_cash_total
     user_sees_cash_assets_total
@@ -225,7 +228,7 @@ subquestion: |
   
   Before you begin, check to be sure you actually need to pay a court filing fee. When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee. If you are submitting an Answer to a court action, you usually don't have a court filing fee. Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
-    <i class="fas fa-stopwatch fa-2x"></i>  It will take you about 45 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
+    <i class="fas fa-stopwatch fa-2x"></i>  It may take you between 20 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
 
   VTCourtForms was created by Legal Services Vermont, a nonprofit legal aid organization. It is **free** to use this tool.
   
@@ -378,7 +381,9 @@ question: |
 subquestion: |
   Because you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
   
-  Click Next to answer a few more questions.
+  We can skip some of the income, expenses and assets questions in the form. 
+  
+  Click Next to answer a couple final questions.
 ---
 id: Work
 question: |
@@ -402,25 +407,20 @@ fields:
     required: False
 ---
 id: Income
+continue button field: list_income
 question: |
   Income
 subquestion: |
-  Select any income you get right now. Then enter the amount of each **per month**. 
+  Select the income you get right now. Then enter the amount of each **per month**. 
 fields:
   - "Wages": user_income_wages
     datatype: yesno    
-    show if:
-      code: |
-        employed
   - "Amount": users1_income_employment_monthly_amount
     datatype: currency
     min: 0
     show if: user_income_wages
   - "Self employment": user_income_self_employment
-    datatype: yesno    
-    show if:
-      code: |
-        employed
+    datatype: yesno
   - "Amount": users1_income_self_employment_monthly_amount
     datatype: currency
     min: 0
@@ -446,21 +446,21 @@ fields:
   - "**I don't have any income**": user_income_none
     datatype: yesno
 ---
-###Borrowed from IL code to add up the monthly income###
 mandatory: True
-code: | 
-  users1_income_monthly_total = sum_if_defined('users1_income_employment_monthly_amount', 
+code: |
+  users1_income_monthly_total = sum_if_defined('users1_income_employment_monthly_amount',
       'users1_income_self_employment_monthly_amount',
       'users1_income_unemployment_monthly_amount',
       'users1_income_child_support_monthly_amount',
-      'users1_income_other_monthly_amount')   
+      'users1_income_other_monthly_amount')
+
 ---
 ###To multiply for annual income###
 mandatory: True
 code: |
   users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
 ---
-id: Income monthly and annual totals
+id: Show income monthly and annual totals
 mandatory: True
 continue button field: user_sees_income_total
 question: |
@@ -475,6 +475,7 @@ subquestion: |
   If this is not correct, go back one screen.
 ---
 id: Expenses
+continue button field: list_expenses
 question: |
   Expenses
 subquestion: |
@@ -614,7 +615,7 @@ fields:
     datatype: currency
     min: 0
     show if: vehicles
-  - "Car / truck / vehicle - amount owed": users1_assets_vehicle_0_amount_owed
+  - "Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_0_amount_owed
     datatype: currency
     show if: vehicles
     min: 0
@@ -627,7 +628,7 @@ fields:
     min: 0
     show if: vehicles
     required: False
-  - "2nd Car / truck / vehicle - amount owed": users1_assets_vehicle_1_amount_owed
+  - "2nd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_1_amount_owed
     datatype: currency
     show if: vehicles
     min: 0
@@ -642,7 +643,7 @@ fields:
     datatype: currency
     show if: vehicles_more
     min: 0
-  - "3rd Car / truck / vehicle - amount owed": users1_assets_vehicle_2_amount_owed
+  - "3rd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_2_amount_owed
     datatype: currency
     show if: vehicles_more
     min: 0
@@ -655,14 +656,13 @@ fields:
     datatype: currency
     min: 0
     required: False
-  - "4th Car / truck / vehicle - amount owed": users1_assets_vehicle_3_amount_owed
+  - "4th Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_3_amount_owed
     datatype: currency
     show if: vehicles_more
     min: 0
     required: False
 ---
 ###To determine the net value for vehicles###
-id: Vehicle net values
 mandatory: True
 code: |
   total = users1_assets_vehicle_0_market_value
@@ -670,20 +670,39 @@ code: |
     total -= users1_assets_vehicle_0_amount_owed
   get_total = True
   users1_assets_vehicle_0_net_value = total
-
+---
+###To determine the net value for vehicles###
+#mandatory: True
+code: |
   total = users1_assets_vehicle_1_market_value
   if defined('users1_assets_vehicle_1_amount_owed'):
     total -= users1_assets_vehicle_1_amount_owed
   get_total = True
   users1_assets_vehicle_1_net_value = total
-  
-#users1_assets_vehicle_0_net_value = users1_assets_vehicle_0_market_value-users1_assets_vehicle_0_amount_owed
-#  if defined(users1_assets_vehicle_1_market_value):
-#    users1_assets_vehicle_1_net_value = users1_assets_vehicle_1_market_value-users1_assets_vehicle_1_amount_owed
-#  if defined(users1_assets_vehicle_2_market_value):
-#    users1_assets_vehicle_2_net_value = users1_assets_vehicle_2_market_value-users1_assets_vehicle_2_amount_owed
-#  if defined(users1_assets_vehicle_3_market_value):
-#    users1_assets_vehicle_3_net_value = users1_assets_vehicle_3_market_value-users1_assets_vehicle_3_amount_owed
+---
+###To determine the net value for vehicles###
+#mandatory: True
+code: |
+  if defined('users1_assets_vehicle_2_market_value'):
+    total = users1_assets_vehicle_2_market_value
+    if defined('users1_assets_vehicle_2_amount_owed'):
+      total -= users1_assets_vehicle_2_amount_owed
+    get_total = True
+    users1_assets_vehicle_2_net_value = total
+  else:
+    users1_assets_vehicle_2_net_value = 0
+---
+###To determine the net value for vehicles###
+#mandatory: True
+code: |
+  if defined('users1_assets_vehicle_2_market_value'):
+    total = users1_assets_vehicle_3_market_value
+    if defined('users1_assets_vehicle_3_amount_owed'):
+      total -= users1_assets_vehicle_3_amount_owed
+    get_total = True
+    users1_assets_vehicle_3_net_value = total
+  else:
+    users1_assets_vehicle_3_net_value = 0    
 ---
 id: Display vehicle net values
 mandatory: True
@@ -695,17 +714,19 @@ subquestion: |
 
   Vehicle #1 net value: ${ currency(users1_assets_vehicle_0_net_value) }
   
-  if defined(users1_assets_vehicle_1_net_value):
-    Vehicle #2 net value: ${ currency(users1_assets_vehicle_1_net_value) }
-#  if defined(users1_assets_vehicle_2_net_value):
-#    Vehicle #3 net value: ${ currency(users1_assets_vehicle_2_net_value) }
-#  if defined(users1_assets_vehicle_1_net_value):
+#  % if defined('users1_assets_vehicle_1_market_value'):
+#    Vehicle #2 net value: ${ currency(users1_assets_vehicle_1_net_value) }
+#    
+#  % if defined('users1_assets_vehicle_2_market_value'):
+#    #Vehicle #3 net value: ${ currency(users1_assets_vehicle_2_net_value) }
+#    
+#  % if defined('users1_assets_vehicle_3_market_value'):
 #    Vehicle #4 net value: ${ currency(users1_assets_vehicle_3_net_value) }
 
 ---
 id: Real estate
 question: |
-  Real estate
+  Real estate / property
 fields:
   - "Do you own a house or other real estate?": real_estate
     datatype: yesnoradio
@@ -720,17 +741,9 @@ fields:
     datatype: currency
     min: 0
     show if: real_estate
-  - "Net value of the property": users1_assets_real_estate_0_net_value
-    datatype: currency
-    min: 0
-    show if: real_estate
----    
-id: More real estate
-question: |
-  More real estate
-fields:
   - "Do you own more real estate?": real_estate_more
     datatype: yesnoradio    
+    show if: real_estate
   - "Description of the real estate - house I live in / condo I live in / mobile home I live in / vacation home / home I rent out / etc.": users1_assets_real_estate_1_description
     maxlength: 17
     show if: real_estate_more
@@ -748,7 +761,6 @@ fields:
     show if: real_estate_more
 ---    
 ###To determine the net value for real estate###
-id: Real estate net values
 mandatory: True
 code: |
   total = users1_assets_real_estate_0_market_value
@@ -758,14 +770,14 @@ code: |
   users1_assets_real_estate_0_net_value = total
 
   total = users1_assets_real_estate_1_market_value
-  if defined('users1_assets_real_estate_0_amount_owed'):
+  if defined('users1_assets_real_estate_1_amount_owed'):
     total -= users1_assets_real_estate_1_amount_owed
   get_total = True
   users1_assets_real_estate_1_net_value = total       
 ---
 id: Display real estate net values
 mandatory: True
-continue button field: user_sees_vehicle_net_values
+continue button field: user_sees_real_estate_net_values
 question: |
   Net value of your property / real estate
 subquestion: |
@@ -773,7 +785,7 @@ subquestion: |
 
   Real estate #1 net value: ${ currency(users1_assets_real_estate_0_net_value) }
   
-  if defined(users1_assets_vehicle_1_net_value):
+  if defined('users1_assets_vehicle_1_net_value'):
     Real estate #2 net value: ${ currency(users1_assets_real_estate_1_net_value) }
     
 ---
