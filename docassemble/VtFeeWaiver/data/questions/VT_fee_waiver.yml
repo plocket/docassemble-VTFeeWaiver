@@ -30,6 +30,9 @@ include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALAnyState:any_state.yml
 ---
+features:
+  css: style.css
+---
 metadata:
   title: |
     Fee Waiver — Vermont court form 600-00228
