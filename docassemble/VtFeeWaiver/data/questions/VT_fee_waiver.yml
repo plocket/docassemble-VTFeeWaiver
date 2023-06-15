@@ -7,16 +7,6 @@
 
 # Offer overflow sheet for assets as needed
 
-# need to add sections for side navigation:
-#Court case info
-#You and your household
-#Income
-#Expenses
-#Property / assets
-#Other reasons can't afford
-#Signature
-#Download
-
 ####################################################
 
 
@@ -107,7 +97,17 @@ objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
 ---
 sections:
+  - intro: Introduction
+  - case_info: Court case info
+  - about_you: You and your household
+  - income: Your income
+  - expenses: Your expenses
+  - assets: Your property and assets
+  - reasons: Other info
   - review_VT_fee_waiver: Review your answers
+  - signature: Sign your document
+  - download: Download your document
+
 ---
 ###This adds the signature feature to the interview###
 code: |
@@ -121,13 +121,16 @@ code: |
   nav.set_section('review_VT_fee_waiver')
   # Below sets the user_role by asking a question.
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
+  nav.set_section('intro')
   important_notes_to_user
   #user_ask_role
+  nav.set_section('case_info')
   case_name
   trial_court_county
   court_division
   docket_number
   set_progress(16)
+  nav.set_section('about_you')
   users.gather()
   set_parts(subtitle=str(users))
   users[0].address.address
@@ -135,6 +138,7 @@ code: |
   users[0].phone_number
   users[0].email
   household_size
+  nav.set_section('income')
   user_receives_benefits
   if user_receives_benefits:
     user_qualifies_interstitial
@@ -147,11 +151,13 @@ code: |
     users1_income_annual_total
     user_sees_income_total
     set_progress(50)
+    nav.set_section('expenses')
     user_expense_rent_mortgage
     users1_expenses_monthly_total
     users1_expenses_annual_total
     user_sees_expenses_total
     set_progress(70)
+    nav.set_section('assets')
     assets
     vehicles
     if vehicles:
@@ -167,10 +173,10 @@ code: |
     user_sees_cash_assets_total
     assets_other
     set_progress(85)
+    nav.set_section('reasons')
     other_reasons_why_cannot_afford
   set_progress(98)
-  #User_signature
-  signature_date
+  #signature_date
   interview_order_VT_fee_waiver = True
 ---
 ###################### Main order ######################
@@ -191,9 +197,12 @@ code: |
           "reached_interview_end": True,
       },
   )
+  nav.set_section('review_VT_fee_waiver')
   VT_fee_waiver_preview_question
+  nav.set_section('signature')
   basic_questions_signature_flow    
   users[0].signature
+  nav.set_section('download')
   VT_fee_waiver_download
 ---
 id: basic questions intro screen
