@@ -19,6 +19,13 @@
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALAnyState:any_state.yml
+  - docassemble.ALToolbox:al_income.yml
+---
+objects:
+  - jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
+  - vehicles: DAList.using(object_type=DAObject, complete_attribute="owed", ask_number=True)
+  - real_estate: DAList.using(object_type=DAObject, complete_attribute="owed")
+  
 ---
 features:
   css: style.css
