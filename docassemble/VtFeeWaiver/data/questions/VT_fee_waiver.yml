@@ -1,11 +1,7 @@
 #############TO-DO LIST#############
 # If someone says they don't have unemployment or other income, the interview stops
 
-# Need to figure out how to show user the Net value of your vehicles
-
-# need to do the math for each net value for car, real estate, etc. and cycle through "is there another"
-
-# If someone enters the market value of a car, determine the net value for vehicle(s) and show the net values
+# need to gather and do the math for each net value for car, real estate, etc. and cycle through "is there another". For example, if someone enters the market value of a car, determine the net value for vehicle(s) and show the net values.
 
 # Offer overflow sheet for assets as needed
 
@@ -168,9 +164,9 @@ code: |
       users1_assets_vehicle_0_net_value
       #user_sees_vehicle_net_values
     real_estate
-    if real_estate:
-      users1_assets_real_estate_0_net_value
-      user_sees_real_estate_net_values
+    #if real_estate:
+      #users1_assets_real_estate_0_net_value
+      #user_sees_real_estate_net_values
     accounts_cash
     users1_assets_cash_total
     user_sees_cash_assets_total
@@ -311,11 +307,11 @@ fields:
       - Windsor
   - Court Division:  court_division
     choices:
-      - Family
-      - Civil
-      - Probate
-      - Criminal
-      - Environmental
+      - FAMILY
+      - CIVIL
+      - PROBATE
+      - CRIMINAL
+      - ENVIRONMENTAL
 ---
 id: Court case information
 question: |
@@ -875,10 +871,12 @@ id: More information
 question: |
   More information
 subquestion: |
-  Tell us about other reasons why you cannot afford the court fees.
+  Tell us about other reasons why you cannot afford the court fees. (optional)
 fields:
   - "Why you cannot afford": other_reasons_why_cannot_afford
     input type: area
+    maxlength: 550
+    required: False
 ---
 id: User signature
 question: |
@@ -912,14 +910,14 @@ id: preview VT_fee_waiver
 question: |
   Preview your form before you sign it
 subquestion: |
-  Here is a preview of the form you will sign on the next page.   
+  The interview is complete. Here is a preview of the form you will sign on the next screen.   
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
-  Click the image to open it in a new tab. Click the "Edit answers" button
+  Click the image to open it in a new tab. Click the "Edit your answers" button
   to edit your answers.
 
-  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit answers', color='info') }
+  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
   Remember to come back to this window to continue and sign your form.
 continue button field: VT_fee_waiver_preview_question    
@@ -953,6 +951,12 @@ review:
     button: |
       **Court county**
       ${ trial_court_county }
+      
+  - Edit: court_division
+    button: |
+      **Court division**:
+      ${ court_division }
+      
   - Edit: case_name
     button: |
       **Case name, as seen on your court papers (example: Kramer vs. Kramer)**:
@@ -1288,11 +1292,10 @@ event: VT_fee_waiver_download
 question: |
   All done
 subquestion: |
-  Thank you ${users}. Your form is ready to download and deliver.
-  
-  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+    
+  View your signed form below. Click the "Edit your answers" button to fix any mistakes. Then click Resume to come back to this screen.
 
-  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit answers', color='info') }
+  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
   
   ${ al_user_bundle.download_list_html() }
