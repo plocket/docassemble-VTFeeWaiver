@@ -1,7 +1,8 @@
 #############TO-DO LIST#############
-# If someone says they don't have unemployment or other income, the interview stops
 
-# need to gather and do the math for each net value for car, real estate, etc. and cycle through "is there another". For example, if someone enters the market value of a car, determine the net value for vehicle(s) and show the net values.
+# trying to gather and do the math for each net value for car, real estate, etc. and cycle through "is there another". For example, if someone enters the market value of a car, determine the net value for vehicle(s) and show the net values.
+
+# If someone says they don't have unemployment or other income, the interview stops
 
 # Offer overflow sheet for assets as needed
 
@@ -22,10 +23,101 @@ include:
   - docassemble.ALToolbox:al_income.yml
 ---
 objects:
-  - jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
-  - vehicles: DAList.using(object_type=DAObject, complete_attribute="owed", ask_number=True)
-  - real_estate: DAList.using(object_type=DAObject, complete_attribute="owed")
+  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  #- real_estate: DAList.using(object_type=DAObject, complete_attribute="amount_owed")
+  #- jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
+---
+code: |
+  vehicles[i].description
+  vehicles[i].amount_owed
+  vehicles[i].complete=True
+---
+###To determine the net value for vehicle###
+code: |
+  total = vehicles[i].market_value
+  total -= vehicles[i].amount_owed
+  vehicles[i].net_value = total
+---
+id: Vehicles
+question: |
+  Vehicles
+fields:
+  - "Do you have a car, truck or other vehicle?": vehicles.there_are_any
+    input type: radio
+    choices:
+      - Yes: True
+      - No: False
+      
+validation code: |
+  if not vehicles.there_are_any:
+    vehicles.target_number = 0
+---
+id: How many vehicles
+question: |
+  How many vehicles
+fields:      
+  - How many cars, trucks or other vehicles do you have?: vehicles.target_number
+    datatype: integer
+    
+---
+id: Describe vehicle
+question: |
+  Describe the ${ ordinal(i) } vehicle
+subquestion: |
+
+  % if i > 0:
+  You have told us about these vehicles already:
   
+  % for item in vehicles.complete_elements():
+  * ${ item.description }
+  
+  Now tell us about the next vehicle.
+  % endfor
+  % endif
+fields:     
+  - Make and model of the car / truck / vehicle: vehicles[i].description
+    maxlength: 76
+  - What is it's market value? How much would you get if you sold it?: vehicles[i].market_value
+    maxlength: 76
+    datatype: currency
+  - If you owe money on the vehicle, how much do you owe? Enter 0 if you own it outright.: vehicles[i].amount_owed
+    maxlength: 76
+    datatype: currency
+
+#---
+#id: Another vehicle
+#question: |
+#  List of vehicles
+#subquestion: |
+#  You have told us about these vehicles:
+#  
+#  % for item in vehicles:
+#    * ${ item.description }
+#  % endfor
+#
+#fields:
+#  - Do you another car, truck or vehicle?: vehicles.there_is_another
+#    input type: radio
+#    choices:
+#      - Yes: True
+#      - No: False
+---
+id: Display vehicle net values
+continue button field: user_sees_vehicle_net_values
+question: |
+  Net value of your vehicles
+subquestion: |
+  With the numbers you entered, these are the **net** values of your vehicles. The net value is what you get when you subtract the amount you owe from the full market value of your vehicle.
+  
+  If any of these are not correct, go back a screen or two and change your numbers.
+
+  % for item in vehicles:
+    ${ item.description } 
+    
+    * Net value = ${ currency(item.net_value) }
+    
+  % endfor
+
 ---
 features:
   css: style.css
@@ -129,6 +221,10 @@ code: |
   # Below sets the user_role by asking a question.
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
+  vehicles.there_are_any
+  if vehicles.there_are_any: 
+    vehicles.gather()
+    user_sees_vehicle_net_values
   important_notes_to_user
   #user_ask_role
   nav.set_section('case_info')
@@ -168,8 +264,8 @@ code: |
     assets
     vehicles
     if vehicles:
-      users1_assets_vehicle_0_net_value
-      #user_sees_vehicle_net_values
+      users1_assets_vehicles_0_net_value
+      #user_sees_vehicles_net_values
     real_estate
     #if real_estate:
       #users1_assets_real_estate_0_net_value
@@ -605,118 +701,118 @@ subquestion: |
   Click the Next button.
 
 ---
-id: Vehicles
-question: |
-  Vehicles
-fields:
-  - "Do you have a car, truck or other vehicle?": vehicles
-    datatype: yesnoradio
-  - "Car / truck / vehicle - description": users1_assets_vehicle_0_description
-    maxlength: 17
-    show if: vehicles
-  - "Car / truck / vehicle - market value": users1_assets_vehicle_0_market_value
-    datatype: currency
-    min: 0
-    show if: vehicles
-  - "Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_0_amount_owed
-    datatype: currency
-    show if: vehicles
-    min: 0
-  - "2nd Car / truck / vehicle - description": users1_assets_vehicle_1_description
-    maxlength: 17
-    show if: vehicles
-    required: False
-  - "2nd Car / truck / vehicle - market value": users1_assets_vehicle_1_market_value
-    datatype: currency
-    min: 0
-    show if: vehicles
-    required: False
-  - "2nd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_1_amount_owed
-    datatype: currency
-    show if: vehicles
-    min: 0
-    required: False
-  - "Do you have more vehicles?": vehicles_more
-    datatype: yesnoradio
-    show if: vehicles
-  - "3rd Car / truck / vehicle - description": users1_assets_vehicle_2_description
-    show if: vehicles_more
-    maxlength: 17
-  - "3rd Car / truck / vehicle - market value": users1_assets_vehicle_2_market_value
-    datatype: currency
-    show if: vehicles_more
-    min: 0
-  - "3rd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_2_amount_owed
-    datatype: currency
-    show if: vehicles_more
-    min: 0
-  - "4th Car / truck / vehicle - description": users1_assets_vehicle_3_description
-    show if: vehicles_more
-    maxlength: 17
-    required: False
-  - "4th Car / truck / vehicle - market value": users1_assets_vehicle_3_market_value
-    show if: vehicles_more
-    datatype: currency
-    min: 0
-    required: False
-  - "4th Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_3_amount_owed
-    datatype: currency
-    show if: vehicles_more
-    min: 0
-    required: False
+#id: Vehicles
+#question: |
+#  Vehicles
+#fields:
+#  - "Do you have a car, truck or other vehicle?": vehicles
+#    datatype: yesnoradio
+#  - "Car / truck / vehicle - description": users1_assets_vehicle_0_description
+#    maxlength: 17
+#    show if: vehicles
+#  - "Car / truck / vehicle - market value": users1_assets_vehicle_0_market_value
+#    datatype: currency
+#    min: 0
+#    show if: vehicles
+#  - "Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_0_amount_owed
+#    datatype: currency
+#    show if: vehicles
+#    min: 0
+#  - "2nd Car / truck / vehicle - description": users1_assets_vehicle_1_description
+#    maxlength: 17
+#    show if: vehicles
+#    required: False
+#  - "2nd Car / truck / vehicle - market value": users1_assets_vehicle_1_market_value
+#    datatype: currency
+#    min: 0
+#    show if: vehicles
+#    required: False
+#  - "2nd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_1_amount_owed
+#    datatype: currency
+#    show if: vehicles
+#    min: 0
+#    required: False
+#  - "Do you have more vehicles?": vehicles_more
+#    datatype: yesnoradio
+#    show if: vehicles
+#  - "3rd Car / truck / vehicle - description": users1_assets_vehicle_2_description
+#    show if: vehicles_more
+#    maxlength: 17
+#  - "3rd Car / truck / vehicle - market value": users1_assets_vehicle_2_market_value
+#    datatype: currency
+#    show if: vehicles_more
+#    min: 0
+#  - "3rd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_2_amount_owed
+#    datatype: currency
+#    show if: vehicles_more
+#    min: 0
+#  - "4th Car / truck / vehicle - description": users1_assets_vehicle_3_description
+#    show if: vehicles_more
+#    maxlength: 17
+#    required: False
+#  - "4th Car / truck / vehicle - market value": users1_assets_vehicle_3_market_value
+#    show if: vehicles_more
+#    datatype: currency
+#    min: 0
+#    required: False
+#  - "4th Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_3_amount_owed
+#    datatype: currency
+#    show if: vehicles_more
+#    min: 0
+#    required: False
 ---
-###To determine the net value for vehicles###
-mandatory: True
-code: |
-  total = users1_assets_vehicle_0_market_value
-  if defined('users1_assets_vehicle_0_amount_owed'):
-    total -= users1_assets_vehicle_0_amount_owed
-  get_total = True
-  users1_assets_vehicle_0_net_value = total
----
-###To determine the net value for vehicles###
+####To determine the net value for vehicles###
 #mandatory: True
-code: |
-  total = users1_assets_vehicle_1_market_value
-  if defined('users1_assets_vehicle_1_amount_owed'):
-    total -= users1_assets_vehicle_1_amount_owed
-  get_total = True
-  users1_assets_vehicle_1_net_value = total
----
-###To determine the net value for vehicles###
+#code: |
+#  total = users1_assets_vehicle_0_market_value
+#  if defined('users1_assets_vehicle_0_amount_owed'):
+#    total -= users1_assets_vehicle_0_amount_owed
+#  get_total = True
+#  users1_assets_vehicle_0_net_value = total
+#---
+####To determine the net value for vehicles###
+##mandatory: True
+#code: |
+#  total = users1_assets_vehicle_1_market_value
+#  if defined('users1_assets_vehicle_1_amount_owed'):
+#    total -= users1_assets_vehicle_1_amount_owed
+#  get_total = True
+#  users1_assets_vehicle_1_net_value = total
+#---
+####To determine the net value for vehicles###
+##mandatory: True
+#code: |
+#  if defined('users1_assets_vehicle_2_market_value'):
+#    total = users1_assets_vehicle_2_market_value
+#    if defined('users1_assets_vehicle_2_amount_owed'):
+#      total -= users1_assets_vehicle_2_amount_owed
+#    get_total = True
+#    users1_assets_vehicle_2_net_value = total
+#  else:
+#    users1_assets_vehicle_2_net_value = 0
+#---
+####To determine the net value for vehicles###
+##mandatory: True
+#code: |
+#  if defined('users1_assets_vehicle_2_market_value'):
+#    total = users1_assets_vehicle_3_market_value
+#    if defined('users1_assets_vehicle_3_amount_owed'):
+#      total -= users1_assets_vehicle_3_amount_owed
+#    get_total = True
+#    users1_assets_vehicle_3_net_value = total
+#  else:
+#    users1_assets_vehicle_3_net_value = 0    
+#---
+#id: Display vehicle net values
 #mandatory: True
-code: |
-  if defined('users1_assets_vehicle_2_market_value'):
-    total = users1_assets_vehicle_2_market_value
-    if defined('users1_assets_vehicle_2_amount_owed'):
-      total -= users1_assets_vehicle_2_amount_owed
-    get_total = True
-    users1_assets_vehicle_2_net_value = total
-  else:
-    users1_assets_vehicle_2_net_value = 0
----
-###To determine the net value for vehicles###
-#mandatory: True
-code: |
-  if defined('users1_assets_vehicle_2_market_value'):
-    total = users1_assets_vehicle_3_market_value
-    if defined('users1_assets_vehicle_3_amount_owed'):
-      total -= users1_assets_vehicle_3_amount_owed
-    get_total = True
-    users1_assets_vehicle_3_net_value = total
-  else:
-    users1_assets_vehicle_3_net_value = 0    
----
-id: Display vehicle net values
-mandatory: True
-continue button field: user_sees_vehicle_net_values
-question: |
-  Net value of your vehicles
-subquestion: |
-  With the numbers you entered, these are the **net** values of your vehicles. If any of these are not correct, go back one screen.
-
-  Vehicle #1 net value: ${ currency(users1_assets_vehicle_0_net_value) }
-  
+#continue button field: user_sees_vehicle_net_values
+#question: |
+#  Net value of your vehicles
+#subquestion: |
+#  With the numbers you entered, these are the **net** values of your vehicles. If any of these are not correct, go back one screen.
+#
+#  Vehicle #1 net value: ${ currency(users1_assets_vehicle_0_net_value) }
+#  
 #  % if defined('users1_assets_vehicle_1_market_value'):
 #    Vehicle #2 net value: ${ currency(users1_assets_vehicle_1_net_value) }
 #    
@@ -1299,14 +1395,11 @@ event: VT_fee_waiver_download
 question: |
   All done
 subquestion: |
-    
   View your signed form below. Click the "Edit your answers" button to fix any mistakes. Then click Resume to come back to this screen.
-
+  
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
-  
   ${ al_user_bundle.download_list_html() }
-  
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
