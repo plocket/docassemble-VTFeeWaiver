@@ -1,8 +1,9 @@
 #############TO-DO LIST#############
 
 # When we have new job gathering / income gathering code ready, use it here
-# finish putting asset fields in attachment area
-# not sure why my edit screens for assets don't let you edit
+# finish putting asset fields in attachment area -- did vehicles
+# do edit screens for assets -- did vehicles
+# problem: id: VT fee waiver review screen  When I edit amount owed or market value on a vehicle the net value does not change; when I add a new vehicle there it does not figure the net value
 # id: your mailing address - change label to PO Box or street address
 # id: your contact information - borrow code from RFA to collect phone and email
 # update form PDF with updated field names for assets. None are showing.
@@ -1163,10 +1164,6 @@ review:
     button: |
       **Total expenses each month**:
       ${ currency(users1_expenses_monthly_total) }
-  - Edit: assets
-    button: |
-      **Assets or property**:
-      ${ word(yesno(assets)) }
   - Edit: vehicles.revisit
     button: |
       **Vehicles**
@@ -1174,74 +1171,11 @@ review:
       % for item in vehicles:
         **${ item.description }** 
         
+        * Market value = ${ currency(item.market_value) }
+        * Amount owed = ${ currency(item.amount_owed) }
         * Net value = ${ currency(item.net_value) }
     
       % endfor
-
-#  - Edit: users1_assets_vehicle_0_amount_owed
-#    button: |
-#      **Car / truck / vehicle - amount owed**:
-#      ${ currency(users1_assets_vehicle_0_amount_owed) }
-#  - Edit: users1_assets_vehicle_0_description
-#    button: |
-#      **Car / truck / vehicle - description**:
-#      ${ users1_assets_vehicle_0_description }
-#  - Edit: users1_assets_vehicle_0_net_value
-#    button: |
-#      **Car / truck / vehicle - net value**:
-#      ${ currency(users1_assets_vehicle_0_net_value) }
-#  - Edit: users1_assets_vehicle_0_market_value
-#    button: |
-#      **Car / truck / vehicle - market value**:
-#      ${ currency(users1_assets_vehicle_0_market_value) }
-#  - Edit: users1_assets_vehicle_1_description
-#    button: |
-#      **2nd Car / truck / vehicle - description**:
-#      ${ users1_assets_vehicle_1_description }
-#  - Edit: users1_assets_vehicle_1_market_value
-#    button: |
-#      **2nd Car / truck / vehicle - market value**:
-#      ${ currency(users1_assets_vehicle_1_market_value) }
-#  - Edit: users1_assets_vehicle_1_amount_owed
-#    button: |
-#      **2nd Car / truck / vehicle - amount owed**:
-#      ${ currency(users1_assets_vehicle_1_amount_owed) }
-#  - Edit: users1_assets_vehicle_1_net_value
-#    button: |
-#      **2nd Car / truck / vehicle - net value**:
-#      ${ currency(users1_assets_vehicle_1_net_value) }
-#  - Edit: users1_assets_vehicle_2_description
-#    button: |
-#      **3rd Car / truck / vehicle - description**:
-#      ${ users1_assets_vehicle_2_description }
-#  - Edit: users1_assets_vehicle_2_amount_owed
-#    button: |
-#      **3rd Car / truck / vehicle - amount owed**:
-#      ${ currency(users1_assets_vehicle_2_amount_owed) }
-#  - Edit: users1_assets_vehicle_2_net_value
-#    button: |
-#      **3rd Car / truck / vehicle - net value**:
-#      ${ currency(users1_assets_vehicle_2_net_value) }
-#  - Edit: users1_assets_vehicle_2_market_value
-#    button: |
-#      **3rd Car / truck / vehicle - market value**:
-#      ${ currency(users1_assets_vehicle_2_market_value) }
-#  - Edit: users1_assets_vehicle_3_description
-#    button: |
-#      **4th Car / truck / vehicle - description**:
-#      ${ users1_assets_vehicle_3_description }
-#  - Edit: users1_assets_vehicle_3_market_value
-#    button: |
-#      **4th Car / truck / vehicle - market value**:
-#      ${ currency(users1_assets_vehicle_3_market_value) }
-#  - Edit: users1_assets_vehicle_3_amount_owed
-#    button: |
-#      **4th Car / truck / vehicle - amount owed**:
-#      ${ currency(users1_assets_vehicle_3_amount_owed) }
-#  - Edit: users1_assets_vehicle_3_net_value
-#    button: |
-#      **4th Car / truck / vehicle - net value**:
-#      ${ currency(users1_assets_vehicle_3_net_value) }
   - Edit: real_estate.revisit
     button: |
       **Real estate**
@@ -1252,38 +1186,6 @@ review:
         * Net value = ${ currency(item.net_value) }
         
         % endfor
-#  - Edit: users1_assets_real_estate_0_description
-#    button: |
-#      **Real estate - description**:
-#      ${ users1_assets_real_estate_0_description }
-#  - Edit: users1_assets_real_estate_0_amount_owed
-#    button: |
-#      **Real estate - amount owed**:
-#      ${ currency(users1_assets_real_estate_0_amount_owed) }
-#  - Edit: users1_assets_real_estate_0_net_value
-#    button: |
-#      **Real estate - net value**:
-#      ${ currency(users1_assets_real_estate_0_net_value) }
-#  - Edit: users1_assets_real_estate_0_market_value
-#    button: |
-#      **Real estate - market value**:
-#      ${ currency(users1_assets_real_estate_0_market_value) }
-#  - Edit: users1_assets_real_estate_1_description
-#    button: |
-#      **2nd Real estate - description**:
-#      ${ users1_assets_real_estate_1_description }
-#  - Edit: users1_assets_real_estate_1_market_value
-#    button: |
-#      **2nd Real estate - market value**:
-#      ${ currency(users1_assets_real_estate_1_market_value) }
-#  - Edit: users1_assets_real_estate_1_amount_owed
-#    button: |
-#      **2nd Real estate - amount owed**:
-#      ${ currency(users1_assets_real_estate_1_amount_owed) }
-#  - Edit: users1_assets_real_estate_1_net_value
-#    button: |
-#      **2nd Real estate - net value**:
-#      ${ currency(users1_assets_real_estate_1_net_value) }
   - Edit: users1_assets_checking_accounts
     button: |
       **Checking accounts**:
@@ -1385,7 +1287,30 @@ edit:
   - phone_number
   - signature
 confirm: True
+---
+continue button field: vehicles.revisit
+question: |
+  Edit vehicles
+subquestion: |
+  ${ vehicles.table }
 
+  ${ vehicles.add_action() }
+---
+table: vehicles.table
+rows: vehicles
+columns:
+  - Description: |
+      row_item.description if defined("row_item.description") else ""
+  - Market value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+  - Amount owed: |
+      currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
+  - Net value: |
+      currency(row_item.net_value) if defined("row_item.net_value") else ""
+edit:
+  - description
+  - market_value
+  - amount_owed
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
