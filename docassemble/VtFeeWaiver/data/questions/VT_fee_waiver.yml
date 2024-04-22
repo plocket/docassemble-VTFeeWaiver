@@ -1,14 +1,16 @@
 #############TO-DO LIST#############
+
+# When we have new job gathering / income gathering code ready, use it here
+# finish putting asset fields in attachment area -- did vehicles
+# do edit screens for assets -- did vehicles
+# problem: id: VT fee waiver review screen  When I edit amount owed or market value on a vehicle the net value does not change; when I add a new vehicle there it does not figure the net value
+# id: your mailing address - change label to PO Box or street address
+# id: your contact information - borrow code from RFA to collect phone and email
+# update form PDF with updated field names for assets. None are showing.
 # If someone says they don't have unemployment or other income, the interview stops
-
-# need to gather and do the math for each net value for car, real estate, etc. and cycle through "is there another". For example, if someone enters the market value of a car, determine the net value for vehicle(s) and show the net values.
-
 # Offer overflow sheet for assets as needed
-
 # Finish entering in tooltip text in the PDF
-
-####################################################
-
+# make box get checked if someone enters an asset
 
 
 
@@ -19,6 +21,250 @@
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALAnyState:any_state.yml
+  - docassemble.ALToolbox:al_income.yml
+---
+objects:
+  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  #- jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
+---
+
+################ Gathering vehicle info ################
+---
+code: |
+  vehicles[i].description
+  vehicles[i].amount_owed
+  vehicles[i].complete=True
+---
+###To determine the net value for vehicle###
+code: |
+  total = vehicles[i].market_value
+  total -= vehicles[i].amount_owed
+  vehicles[i].net_value = total
+---
+id: Vehicles
+question: |
+  Vehicles
+fields:
+  - "Do you have a car, truck or other vehicle?": vehicles.there_are_any
+    input type: radio
+    choices:
+      - Yes: True
+      - No: False
+      
+validation code: |
+  if not vehicles.there_are_any:
+    vehicles.target_number = 0
+---
+id: How many vehicles
+question: |
+  How many vehicles
+fields:      
+  - How many cars, trucks or other vehicles do you have?: vehicles.target_number
+    datatype: integer
+  - note: |
+      We will ask for the value of each.
+    
+---
+id: Describe vehicle
+question: |
+  Describe the ${ ordinal(i) } vehicle
+subquestion: |
+
+  % if i > 0:
+  You have told us about these vehicles already:
+  
+  % for item in vehicles.complete_elements():
+  * ${ item.description }
+  
+  Now tell us about the next vehicle.
+  % endfor
+  % endif
+fields:     
+  - Make, model and year of the car / truck / vehicle: vehicles[i].description
+    maxlength: 76
+  - What is it's market value? How much would you get if you sold it?: vehicles[i].market_value
+    maxlength: 76
+    datatype: currency
+  - If you have a loan or owe money on the vehicle, how much do you owe? Enter 0 if you own it outright.: vehicles[i].amount_owed
+    maxlength: 76
+    datatype: currency
+---
+id: Display vehicle net values
+continue button field: user_sees_vehicle_net_values
+question: |
+  Net value of your vehicles
+subquestion: |
+  With the numbers you entered, these are the **net** values of your vehicles. The net value is what you get when you subtract the amount you owe from the full market value of your vehicle.
+  
+  If any of these are not correct, go back a screen or two and change your numbers.
+
+  % for item in vehicles:
+    **${ item.description }** 
+    
+    * Net value = ${ currency(item.net_value) }
+    
+  % endfor
+  
+################ Gather real estate info ################
+---
+code: |
+  real_estate[i].description
+  real_estate[i].amount_owed
+  real_estate[i].complete=True
+---
+###To determine the net value for real estate###
+code: |
+  total = real_estate[i].market_value
+  total -= real_estate[i].amount_owed
+  real_estate[i].net_value = total
+---
+id: Real estate
+question: |
+  Real estate
+fields:
+  - "Do you have any real estate like a house, building or land?": real_estate.there_are_any
+    input type: radio
+    choices:
+      - Yes: True
+      - No: False
+      
+validation code: |
+  if not real_estate.there_are_any:
+    real_estate.target_number = 0
+---
+id: How many real estate
+question: |
+  How many pieces of real estate
+fields:      
+  - How many houses, buildings or land parcels do you own?: real_estate.target_number
+    datatype: integer
+  - note: |
+      We will ask for the value of each.
+    
+---
+id: Describe real estate
+question: |
+  Describe the ${ ordinal(i) } piece of real esate
+subquestion: |
+
+  % if i > 0:
+  You have told us about these already:
+  
+  % for item in real_estate.complete_elements():
+  * ${ item.description }
+  
+  Now tell us about the next piece of real estate.
+  % endfor
+  % endif
+fields:     
+  - Short description of real estate. Examples -- house I live in, condo I live in, mobile home I live in, vacation camp, home I rent out, building for my business, land I own: real_estate[i].description
+    maxlength: 76
+  - What is it's market value? How much would you get if you sold it?: real_estate[i].market_value
+    maxlength: 76
+    datatype: currency
+  - If you have a mortgage or owe money on the real estate, how much do you owe? Enter 0 if you own it outright.: real_estate[i].amount_owed
+    maxlength: 76
+    datatype: currency
+---
+id: Display real estate net values
+continue button field: user_sees_real_estate_net_values
+question: |
+  Net value of your real estate
+subquestion: |
+  With the numbers you entered, these are the **net** values of your real estate. The net value is what you get when you subtract the amount you owe from the full market value of your real estate.
+  
+  If any of these are not correct, go back a screen or two and change your numbers.
+
+  % for item in real_estate:
+    **${ item.description }** 
+    
+    * Net value = ${ currency(item.net_value) }
+    
+  % endfor
+################ Gathering other assets info ################
+---
+code: |
+  other_assets[i].description
+  other_assets[i].market_value
+  other_assets[i].complete=True
+---
+###To determine the net value### Not needed on form
+#code: |
+#  total = other_assets[i].market_value
+#  total -= other_assets[i].amount_owed
+#  other_assets[i].net_value = total
+---
+id: Other assets
+question: |
+  Other assets -- things that you own
+subquestion: |  
+  These may be things like tools, equipment, recreational vehicles, electronics, stocks, bonds, etc.)? — what about retirement account?
+fields:
+  - "Do you have other assets that you haven't entered already?  -- what about retirement account?": other_assets.there_are_any
+    input type: radio
+    choices:
+      - Yes: True
+      - No: False
+      
+validation code: |
+  if not other_assets.there_are_any:
+    other_assets.target_number = 0
+---
+id: How many other assets
+question: |
+  How many other assets
+fields:      
+  - How many other assets do you have?: other_assets.target_number
+    datatype: integer
+  - note: |
+      We will ask for the value of each.
+    
+---
+id: Describe other asset
+question: |
+  Describe the ${ ordinal(i) } other asset
+subquestion: |
+
+  % if i > 0:
+  You have told us about these other assets already:
+  
+  % for item in other_assets.complete_elements():
+  * ${ item.description }
+  
+  Now tell us about the next asset.
+  % endfor
+  % endif
+fields:     
+  - What is the asset?: other_assets[i].description
+    maxlength: 76
+  - What is it's market value? How much would you get if you sold it?: other_assets[i].market_value
+    maxlength: 76
+    datatype: currency
+---
+id: Display other asset values
+continue button field: user_sees_other_assets_values
+question: |
+  Values of your other assets
+subquestion: |
+  You said these are the values of your other assets.
+  
+  If any of these are not correct, go back a screen or two and change your numbers.
+
+  % for item in other_assets:
+    **${ item.description }** 
+    
+    * Market value = ${ currency(item.market_value) }
+
+    
+  % endfor
+---
+
+
+
+
+###############
 ---
 features:
   css: style.css
@@ -122,6 +368,24 @@ code: |
   # Below sets the user_role by asking a question.
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
+  assets
+  vehicles.there_are_any
+  if vehicles.there_are_any: 
+    vehicles.gather()
+    user_sees_vehicle_net_values
+  real_estate.there_are_any
+  if real_estate.there_are_any: 
+    real_estate.gather()
+    user_sees_real_estate_net_values
+  accounts_cash
+  if accounts_cash:
+    users1_assets_cash_total
+    user_sees_cash_assets_total
+  other_assets.there_are_any
+  if other_assets.there_are_any: 
+    other_assets.gather()
+    user_sees_other_assets_values
+  
   important_notes_to_user
   #user_ask_role
   nav.set_section('case_info')
@@ -158,19 +422,12 @@ code: |
     user_sees_expenses_total
     set_progress(70)
     nav.set_section('assets')
-    assets
-    vehicles
-    if vehicles:
-      users1_assets_vehicle_0_net_value
-      #user_sees_vehicle_net_values
-    real_estate
-    #if real_estate:
-      #users1_assets_real_estate_0_net_value
-      #user_sees_real_estate_net_values
-    accounts_cash
-    users1_assets_cash_total
-    user_sees_cash_assets_total
-    assets_other
+
+
+
+
+    
+    
     set_progress(85)
     nav.set_section('reasons')
     other_reasons_why_cannot_afford
@@ -597,192 +854,9 @@ subquestion: |
   Now we will review the things that you own — your assets or property.
   Click the Next button.
 
----
-id: Vehicles
-question: |
-  Vehicles
-fields:
-  - "Do you have a car, truck or other vehicle?": vehicles
-    datatype: yesnoradio
-  - "Car / truck / vehicle - description": users1_assets_vehicle_0_description
-    maxlength: 17
-    show if: vehicles
-  - "Car / truck / vehicle - market value": users1_assets_vehicle_0_market_value
-    datatype: currency
-    min: 0
-    show if: vehicles
-  - "Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_0_amount_owed
-    datatype: currency
-    show if: vehicles
-    min: 0
-  - "2nd Car / truck / vehicle - description": users1_assets_vehicle_1_description
-    maxlength: 17
-    show if: vehicles
-    required: False
-  - "2nd Car / truck / vehicle - market value": users1_assets_vehicle_1_market_value
-    datatype: currency
-    min: 0
-    show if: vehicles
-    required: False
-  - "2nd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_1_amount_owed
-    datatype: currency
-    show if: vehicles
-    min: 0
-    required: False
-  - "Do you have more vehicles?": vehicles_more
-    datatype: yesnoradio
-    show if: vehicles
-  - "3rd Car / truck / vehicle - description": users1_assets_vehicle_2_description
-    show if: vehicles_more
-    maxlength: 17
-  - "3rd Car / truck / vehicle - market value": users1_assets_vehicle_2_market_value
-    datatype: currency
-    show if: vehicles_more
-    min: 0
-  - "3rd Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_2_amount_owed
-    datatype: currency
-    show if: vehicles_more
-    min: 0
-  - "4th Car / truck / vehicle - description": users1_assets_vehicle_3_description
-    show if: vehicles_more
-    maxlength: 17
-    required: False
-  - "4th Car / truck / vehicle - market value": users1_assets_vehicle_3_market_value
-    show if: vehicles_more
-    datatype: currency
-    min: 0
-    required: False
-  - "4th Car / truck / vehicle - amount you owe on it": users1_assets_vehicle_3_amount_owed
-    datatype: currency
-    show if: vehicles_more
-    min: 0
-    required: False
----
-###To determine the net value for vehicles###
-mandatory: True
-code: |
-  total = users1_assets_vehicle_0_market_value
-  if defined('users1_assets_vehicle_0_amount_owed'):
-    total -= users1_assets_vehicle_0_amount_owed
-  get_total = True
-  users1_assets_vehicle_0_net_value = total
----
-###To determine the net value for vehicles###
-#mandatory: True
-code: |
-  total = users1_assets_vehicle_1_market_value
-  if defined('users1_assets_vehicle_1_amount_owed'):
-    total -= users1_assets_vehicle_1_amount_owed
-  get_total = True
-  users1_assets_vehicle_1_net_value = total
----
-###To determine the net value for vehicles###
-#mandatory: True
-code: |
-  if defined('users1_assets_vehicle_2_market_value'):
-    total = users1_assets_vehicle_2_market_value
-    if defined('users1_assets_vehicle_2_amount_owed'):
-      total -= users1_assets_vehicle_2_amount_owed
-    get_total = True
-    users1_assets_vehicle_2_net_value = total
-  else:
-    users1_assets_vehicle_2_net_value = 0
----
-###To determine the net value for vehicles###
-#mandatory: True
-code: |
-  if defined('users1_assets_vehicle_2_market_value'):
-    total = users1_assets_vehicle_3_market_value
-    if defined('users1_assets_vehicle_3_amount_owed'):
-      total -= users1_assets_vehicle_3_amount_owed
-    get_total = True
-    users1_assets_vehicle_3_net_value = total
-  else:
-    users1_assets_vehicle_3_net_value = 0    
----
-id: Display vehicle net values
-mandatory: True
-continue button field: user_sees_vehicle_net_values
-question: |
-  Net value of your vehicles
-subquestion: |
-  With the numbers you entered, these are the **net** values of your vehicles. If any of these are not correct, go back one screen.
 
-  Vehicle #1 net value: ${ currency(users1_assets_vehicle_0_net_value) }
-  
-#  % if defined('users1_assets_vehicle_1_market_value'):
-#    Vehicle #2 net value: ${ currency(users1_assets_vehicle_1_net_value) }
-#    
-#  % if defined('users1_assets_vehicle_2_market_value'):
-#    #Vehicle #3 net value: ${ currency(users1_assets_vehicle_2_net_value) }
-#    
-#  % if defined('users1_assets_vehicle_3_market_value'):
-#    Vehicle #4 net value: ${ currency(users1_assets_vehicle_3_net_value) }
-
----
-id: Real estate
-question: |
-  Real estate / property
-fields:
-  - "Do you own a house or other real estate?": real_estate
-    datatype: yesnoradio
-  - "Description of the real estate - house I live in / condo I live in / mobile home I live in / vacation home / home I rent out / etc.": users1_assets_real_estate_0_description
-    maxlength: 17
-    show if: real_estate
-  - "Market value": users1_assets_real_estate_0_market_value
-    datatype: currency
-    min: 0
-    show if: real_estate
-  - "Amount owed on the property": users1_assets_real_estate_0_amount_owed
-    datatype: currency
-    min: 0
-    show if: real_estate
-  - "Do you own more real estate?": real_estate_more
-    datatype: yesnoradio    
-    show if: real_estate
-  - "Description of the real estate - house I live in / condo I live in / mobile home I live in / vacation home / home I rent out / etc.": users1_assets_real_estate_1_description
-    maxlength: 17
-    show if: real_estate_more
-  - "2nd Real estate - market value": users1_assets_real_estate_1_market_value
-    datatype: currency
-    min: 0
-    show if: real_estate_more
-  - "2nd Real estate - amount owed": users1_assets_real_estate_1_amount_owed
-    datatype: currency
-    min: 0
-    show if: real_estate_more
-  - "2nd Real estate - net value": users1_assets_real_estate_1_net_value
-    datatype: currency
-    min: 0
-    show if: real_estate_more
 ---    
-###To determine the net value for real estate###
-mandatory: True
-code: |
-  total = users1_assets_real_estate_0_market_value
-  if defined('users1_assets_real_estate_0_amount_owed'):
-    total -= users1_assets_real_estate_0_amount_owed
-  get_total = True
-  users1_assets_real_estate_0_net_value = total
 
-  total = users1_assets_real_estate_1_market_value
-  if defined('users1_assets_real_estate_1_amount_owed'):
-    total -= users1_assets_real_estate_1_amount_owed
-  get_total = True
-  users1_assets_real_estate_1_net_value = total       
----
-id: Display real estate net values
-mandatory: True
-continue button field: user_sees_real_estate_net_values
-question: |
-  Net value of your property / real estate
-subquestion: |
-  With the numbers you entered, these are the **net** values of your real estate. If any of these are not correct, go back one screen.
-
-  Real estate #1 net value: ${ currency(users1_assets_real_estate_0_net_value) }
-  
-  if defined('users1_assets_vehicle_1_net_value'):
-    Real estate #2 net value: ${ currency(users1_assets_real_estate_1_net_value) }
     
 ---
 id: Bank accounts and cash
@@ -791,18 +865,24 @@ question: |
 fields:
   - "Do you have bank accounts or cash on hand?": accounts_cash
     datatype: yesnoradio
+  - note: |
+      Enter the amounts of the accounts or cash that you have.
+    show if: accounts_cash      
   - "Checking accounts": users1_assets_checking_accounts
     datatype: currency
     min: 0
     show if: accounts_cash
+    required: False
   - "Cash on hand": users1_assets_cash_on_hand
     datatype: currency
     min: 0
     show if: accounts_cash
+    required: False
   - "Savings accounts": users1_assets_savings_accounts
     datatype: currency
     min: 0
     show if: accounts_cash
+    required: False
 ---
 mandatory: True
 code: | 
@@ -810,7 +890,7 @@ code: |
       'users1_assets_cash_on_hand',
       'users1_assets_savings_accounts')
 ---
-id: Total cash assets
+id: Display total cash assets
 mandatory: True
 show if: accounts_cash
 continue button field: user_sees_cash_assets_total
@@ -822,50 +902,50 @@ subquestion: |
        
   If this is not correct, go back one screen.
 ---
-id: Other cash assets
-mandatory: True
-question: |
-  Other assets
-subquestion: |
-  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
-fields:
-  - "Do you have other assets?": assets_other
-    datatype: yesnoradio
-  - "Description of other asset": users1_assets_other_0_description
-    maxlength: 17
-    show if: assets_other
-  - "Market value": users1_assets_other_0_market_value
-    datatype: currency
-    min: 0
-    show if: assets_other
-  - "Description of 2nd other asset": users1_assets_other_1_description
-    maxlength: 17
-    show if: assets_other
-    required: False
-  - "Market value": users1_assets_other_1_market_value
-    datatype: currency
-    min: 0
-    show if: assets_other
-    required: False
----
-mandatory: True
-code: | 
-  users1_assets_other_total = sum_if_defined('users1_assets_other_0_market_value', 
-      'users1_assets_other_1_market_value')
----
-id: Total other assets
-mandatory: True
-show if: assets_other
-continue button field: user_sees_other_assets_total
-question: |
-  Total other assets
-subquestion: |
-  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
-  
-  You said that your total other assets are worth:
-    ${ currency(users1_assets_other_total) }
-       
-  If this is not correct, go back one screen.
+#id: Other cash assets
+#mandatory: True
+#question: |
+#  Other assets
+#subquestion: |
+#  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
+#fields:
+#  - "Do you have other assets?": assets_other
+#    datatype: yesnoradio
+#  - "Description of other asset": users1_assets_other_0_description
+#    maxlength: 17
+#    show if: assets_other
+#  - "Market value": users1_assets_other_0_market_value
+#    datatype: currency
+#    min: 0
+#    show if: assets_other
+#  - "Description of 2nd other asset": users1_assets_other_1_description
+#    maxlength: 17
+#    show if: assets_other
+#    required: False
+#  - "Market value": users1_assets_other_1_market_value
+#    datatype: currency
+#    min: 0
+#    show if: assets_other
+#    required: False
+#---
+#mandatory: True
+#code: | 
+#  users1_assets_other_total = sum_if_defined('users1_assets_other_0_market_value', 
+#      'users1_assets_other_1_market_value')
+#---
+#id: Total other assets
+#mandatory: True
+#show if: assets_other
+#continue button field: user_sees_other_assets_total
+#question: |
+#  Total other assets
+#subquestion: |
+#  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
+#  
+#  You said that your total other assets are worth:
+#    ${ currency(users1_assets_other_total) }
+#       
+#  If this is not correct, go back one screen.
 ---
 id: More information
 question: |
@@ -1084,106 +1164,28 @@ review:
     button: |
       **Total expenses each month**:
       ${ currency(users1_expenses_monthly_total) }
-  - Edit: assets
+  - Edit: vehicles.revisit
     button: |
-      **Assets or property**:
-      ${ word(yesno(assets)) }
-  - Edit: users1_assets_vehicle_0_amount_owed
+      **Vehicles**
+
+      % for item in vehicles:
+        **${ item.description }** 
+        
+        * Market value = ${ currency(item.market_value) }
+        * Amount owed = ${ currency(item.amount_owed) }
+        * Net value = ${ currency(item.net_value) }
+    
+      % endfor
+  - Edit: real_estate.revisit
     button: |
-      **Car / truck / vehicle - amount owed**:
-      ${ currency(users1_assets_vehicle_0_amount_owed) }
-  - Edit: users1_assets_vehicle_0_description
-    button: |
-      **Car / truck / vehicle - description**:
-      ${ users1_assets_vehicle_0_description }
-  - Edit: users1_assets_vehicle_0_net_value
-    button: |
-      **Car / truck / vehicle - net value**:
-      ${ currency(users1_assets_vehicle_0_net_value) }
-  - Edit: users1_assets_vehicle_0_market_value
-    button: |
-      **Car / truck / vehicle - market value**:
-      ${ currency(users1_assets_vehicle_0_market_value) }
-  - Edit: users1_assets_vehicle_1_description
-    button: |
-      **2nd Car / truck / vehicle - description**:
-      ${ users1_assets_vehicle_1_description }
-  - Edit: users1_assets_vehicle_1_market_value
-    button: |
-      **2nd Car / truck / vehicle - market value**:
-      ${ currency(users1_assets_vehicle_1_market_value) }
-  - Edit: users1_assets_vehicle_1_amount_owed
-    button: |
-      **2nd Car / truck / vehicle - amount owed**:
-      ${ currency(users1_assets_vehicle_1_amount_owed) }
-  - Edit: users1_assets_vehicle_1_net_value
-    button: |
-      **2nd Car / truck / vehicle - net value**:
-      ${ currency(users1_assets_vehicle_1_net_value) }
-  - Edit: users1_assets_vehicle_2_description
-    button: |
-      **3rd Car / truck / vehicle - description**:
-      ${ users1_assets_vehicle_2_description }
-  - Edit: users1_assets_vehicle_2_amount_owed
-    button: |
-      **3rd Car / truck / vehicle - amount owed**:
-      ${ currency(users1_assets_vehicle_2_amount_owed) }
-  - Edit: users1_assets_vehicle_2_net_value
-    button: |
-      **3rd Car / truck / vehicle - net value**:
-      ${ currency(users1_assets_vehicle_2_net_value) }
-  - Edit: users1_assets_vehicle_2_market_value
-    button: |
-      **3rd Car / truck / vehicle - market value**:
-      ${ currency(users1_assets_vehicle_2_market_value) }
-  - Edit: users1_assets_vehicle_3_description
-    button: |
-      **4th Car / truck / vehicle - description**:
-      ${ users1_assets_vehicle_3_description }
-  - Edit: users1_assets_vehicle_3_market_value
-    button: |
-      **4th Car / truck / vehicle - market value**:
-      ${ currency(users1_assets_vehicle_3_market_value) }
-  - Edit: users1_assets_vehicle_3_amount_owed
-    button: |
-      **4th Car / truck / vehicle - amount owed**:
-      ${ currency(users1_assets_vehicle_3_amount_owed) }
-  - Edit: users1_assets_vehicle_3_net_value
-    button: |
-      **4th Car / truck / vehicle - net value**:
-      ${ currency(users1_assets_vehicle_3_net_value) }
-  - Edit: users1_assets_real_estate_0_description
-    button: |
-      **Real estate - description**:
-      ${ users1_assets_real_estate_0_description }
-  - Edit: users1_assets_real_estate_0_amount_owed
-    button: |
-      **Real estate - amount owed**:
-      ${ currency(users1_assets_real_estate_0_amount_owed) }
-  - Edit: users1_assets_real_estate_0_net_value
-    button: |
-      **Real estate - net value**:
-      ${ currency(users1_assets_real_estate_0_net_value) }
-  - Edit: users1_assets_real_estate_0_market_value
-    button: |
-      **Real estate - market value**:
-      ${ currency(users1_assets_real_estate_0_market_value) }
-  - Edit: users1_assets_real_estate_1_description
-    button: |
-      **2nd Real estate - description**:
-      ${ users1_assets_real_estate_1_description }
-  - Edit: users1_assets_real_estate_1_market_value
-    button: |
-      **2nd Real estate - market value**:
-      ${ currency(users1_assets_real_estate_1_market_value) }
-  - Edit: users1_assets_real_estate_1_amount_owed
-    button: |
-      **2nd Real estate - amount owed**:
-      ${ currency(users1_assets_real_estate_1_amount_owed) }
-  - Edit: users1_assets_real_estate_1_net_value
-    button: |
-      **2nd Real estate - net value**:
-      ${ currency(users1_assets_real_estate_1_net_value) }
+      **Real estate**
+
+      % for item in real_estate:
+        **${ item.description }** 
+        
+        * Net value = ${ currency(item.net_value) }
+        
+        % endfor
   - Edit: users1_assets_checking_accounts
     button: |
       **Checking accounts**:
@@ -1285,20 +1287,42 @@ edit:
   - phone_number
   - signature
 confirm: True
+---
+continue button field: vehicles.revisit
+question: |
+  Edit vehicles
+subquestion: |
+  ${ vehicles.table }
 
+  ${ vehicles.add_action() }
+---
+table: vehicles.table
+rows: vehicles
+columns:
+  - Description: |
+      row_item.description if defined("row_item.description") else ""
+  - Market value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+  - Amount owed: |
+      currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
+  - Net value: |
+      currency(row_item.net_value) if defined("row_item.net_value") else ""
+edit:
+  - description
+  - market_value
+  - amount_owed
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
 question: |
   All done
 subquestion: |
-  View your signed form below. Click the Edit your answers button to fix any mistakes. Then click Resume to come back to this screen.
 
+  View your signed form below. Click the Edit your answers button to fix any mistakes. Then click Resume to come back to this screen.
+  
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
-  
   ${ al_user_bundle.download_list_html() }
-  
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
@@ -1370,13 +1394,13 @@ attachments:
       - "assets_yes": ${ (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }  
       - "assets_no": ${ not (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }
 ######   
-      - "users1_assets_vehicle_0_amount_owed": ${ currency(users1_assets_vehicle_0_amount_owed) }
-      - "users1_assets_vehicle_0_description": ${ users1_assets_vehicle_0_description }
-      - "users1_assets_vehicle_0_net_value": ${ currency(users1_assets_vehicle_0_net_value) }
-      - "users1_assets_vehicle_0_market_value": ${ currency(users1_assets_vehicle_0_market_value) }
-      - "users1_assets_vehicle_1_description": ${ users1_assets_vehicle_1_description }
-      - "users1_assets_vehicle_1_market_value": ${ currency(users1_assets_vehicle_1_market_value) }
-      - "users1_assets_vehicle_1_amount_owed": ${ currency(users1_assets_vehicle_1_amount_owed) }
+      - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].amount_owed) }
+      - "users1_assets_vehicle_0_description": ${ vehicles[0].description }
+      - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].net_value) }
+      - "users1_assets_vehicle_0_market_value": ${ currency(vehicles[0].market_value) }
+      - "users1_assets_vehicle_1_description": ${ vehicles[1].description }
+      - "users1_assets_vehicle_1_market_value": ${ currency(vehicles[1].market_value) }
+      - "users1_assets_vehicle_1_amount_owed": ${ currency(vehicles[1].amount_owed) }
       - "users1_assets_vehicle_1_net_value": ${ currency(users1_assets_vehicle_1_net_value) }
       - "users1_assets_vehicle_2_description": ${ users1_assets_vehicle_2_description }
       - "users1_assets_vehicle_2_amount_owed": ${ currency(users1_assets_vehicle_2_amount_owed) }
@@ -1386,11 +1410,11 @@ attachments:
       - "users1_assets_vehicle_3_market_value": ${ currency(users1_assets_vehicle_3_market_value) }
       - "users1_assets_vehicle_3_amount_owed": ${ currency(users1_assets_vehicle_3_amount_owed) }
       - "users1_assets_vehicle_3_net_value": ${ currency(users1_assets_vehicle_3_net_value) }
-      - "users1_assets_real_estate_0_description": ${ users1_assets_real_estate_0_description }
-      - "users1_assets_real_estate_0_amount_owed": ${ currency(users1_assets_real_estate_0_amount_owed) }
-      - "users1_assets_real_estate_0_net_value": ${ currency(users1_assets_real_estate_0_net_value) }
-      - "users1_assets_real_estate_0_market_value": ${ currency(users1_assets_real_estate_0_market_value) }
-      - "users1_assets_real_estate_1_description": ${ users1_assets_real_estate_1_description }
+      - "users1_assets_real_estate_0_description": ${ real_estate[0].description }
+      - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].amount_owed) }
+      - "users1_assets_real_estate_0_net_value": ${ currency(real_estate[0].net_value) }
+      - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
+      - "users1_assets_real_estate_1_description": ${ real_estate[1].description }
       - "users1_assets_real_estate_1_market_value": ${ currency(users1_assets_real_estate_1_market_value) }
       - "users1_assets_real_estate_1_amount_owed": ${ currency(users1_assets_real_estate_1_amount_owed) }
       - "users1_assets_real_estate_1_net_value": ${ currency(users1_assets_real_estate_1_net_value) }
@@ -1398,10 +1422,10 @@ attachments:
       - "users1_assets_cash_on_hand": ${ currency(users1_assets_cash_on_hand) }
       - "users1_assets_savings_accounts": ${ currency(users1_assets_savings_accounts) }
       - "users1_assets_cash_total": ${ currency(users1_assets_cash_total) }
-      - "users1_assets_other_0_market_value": ${ currency(users1_assets_other_0_market_value) }
-      - "users1_assets_other_0_market_value": ${ currency(users1_assets_other_0_market_value) }
-      - "users1_assets_other_0_description": ${ users1_assets_other_0_description }
-      - "users1_assets_other_1_description": ${ users1_assets_other_1_description }
+      - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value) }
+      - "users1_assets_other_0_description": ${ other_assets[0].description }
+      - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value) }
+      - "users1_assets_other_1_description": ${ other_assets[1].description }
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
