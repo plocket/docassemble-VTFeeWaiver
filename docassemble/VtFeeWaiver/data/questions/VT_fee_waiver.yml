@@ -507,7 +507,7 @@ comment: |
 id: Fee_waiver__Vermont__Form_60000228
 continue button field: VT_fee_waiver_intro
 question: |
-  Fee waiver — Vermont court form 600-00228
+  Fee waiver
 subquestion: |
   To use this program you will need to know:
   
@@ -520,12 +520,6 @@ subquestion: |
   If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
 
   You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
-
-  Select **{green words :question-circle:}** to learn what they mean. Select **Help** to learn more about a question.
-  
-terms:
-  green words: |
-    Green words are legal terms or other words that may need more explanation. Information pops up when you tap the green words.
 ---
 id: important_notes_to_user
 question: |
@@ -1390,10 +1384,24 @@ attachments:
       - "users1_expenses_all_insurance_monthly_amount": ${ currency(users1_expenses_all_insurance_monthly_amount) }
       - "users1_expenses_other_monthly_amount": ${ currency(users1_expenses_other_monthly_amount) }
       - "users1_expenses_monthly_total": ${ currency(users1_expenses_monthly_total) }
-######checkbox - test this
-      - "assets_yes": ${ (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }  
-      - "assets_no": ${ not (vehicles or vehicles_more or real_estate or real_estate_more or accounts_cash or assets_other) }
-######   
+      - "assets_yes": |
+          % if vehicles.target_number > 0:
+          ${ "True" }
+
+          % elif real_estate.target_number > 0:
+          ${ "True" }
+
+          % elif other_assets.target_number > 0:
+          ${ "True" }
+          % endif
+      - "assets_no": |
+          % if vehicles.target_number == 0:
+            % if real_estate.target_number == 0:
+              % if other_assets.target_number == 0:
+                ${ "True" }
+              % endif
+            % endif
+          % endif
       - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].amount_owed) }
       - "users1_assets_vehicle_0_description": ${ vehicles[0].description }
       - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].net_value) }
