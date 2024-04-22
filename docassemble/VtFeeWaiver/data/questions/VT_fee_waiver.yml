@@ -1292,8 +1292,7 @@ event: VT_fee_waiver_download
 question: |
   All done
 subquestion: |
-    
-  View your signed form below. Click the "Edit your answers" button to fix any mistakes. Then click Resume to come back to this screen.
+  View your signed form below. Click the Edit your answers button to fix any mistakes. Then click Resume to come back to this screen.
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
