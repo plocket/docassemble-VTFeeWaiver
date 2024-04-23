@@ -1,7 +1,7 @@
 #############TO-DO LIST#############
 
-# When we have new job gathering / income gathering code ready, use it here
-# do edit screens for assets -- did vehicles
+# When we have new job gathering / income gathering code ready, use it here -- use the same variable names
+# do edit screens for assets; group employment things together to edit; also benefits
 # problem: id: VT fee waiver review screen  When I edit amount owed or market value on a vehicle the net value does not change; when I add a new vehicle there it does not figure the net value
 # Offer overflow sheet for assets as needed
 # Finish entering in tooltip text in the PDF
@@ -189,7 +189,7 @@ subquestion: |
 
   <p>${ intro_vtcourtforms_3_steps }</p>
   
-  <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed fee waiver form — Vermont court form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action. 
+  <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed fee waiver form for Vermont courts -- form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action. 
   
   Before you begin, check to be sure you actually need to pay a court filing fee. When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee. If you are submitting an Answer to a court action, you usually don't have a court filing fee. Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
@@ -221,11 +221,12 @@ question: |
 subquestion: |
   To use this program you will need to know:
   
-  * the public benefits that you get 
+  * the public benefits that you get
+  * the amount of money you have in the bank and on hand
   * your income in the past month
   * your income over the past 12 months
   * your monthly expenses, and
-  * the value of your belongings.
+  * the value of your vehicles / cars, real estate / home, and any other major things you own.
 
   If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
 
@@ -234,9 +235,7 @@ subquestion: |
 id: important_notes_to_user
 question: |
   Important
-subquestion: |
-  This program creates a form that asks to participate in a court case for free.
-  
+subquestion: |  
   <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to do this yourself. We will give you instructions when you finish the form.
   
   This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
@@ -373,14 +372,14 @@ fields:
   - "Your employer's name or company name": users1_employer_0_name
     maxlength: 25
     show if: employed
-  - "Your employer's address": users1_employer_0_address_one_line
+  - "Your employer's address (street, city, state)": users1_employer_0_address_one_line
     maxlength: 44
     show if: employed
   - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
     maxlength: 25
     show if: employed
     required: False
-  - "Your 2nd employer's address": users1_employer_1_address_one_line
+  - "Your 2nd employer's address (street, city, state)": users1_employer_1_address_one_line
     maxlength: 44
     show if: employed
     required: False
@@ -870,6 +869,8 @@ fields:
     input type: area
     maxlength: 550
     required: False
+  - note: |
+      ${ after_last_question_we_will_generate_your_forms }
 ---
 id: User signature
 question: |
@@ -880,7 +881,7 @@ id: preview VT_fee_waiver
 question: |
   Preview your form before you sign it
 subquestion: |
-  The interview is complete. Here is a preview of the form you will sign on the next screen.   
+  Here is a preview of the form you will sign on the next page. 
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
@@ -905,6 +906,8 @@ id: VT fee waiver review screen
 event: review_VT_fee_waiver
 question: |
   Review your answers
+subquestion: |  
+  ${ review_screen_instructions }
 review:
   - Edit: 
     - trial_court_division
@@ -968,7 +971,7 @@ review:
       ${ word(yesno(user_receives_benefits)) }
   - Edit: users1_benefits
     button: |
-      **Type of benefits / assistance (Examples: Reach Up, SSI, SSDI, General Assistance, etc.)**:
+      **Type of benefits / assistance**:
       ${ users1_benefits }
   - Edit: users1_benefits_monthly_amount
     button: |
@@ -1106,49 +1109,21 @@ review:
       ${ users1_assets_other_1_description }
   - Edit: other_reasons_why_cannot_afford
     button: |
-      **Why you cannot afford**:
-      > ${ single_paragraph(other_reasons_why_cannot_afford) }
+      **Other reason(s) you cannot afford the fees (optional question)**:
+      % if defined("other_reasons_why_cannot_afford"):
+      ${ single_paragraph(other_reasons_why_cannot_afford) }
+      % else:
+      None
+      % endif
   - Edit: signature_date
     button: |
       **Date of signature**:
       ${ signature_date }
-#  - Edit: denied
-#    button: |
-#      **Waiver denied**:
-#      ${ word(yesno(denied)) }
-#  - Edit: denied_must_pay_fee
-#    button: |
-#      **Must pay fee**:
-#      ${ denied_must_pay_fee }
-#  - Edit: granted
-#    button: |
-#      **Waiver granted**:
-#      ${ word(yesno(granted)) }
-#  - Edit: granted_assistance
-#    button: |
-#      **Granted due to getting public assistance**:
-#      ${ word(yesno(granted_assistance)) }
-#  - Edit: granted_fpl
-#    button: |
-#      **Granted due to income**:
-#      ${ word(yesno(granted_fpl)) }
-#  - Edit: granted_unable_to_pay
-#    button: |
-#      **Granted due to being unable to pay**:
-#      ${ word(yesno(granted_unable_to_pay)) }
-#  - Edit: date
-#    button: |
-#      **Date**:
-#      ${ date }
-#  - Edit: clerk_signature
-#    button: |
-#      **Clerk signature**:
-#      ${ clerk_signature }
 
 ---
 continue button field: users.revisit
 question: |
-  Edit users
+  Edit info about you
 subquestion: |
   ${ users.table }
 
@@ -1205,16 +1180,23 @@ edit:
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
 question: |
-  All done
+  Review your forms and download and/or print them
 subquestion: |
+  ${ download_screen_instructions }
 
-  View your signed form below. Click the Edit your answers button to fix any mistakes. Then click Resume to come back to this screen.
+  ${ action_button_html(url_action('review_divorce'), label='Edit your answers', color='info') }
   
-  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
   ${ al_user_bundle.download_list_html() }
+  
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+
+  
+  ${ download_screen_bottom_instructions }
+  
+  ${ collapse_template(not_seeing_email) }
+  ${ collapse_template(log_out_when_done) }
 
 progress: 100
 ---
