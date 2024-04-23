@@ -3,10 +3,6 @@
 # When we have new job gathering / income gathering code ready, use it here
 # do edit screens for assets -- did vehicles
 # problem: id: VT fee waiver review screen  When I edit amount owed or market value on a vehicle the net value does not change; when I add a new vehicle there it does not figure the net value
-# id: your mailing address - change label to PO Box or street address
-# id: your contact information - borrow code from RFA to collect phone and email
-# update form PDF with updated field names for assets. None are showing.
-# If someone says they don't have unemployment or other income, the interview stops
 # Offer overflow sheet for assets as needed
 # Finish entering in tooltip text in the PDF
 
@@ -15,36 +11,32 @@
 ######################################################
 
 ---
-metadata:
-  title: |
-    Fee Waiver — Vermont court form 600-00228
-  short title: |
-    Fee waiver - Vermont
-  tags:
-    - FA-00-00-00-00
-    - HO-00-00-00-00
-    - MO-00-00-00-00
-  authors:
-    - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
-    - Authored by Legal Services Vermont
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.ALToolbox:phone-number-validation.yml
+  - docassemble.ALToolbox:al_income.yml
+  - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
 ---
-mandatory: True
 comment: |
   Global interview metadata
-variable name: interview_metadata["VT_fee_waiver"]
-data:
+metadata:
   al_weaver_version: "1.7.0"
   generated on: "2022-08-19"
   title: >-
-    Fee Waiver — Vermont court form 600-00228
+    Fee Waiver
   short title: >-
-    Fee waiver - Vermont
-  description: |-
     Fee waiver
+  description: |-
+    Fee waiver for Vermont Courts. Based on Vermont Judiciary paper form 600-00228 (11/2023).
   original_form: >-
-    https://www.vermontjudiciary.org/sites/default/files/documents/600-00228_6.pdf
-  allowed courts: 
-    - "Superior Court"
+    https://www.vermontjudiciary.org/media/47
+  help_page_url: >-
+    https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs
+  help_page_title: >-
+    Application to Waive Filing Fees and Service Costs on the Vermont Judiciary website.
+  authors:
+    - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
+    - Authored by Legal Services Vermont
   categories:
     - "FA-00-00-00-00"
     - "HO-00-00-00-00"
@@ -63,16 +55,10 @@ code: |
   github_repo_name =  'docassemble-VtFeeWaiver'
 ---
 code: |
-  interview_short_title = "Ask the court to waive the court filing fees"
+  interview_short_title = "Ask to waive filing and service fees in Vermont"
 ---
 code: |
   al_form_type = "existing_case" 
-
-include:
-  - docassemble.AssemblyLine:assembly_line.yml
-  - docassemble.ALToolbox:phone-number-validation.yml
-  - docassemble.ALToolbox:al_income.yml
-  - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
@@ -117,7 +103,7 @@ code: |
   users.gather()
   set_parts(subtitle=str(users))
   users[0].address.address
-  users[0].phone_number
+  users[0].daytime_phone_number
   users[0].email
   household_size
   
@@ -198,30 +184,25 @@ code: |
 id: basic questions intro screen
 decoration: form-lineal
 question: |
-  ${interview_short_title}: ${ AL_ORGANIZATION_TITLE}
-subquestion: |
-  [FILE big_logo, 30%, Legal Services Vermont logo]
+  ${interview_short_title}
+subquestion: |  
+
+  <p>${ intro_vtcourtforms_3_steps }</p>
   
-  Welcome to VTCourtForms.
-  
-  ${ AL_ORGANIZATION_TITLE } can help you complete and download forms in 3 steps:
-  
-  **Step 1:** Answer questions that will fill in court forms for you.  
-  **Step 2:** Preview the completed forms.  
-  **Step 3:** Download or print the final forms. You will need to mail, email, efile or deliver them
-  to the court on your own.
-  
-  <i class="fas fa-file fa-2x"></i> This interview will produce a completed fee waiver form — Vermont court form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action. 
+  <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed fee waiver form — Vermont court form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action. 
   
   Before you begin, check to be sure you actually need to pay a court filing fee. When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee. If you are submitting an Answer to a court action, you usually don't have a court filing fee. Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
-    <i class="fas fa-stopwatch fa-2x"></i>  It may take you between 20 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
+    <i class="fas fa-clock fa-2x"></i>  It may take you between 20 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
 
-  VTCourtForms was created by Legal Services Vermont, a nonprofit legal aid organization. It is **free** to use this tool.
+  <i class="fas fa-circle-info fa-2x"></i> It is free to use this program. This site is not a lawyer.
   
-  This site is not a lawyer. Visit the [VTLawHelp.org website](https://vtlawhelp.org) if you have legal questions. VTLawHelp.org is operated by Legal Services Vermont and Vermont Legal Aid.
+  Visit the [VTLawHelp.org website](https://vtlawhelp.org) for information about civil legal issues.
+
+  <p>${ intro_vtcourtforms_created_by }</p>
+
 fields:
-  - To continue, you must accept our [terms of use](https://vtlawhelp.org/vlh-privacy): acknowledged_information_use
+  - To continue, please accept our [terms of use](https://vtlawhelp.org/vtcourtforms/terms-of-use).: acknowledged_information_use
     datatype: checkboxes
     none of the above: False    
     minlength: 1
@@ -231,17 +212,12 @@ fields:
       minlength: |
         You cannot continue unless you agree to the terms of use.        
 continue button field: al_intro_screen
-terms:
-  green words: |
-    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words
-    
 ---    
-comment: |
-  This question is used to introduce your interview. 
-id: Fee_waiver__Vermont__Form_60000228
+ 
+id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
 question: |
-  Fee waiver
+  What you will need
 subquestion: |
   To use this program you will need to know:
   
@@ -263,9 +239,9 @@ subquestion: |
   
   <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to do this yourself. We will give you instructions when you finish the form.
   
-  <i class="fa fa-exclamation-circle fa-2x"></i>  This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
+  This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
     
-    To start the program, click on the Next button.
+    Let's get started. Tap the Next button.
 continue button field: important_notes_to_user
 ---
 id: choose a court
@@ -311,24 +287,24 @@ question: |
 fields:
   - code: |
       users[0].address_fields(default_state=AL_DEFAULT_STATE)
-  - I have a mailing address that is different from my street address: users_mailing_address_different
+  - I have a mailing address that is different from my street address: users1_mailing_address_different
     datatype: yesno
   - Mailing address: users[0].mailing_address.address
     address autocomplete: True
-    show if: users_mailing_address_different
+    show if: users1_mailing_address_different
   - Unit: users[0].mailing_address.unit
     required: False
-    show if: users_mailing_address_different
+    show if: users1_mailing_address_different
   - City: users[0].mailing_address.city
-    show if: users_mailing_address_different
+    show if: users1_mailing_address_different
   - State: users[0].mailing_address.state
     code: |
       states_list()
     default: VT
-    show if: users_mailing_address_different
+    show if: users1_mailing_address_different
   - Zip or postal code: users[0].mailing_address.zip
     required: False
-    show if: users_mailing_address_different
+    show if: users1_mailing_address_different
 
 ---
 id: About you
@@ -350,14 +326,15 @@ subquestion: |
   If you do not have a phone number or email, use a trusted friend's phone number. But the friend must be someone you can rely on to give you a message.
 
 fields:  
-  - Phone number: users[0].phone_number
+  - Daytime phone number: users[0].daytime_phone_number
+    datatype: al_international_phone
     required: False
   - Email address: users[0].email    
     datatype: email
     required: False
 
 validation code: |
-  if (not showifdef('users[0].phone_number') and \
+  if (not showifdef('users[0].daytime_phone_number') and \
       (not showifdef('users[0].email')) and \
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
@@ -366,12 +343,12 @@ id: Benefits
 question: |
   Public benefits
 fields:
-  - "Does anyone get public benefits like Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
+  - "Does anyone get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
     datatype: yesnoradio
-  - "Type of benefits / assistance": users1_benefits
+  - "Type(s) of benefits / assistance": users1_benefits
     show if: user_receives_benefits
     maxlength: 34
-  - "Amount every month": users1_benefits_monthly_amount
+  - "Total amount every month": users1_benefits_monthly_amount
     datatype: currency
     show if: user_receives_benefits
     min: 0
@@ -383,7 +360,7 @@ question: |
 subquestion: |
   Because you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
   
-  We can skip some of the income, expenses and assets questions in the form. 
+  We can skip some of the questions in the form. 
   
   Click Next to answer a couple final questions.
 ---
@@ -952,7 +929,7 @@ review:
       ${ docket_number }      
   - Edit: case_name
     button: |
-      **Case name, as seen on your court papers (example: Kramer vs. Kramer)**:
+      **Case name**:
       ${ case_name }
   - Edit: users.revisit
     button: |
@@ -1189,7 +1166,7 @@ columns:
   - Email: |
       row_item.email if defined("row_item.email") else ""
   - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
+      row_item.daytime_phone_number if defined("row_item.daytime_phone_number") else ""
   - Signature: |
       row_item.signature if defined("row_item.signature") else ""
 edit:
@@ -1197,7 +1174,7 @@ edit:
   - address.address
   - mailing_address.address
   - email
-  - phone_number
+  - daytime_phone_number
   - signature
 confirm: True
 ---
@@ -1278,9 +1255,12 @@ attachments:
       - "users1_name_full__1": ${ users[0] }
       - "users1_address_line_one": ${ users[0].address.line_one() }
       - "users1_address_line_two": ${ users[0].address.line_two() }
-      - "users1_mailing_address_on_one_line": ${ users[0].mailing_address.on_one_line() }
+      - "users1_mailing_address_on_one_line": |
+          % if users1_mailing_address_different:
+          ${ users[0].mailing_address.on_one_line() }
+          % endif
       - "users1_email": ${ users[0].email }
-      - "users1_phone_number": ${ users[0].phone_number }
+      - "users1_phone_number": ${ users[0].daytime_phone_number }
       - "household_size": ${ household_size }
       - "employed_yes": ${ employed }
       - "employed_no": ${ not employed }
