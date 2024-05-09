@@ -20,8 +20,9 @@
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
-  - docassemble.ALAnyState:any_state.yml
+  - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.ALToolbox:al_income.yml
+  - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
 ---
 objects:
   - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
@@ -266,9 +267,6 @@ subquestion: |
 
 ###############
 ---
-features:
-  css: style.css
----
 metadata:
   title: |
     Fee Waiver — Vermont court form 600-00228
@@ -280,7 +278,7 @@ metadata:
     - MO-00-00-00-00
   authors:
     - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
-    - Authored by Kris Surette in 2023
+    - Authored by Legal Services Vermont
 ---
 mandatory: True
 comment: |
@@ -305,6 +303,10 @@ data:
     - "MO-00-00-00-00"
   typical role: "plaintiff"
   generate download screen: True
+---
+# customized feedback form
+code: |   
+  feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
 ---
 code: |
   interview_metadata['main_interview_key'] =  'VT_fee_waiver'
@@ -390,8 +392,7 @@ code: |
   #user_ask_role
   nav.set_section('case_info')
   case_name
-  trial_court_county
-  court_division
+  trial_court_division
   docket_number
   set_progress(16)
   nav.set_section('about_you')
@@ -454,6 +455,7 @@ code: |
       },
   )
   nav.set_section('review_VT_fee_waiver')
+  trial_court.address.county
   VT_fee_waiver_preview_question
   nav.set_section('signature')
   basic_questions_signature_flow    
@@ -534,35 +536,26 @@ subquestion: |
     To start the program, click on the Next button.
 continue button field: important_notes_to_user
 ---
-id: Court
+id: choose a court
 question: |
   What court is your case in?
-subquestion: |
-  Look at the top of your court papers.
 fields:
-  - County: trial_court_county
+  - note: |
+      Choose the court division and the county court where you will file this form. 
+      
+      If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
+      
+      Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
+
+  - "Division": trial_court_division
+    input type: radio
     choices:
-      - Addison
-      - Bennington
-      - Caledonia
-      - Chittenden
-      - Essex
-      - Franklin
-      - Grand Isle
-      - Lamoille
-      - Orange
-      - Orleans
-      - Rutland
-      - Washington
-      - Windham
-      - Windsor
-  - Court Division:  court_division
-    choices:
-      - FAMILY
-      - CIVIL
-      - PROBATE
-      - CRIMINAL
-      - ENVIRONMENTAL
+      - Family court: family
+      - Civil court: civil
+      - Probate court: probate
+
+  - County: trial_court_index
+    code: all_courts._load_courts()['address_county'].items()
 ---
 id: Court case information
 question: |
@@ -957,29 +950,6 @@ question: |
   User signature
 continue button field: User_signature
 ---
-#id: For court clerk to fill in
-#uestion: |
-# For court clerk to fill in
-#ubquestion: |
-# Don't fill in this information. The court clerk will fill it in.
-#ields:
-# - "Waiver denied": denied
-#   datatype: yesno
-# - "Must pay fee": denied_must_pay_fee
-#   maxlength: 10
-# - "Waiver granted": granted
-#   datatype: yesno
-# - "Granted due to getting public assistance": granted_assistance
-#   datatype: yesno
-# - "Granted due to income": granted_fpl
-#   datatype: yesno
-# - "Granted due to being unable to pay": granted_unable_to_pay
-#   datatype: yesno
-# - "Date": date
-#   datatype: date
-# - "Clerk signature": clerk_signature
-#   maxlength: 39
----
 id: preview VT_fee_waiver
 question: |
   Preview your form before you sign it
@@ -1010,27 +980,27 @@ event: review_VT_fee_waiver
 question: |
   Review your answers
 review:
-  - Edit: courts.revisit
+  - Edit: 
+    - trial_court_division
+    - recompute:
+      - trial_court
     button: |
-      **Courts**
-
-      % for item in courts:
-        * ${ item }
-      % endfor
+      Your court case is in: **${( trial_court.address.county )} County**
+      
+      In this court division:
+      % if defined("trial_court.division_abbr"):
+      **${ trial_court.division_abbr }**
+      % elif trial_court_division == "family":
+      **Family**
+      % elif trial_court_division == "probate":
+      **Probate**
+      % elif trial_court_division == "civil":
+      **Civil**
+      % endif
   - Edit: docket_number
     button: |
       **Docket number**:
-      ${ docket_number }
-  - Edit: trial_court_county
-    button: |
-      **Court county**
-      ${ trial_court_county }
-      
-  - Edit: court_division
-    button: |
-      **Court division**:
-      ${ court_division }
-      
+      ${ docket_number }      
   - Edit: case_name
     button: |
       **Case name, as seen on your court papers (example: Kramer vs. Kramer)**:
@@ -1342,9 +1312,18 @@ attachments:
     skip undefined: True
     pdf template file: VT_fee_waiver.pdf
     fields:
-      - "court_division": ${ court_division }
+      - "court_division": |
+          % if defined("trial_court.division_abbr"):
+            ${ trial_court.division_abbr.upper()  }
+          % elif trial_court_division == "family":
+          FAMILY          
+          % elif trial_court_division == "probate":
+          PROBATE          
+          % elif trial_court_division == "civil":
+          CIVIL          
+          % endif
       - "docket_number": ${ docket_number }
-      - "trial_court_county": ${ trial_court_county }
+      - "trial_court_county": ${(trial_court.address.county)}
       - "case_name": ${ case_name }
       - "users1_name_full": ${ users[0] }
       - "users1_name_full__1": ${ users[0] }
@@ -1438,15 +1417,6 @@ attachments:
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
       
-###Below are fields that the court fills in
-#      - "denied": ${ denied }
-#      - "denied_must_pay_fee": ${ denied_must_pay_fee }
-#      - "granted": ${ granted }
-#      - "granted_assistance": ${ granted_assistance }
-#      - "granted_fpl": ${ granted_fpl }
-#      - "granted_unable_to_pay": ${ granted_unable_to_pay }
-#      - "date": ${ date }
-#      - "clerk_signature": ${ clerk_signature }
 ---
 code: |
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
