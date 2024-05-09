@@ -1,21 +1,14 @@
 #############TO-DO LIST#############
 
 # When we have new job gathering / income gathering code ready, use it here
-# finish putting asset fields in attachment area -- did vehicles
 # do edit screens for assets -- did vehicles
 # problem: id: VT fee waiver review screen  When I edit amount owed or market value on a vehicle the net value does not change; when I add a new vehicle there it does not figure the net value
-# id: your mailing address - change label to PO Box or street address
-# id: your contact information - borrow code from RFA to collect phone and email
-# update form PDF with updated field names for assets. None are showing.
-# If someone says they don't have unemployment or other income, the interview stops
 # Offer overflow sheet for assets as needed
 # Finish entering in tooltip text in the PDF
-# make box get checked if someone enters an asset
 
 
 
 ######################################################
-
 
 ---
 include:
@@ -24,13 +17,569 @@ include:
   - docassemble.ALToolbox:al_income.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
 ---
+comment: |
+  Global interview metadata
+metadata:
+  al_weaver_version: "1.7.0"
+  generated on: "2022-08-19"
+  title: >-
+    Fee Waiver
+  short title: >-
+    Fee waiver
+  description: |-
+    Fee waiver for Vermont Courts. Based on Vermont Judiciary paper form 600-00228 (11/2023).
+  original_form: >-
+    https://www.vermontjudiciary.org/media/47
+  help_page_url: >-
+    https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs
+  help_page_title: >-
+    Application to Waive Filing Fees and Service Costs on the Vermont Judiciary website.
+  authors:
+    - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
+    - Authored by Legal Services Vermont
+  categories:
+    - "FA-00-00-00-00"
+    - "HO-00-00-00-00"
+    - "MO-00-00-00-00"
+  typical role: "plaintiff"
+  generate download screen: True
+---
+# customized feedback form
+code: |   
+  feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
+---
+code: |
+  interview_metadata['main_interview_key'] =  'VT_fee_waiver'
+---
+code: |
+  github_repo_name =  'docassemble-VtFeeWaiver'
+---
+code: |
+  interview_short_title = "Ask to waive filing and service fees in Vermont"
+---
+code: |
+  al_form_type = "existing_case" 
+---
 objects:
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
   - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   #- jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
 ---
+sections:
+  - intro: Introduction
+  - case_info: Court case info
+  - about_you: You and your household
+  - income: Your income
+  - expenses: Your expenses
+  - assets: Your property and assets
+  - reasons: Other info
+  - review_VT_fee_waiver: Review your answers
+  - signature: Sign your document
+  - download: Download your document
+---
+###This adds the signature feature to the interview###
+code: |
+  signature_fields = ['users[0].signature']
+---
+#################### INTERVIEW ORDER #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_VT_fee_waiver
+code: |
+  nav.set_section('review_VT_fee_waiver')
+  # Below sets the user_role by asking a question.
+  # You can set user_role directly instead to either 'plaintiff' or 'defendant'
+  nav.set_section('intro')
+  important_notes_to_user
+  #user_ask_role
+  nav.set_section('case_info')
+  case_name
+  trial_court_division
+  docket_number
+  set_progress(16)
+  nav.set_section('about_you')
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].address.address
+  users[0].daytime_phone_number
+  users[0].email
+  household_size
+  
+  nav.set_section('income')
+  user_receives_benefits
+  if user_receives_benefits:
+    user_qualifies_interstitial
+    employed
+  else:
+    set_progress(33)
+    employed
+    list_income
+    users1_income_monthly_total
+    users1_income_annual_total
+    user_sees_income_total
+    set_progress(50)
+    
+    nav.set_section('expenses')
+    list_expenses
+    users1_expenses_monthly_total
+    users1_expenses_annual_total
+    user_sees_expenses_total
+    set_progress(70)
+ 
+    nav.set_section('assets')
+    assets
+    vehicles.there_are_any
+    if vehicles.there_are_any: 
+      vehicles.gather()
+      user_sees_vehicle_net_values
+    real_estate.there_are_any
+    if real_estate.there_are_any: 
+      real_estate.gather()
+      user_sees_real_estate_net_values
+    accounts_cash
+    if accounts_cash:
+      users1_assets_cash_total
+      user_sees_cash_assets_total
+    other_assets.there_are_any
+    if other_assets.there_are_any: 
+      other_assets.gather()
+      user_sees_other_assets_values
+ 
+    set_progress(85)
+    nav.set_section('reasons')
+  other_reasons_why_cannot_afford
+  set_progress(98)
+  interview_order_VT_fee_waiver = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  VT_fee_waiver_intro
+  interview_order_VT_fee_waiver
 
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  nav.set_section('review_VT_fee_waiver')
+  trial_court.address.county
+  VT_fee_waiver_preview_question
+  nav.set_section('signature')
+  signature_date
+  basic_questions_signature_flow    
+  users[0].signature
+  nav.set_section('download')
+  VT_fee_waiver_download
+---
+id: basic questions intro screen
+decoration: form-lineal
+question: |
+  ${interview_short_title}
+subquestion: |  
+
+  <p>${ intro_vtcourtforms_3_steps }</p>
+  
+  <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed fee waiver form — Vermont court form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action. 
+  
+  Before you begin, check to be sure you actually need to pay a court filing fee. When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee. If you are submitting an Answer to a court action, you usually don't have a court filing fee. Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  
+    <i class="fas fa-clock fa-2x"></i>  It may take you between 20 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
+
+  <i class="fas fa-circle-info fa-2x"></i> It is free to use this program. This site is not a lawyer.
+  
+  Visit the [VTLawHelp.org website](https://vtlawhelp.org) for information about civil legal issues.
+
+  <p>${ intro_vtcourtforms_created_by }</p>
+
+fields:
+  - To continue, please accept our [terms of use](https://vtlawhelp.org/vtcourtforms/terms-of-use).: acknowledged_information_use
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use.        
+continue button field: al_intro_screen
+---    
+ 
+id: VT fee waiver intro
+continue button field: VT_fee_waiver_intro
+question: |
+  What you will need
+subquestion: |
+  To use this program you will need to know:
+  
+  * the public benefits that you get 
+  * your income in the past month
+  * your income over the past 12 months
+  * your monthly expenses, and
+  * the value of your belongings.
+
+  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
+
+  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
+---
+id: important_notes_to_user
+question: |
+  Important
+subquestion: |
+  This program creates a form that asks to participate in a court case for free.
+  
+  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to do this yourself. We will give you instructions when you finish the form.
+  
+  This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
+    
+    Let's get started. Tap the Next button.
+continue button field: important_notes_to_user
+---
+id: choose a court
+question: |
+  What court is your case in?
+fields:
+  - note: |
+      Choose the court division and the county court where you will file this form. 
+      
+      If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
+      
+      Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
+
+  - "Division": trial_court_division
+    input type: radio
+    choices:
+      - Family court: family
+      - Civil court: civil
+      - Probate court: probate
+
+  - County: trial_court_index
+    code: all_courts._load_courts()['address_county'].items()
+---
+id: Court case information
+question: |
+  Court case information
+subquestion: |
+  What is the name of the court case you are involved in?
+fields:
+  - "Case name, as seen on your court papers (example: Kramer vs. Kramer)": case_name
+    maxlength: 80
+---
+id: Gather users street address
+sets:
+  - users[0].address.address
+  - users[0].address.city
+  - users[0].address.zip
+  - users[0].address.unit
+  - users[0].address.state
+question: |
+  What is your address?
+  
+fields:
+  - code: |
+      users[0].address_fields(default_state=AL_DEFAULT_STATE)
+  - I have a mailing address that is different from my street address: users1_mailing_address_different
+    datatype: yesno
+  - Mailing address: users[0].mailing_address.address
+    address autocomplete: True
+    show if: users1_mailing_address_different
+  - Unit: users[0].mailing_address.unit
+    required: False
+    show if: users1_mailing_address_different
+  - City: users[0].mailing_address.city
+    show if: users1_mailing_address_different
+  - State: users[0].mailing_address.state
+    code: |
+      states_list()
+    default: VT
+    show if: users1_mailing_address_different
+  - Zip or postal code: users[0].mailing_address.zip
+    required: False
+    show if: users1_mailing_address_different
+
+---
+id: About you
+question: |
+  About you and your household
+subquestion: |
+  How many people live in your household? Include yourself, any spouse, partner, children and dependants.
+fields:
+  - "Household size": household_size
+    datatype: integer
+    min: 0
+---
+id: your contact information
+question: |
+  What is your contact information?
+subquestion: |
+  Include **at least one** way to reach you other than by mail.
+
+  If you do not have a phone number or email, use a trusted friend's phone number. But the friend must be someone you can rely on to give you a message.
+
+fields:  
+  - Daytime phone number: users[0].daytime_phone_number
+    datatype: al_international_phone
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+
+validation code: |
+  if (not showifdef('users[0].daytime_phone_number') and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+---
+id: Benefits
+question: |
+  Public benefits
+fields:
+  - "Does anyone get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
+    datatype: yesnoradio
+  - "Type(s) of benefits / assistance": users1_benefits
+    show if: user_receives_benefits
+    maxlength: 34
+  - "Total amount every month": users1_benefits_monthly_amount
+    datatype: currency
+    show if: user_receives_benefits
+    min: 0
+---
+id: user qualifies due to benefits
+continue button field: user_qualifies_interstitial
+question: |
+  You should qualify
+subquestion: |
+  Because you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
+  
+  We can skip some of the questions in the form. 
+  
+  Click Next to answer a couple final questions.
+---
+id: Work
+question: |
+  Work
+fields:
+  - "Do you get income from working?": employed
+    datatype: yesnoradio
+  - "Your employer's name or company name": users1_employer_0_name
+    maxlength: 25
+    show if: employed
+  - "Your employer's address": users1_employer_0_address_one_line
+    maxlength: 44
+    show if: employed
+  - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
+    maxlength: 25
+    show if: employed
+    required: False
+  - "Your 2nd employer's address": users1_employer_1_address_one_line
+    maxlength: 44
+    show if: employed
+    required: False
+---
+id: Income
+continue button field: list_income
+question: |
+  Income
+subquestion: |
+  Select the income you get right now. Then enter the amount of each **per month**. 
+fields:
+  - "Wages": user_income_wages
+    datatype: yesno    
+  - "Amount": users1_income_employment_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_income_wages
+  - "Self employment": user_income_self_employment
+    datatype: yesno
+  - "Amount": users1_income_self_employment_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_income_self_employment
+  - "Unemployment benefits": user_income_unemployment
+    datatype: yesno    
+  - "Amount": users1_income_unemployment_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_income_unemployment
+  - "Child support": user_income_child_support
+    datatype: yesno    
+  - "Amount": users1_income_child_support_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_income_child_support
+  - "Other income": user_income_other
+    datatype: yesno    
+  - "Amount": users1_income_other_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_income_other
+  - "**I don't have any income**": user_income_none
+    datatype: yesno
+---
+mandatory: True
+code: |
+  users1_income_monthly_total = sum_if_defined('users1_income_employment_monthly_amount',
+      'users1_income_self_employment_monthly_amount',
+      'users1_income_unemployment_monthly_amount',
+      'users1_income_child_support_monthly_amount',
+      'users1_income_other_monthly_amount')
+
+---
+###To multiply for annual income###
+mandatory: True
+code: |
+  users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
+---
+id: Show income monthly and annual totals
+mandatory: True
+continue button field: user_sees_income_total
+question: |
+  Total income
+subquestion: |
+  You said that your total income each month is:
+    ${ currency(users1_income_monthly_total) }
+    
+  Therefore, your total income each year is:
+    ${ currency(users1_income_annual_total) }
+    
+  If this is not correct, go back one screen.
+---
+id: Expenses
+continue button field: list_expenses
+question: |
+  Expenses
+subquestion: |
+  Select the expenses you have right now. Then enter the amount of each of those expenses **per month**.
+fields:
+  - "Rent or mortgage": user_expense_rent_mortgage
+    datatype: yesno    
+  - "Amount": users1_expenses_rent_mortgage_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_rent_mortgage
+  - "Electric": user_expense_electric
+    datatype: yesno     
+  - "Amount": users1_expenses_electric_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_electric
+  - "Phone": user_expense_phone
+    datatype: yesno    
+  - "Amount": users1_expenses_phone_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_phone
+  - "Fuel": user_expense_fuel
+    datatype: yesno    
+  - "Amount": users1_expenses_fuel_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_fuel
+  - "Food": user_expense_food
+    datatype: yesno    
+  - "Amount": users1_expenses_food_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_food
+  - "Clothes": user_expense_clothes
+    datatype: yesno    
+  - "Amount": users1_expenses_clothes_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_clothes
+  - "Medical / medicine": user_expense_medicine
+    datatype: yesno
+  - "Amount": users1_expenses_medical_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_medicine
+  - "Child support": user_expense_child_support
+    datatype: yesno    
+  - "Amount": users1_expenses_child_support_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_child_support
+  - "Auto loan": user_expense_child_auto_loan
+    datatype: yesno    
+  - "Amount": users1_expenses_auto_loan_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_child_auto_loan
+  - "Property taxes": user_expense_property_tax
+    datatype: yesno  
+  - "Amount": users1_expenses_property_tax_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_property_tax
+  - "All kinds of insurance": user_expense_insurance
+    datatype: yesno    
+  - "Amount":  users1_expenses_all_insurance_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_insurance
+  - "Other": user_expense_other
+    datatype: yesno    
+  - "Amount": users1_expenses_other_monthly_amount
+    datatype: currency
+    min: 0
+    show if: user_expense_other
+  - "**I don't have any expenses**": user_expense_none
+    datatype: yesno
+---
+mandatory: True
+code: | 
+  users1_expenses_monthly_total = sum_if_defined('users1_expenses_rent_mortgage_monthly_amount', 
+      'users1_expenses_electric_monthly_amount',
+      'users1_expenses_phone_monthly_amount',
+      'users1_expenses_fuel_monthly_amount',
+      'users1_expenses_food_monthly_amount',
+      'users1_expenses_clothes_monthly_amount',
+      'users1_expenses_medical_monthly_amount',
+      'users1_expenses_child_support_monthly_amount',
+      'users1_expenses_auto_loan_monthly_amount',
+      'users1_expenses_property_tax_monthly_amount',
+      'users1_expenses_all_insurance_monthly_amount',    
+      'users1_expenses_other_monthly_amount')
+---
+###To multiply for annual expenses###
+mandatory: True
+code: |
+  users1_expenses_annual_total = sum_if_defined('users1_expenses_monthly_total') * 12
+---
+id: Expenses monthly and annual totals
+mandatory: True
+continue button field: user_sees_expenses_total
+question: |
+  Total expenses
+subquestion: |
+  You said that your total expenses each month are:
+    ${ currency(users1_expenses_monthly_total) }
+    
+  Therefore, your total expenses each year are:
+    ${ currency(users1_expenses_annual_total) }
+    
+  If this is not correct, go back one screen.
+  
+---
+#How check the box on form if they answer any of the asset questions???
+id: Assets
+mandatory: True
+continue button field: assets
+question: |
+  Assets
+subquestion: |
+  Now we will review the things that you own — your assets or property.
+  Click the Next button.
+---    
 ################ Gathering vehicle info ################
 ---
 code: |
@@ -266,584 +815,6 @@ subquestion: |
 
 
 ###############
----
-metadata:
-  title: |
-    Fee Waiver — Vermont court form 600-00228
-  short title: |
-    Fee waiver - Vermont
-  tags:
-    - FA-00-00-00-00
-    - HO-00-00-00-00
-    - MO-00-00-00-00
-  authors:
-    - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
-    - Authored by Legal Services Vermont
----
-mandatory: True
-comment: |
-  Global interview metadata
-variable name: interview_metadata["VT_fee_waiver"]
-data:
-  al_weaver_version: "1.7.0"
-  generated on: "2022-08-19"
-  title: >-
-    Fee Waiver — Vermont court form 600-00228
-  short title: >-
-    Fee waiver - Vermont
-  description: |-
-    Fee waiver
-  original_form: >-
-    https://www.vermontjudiciary.org/sites/default/files/documents/600-00228_6.pdf
-  allowed courts: 
-    - "Superior Court"
-  categories:
-    - "FA-00-00-00-00"
-    - "HO-00-00-00-00"
-    - "MO-00-00-00-00"
-  typical role: "plaintiff"
-  generate download screen: True
----
-# customized feedback form
-code: |   
-  feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
----
-code: |
-  interview_metadata['main_interview_key'] =  'VT_fee_waiver'
----
-code: |
-  # This controls the default country and list of states in address field questions
-  AL_DEFAULT_COUNTRY = "US"
----
-code: |
-  # This controls the default state in address field questions
-  AL_DEFAULT_STATE = "VT"
----
-code: |
-  github_repo_name =  'docassemble-VtFeeWaiver'
----
-code: |
-  interview_short_title = "Ask the court to waive the court filing fees"
----
-code: |
-  al_form_type = "existing_case" 
----
----
-code: |
-  AL_ORGANIZATION_TITLE = "VTCourtForms"
----
-code: |
-  AL_ORGANIZATION_HOMEPAGE = "https://vtlawhelp.org/"
----
-objects:
-  - al_logo: DAStaticFile.using(filename="LSV_bug.png")
----
-images:
-  big_logo: LSV_logo.png 
----
-objects:
-  - users: ALPeopleList.using(ask_number=True,target_number=1)
----
-sections:
-  - intro: Introduction
-  - case_info: Court case info
-  - about_you: You and your household
-  - income: Your income
-  - expenses: Your expenses
-  - assets: Your property and assets
-  - reasons: Other info
-  - review_VT_fee_waiver: Review your answers
-  - signature: Sign your document
-  - download: Download your document
-
----
-###This adds the signature feature to the interview###
-code: |
-  signature_fields = ['users[0].signature']
----
-#################### INTERVIEW ORDER #####################
-comment: |
-  Controls order and branching logic for questions specific to this form
-id: interview_order_VT_fee_waiver
-code: |
-  nav.set_section('review_VT_fee_waiver')
-  # Below sets the user_role by asking a question.
-  # You can set user_role directly instead to either 'plaintiff' or 'defendant'
-  nav.set_section('intro')
-  assets
-  vehicles.there_are_any
-  if vehicles.there_are_any: 
-    vehicles.gather()
-    user_sees_vehicle_net_values
-  real_estate.there_are_any
-  if real_estate.there_are_any: 
-    real_estate.gather()
-    user_sees_real_estate_net_values
-  accounts_cash
-  if accounts_cash:
-    users1_assets_cash_total
-    user_sees_cash_assets_total
-  other_assets.there_are_any
-  if other_assets.there_are_any: 
-    other_assets.gather()
-    user_sees_other_assets_values
-  
-  important_notes_to_user
-  #user_ask_role
-  nav.set_section('case_info')
-  case_name
-  trial_court_division
-  docket_number
-  set_progress(16)
-  nav.set_section('about_you')
-  users.gather()
-  set_parts(subtitle=str(users))
-  users[0].address.address
-  users[0].mailing_address.address
-  users[0].phone_number
-  users[0].email
-  household_size
-  nav.set_section('income')
-  user_receives_benefits
-  if user_receives_benefits:
-    user_qualifies_interstitial
-    employed
-  else:
-    set_progress(33)
-    employed
-    list_income
-    users1_income_monthly_total
-    users1_income_annual_total
-    user_sees_income_total
-    set_progress(50)
-    nav.set_section('expenses')
-    list_expenses
-    users1_expenses_monthly_total
-    users1_expenses_annual_total
-    user_sees_expenses_total
-    set_progress(70)
-    nav.set_section('assets')
-
-
-
-
-    
-    
-    set_progress(85)
-    nav.set_section('reasons')
-    other_reasons_why_cannot_afford
-  set_progress(98)
-  #signature_date
-  interview_order_VT_fee_waiver = True
----
-###################### Main order ######################
-comment: |
-  This block includes the logic for standalone interviews.
-  Delete mandatory: True to include in another interview
-mandatory: True
-code: |
-  al_intro_screen
-  VT_fee_waiver_intro
-  interview_order_VT_fee_waiver
-  signature_date
-  # Store anonymous data for analytics / statistics
-  store_variables_snapshot(
-      persistent=True,
-      data={
-          "zip": showifdef("users[0].address.zip"),
-          "reached_interview_end": True,
-      },
-  )
-  nav.set_section('review_VT_fee_waiver')
-  trial_court.address.county
-  VT_fee_waiver_preview_question
-  nav.set_section('signature')
-  basic_questions_signature_flow    
-  users[0].signature
-  nav.set_section('download')
-  VT_fee_waiver_download
----
-id: basic questions intro screen
-decoration: form-lineal
-question: |
-  ${interview_short_title}: ${ AL_ORGANIZATION_TITLE}
-subquestion: |
-  [FILE big_logo, 30%, Legal Services Vermont logo]
-  
-  Welcome to VTCourtForms.
-  
-  ${ AL_ORGANIZATION_TITLE } can help you complete and download forms in 3 steps:
-  
-  **Step 1:** Answer questions that will fill in court forms for you.  
-  **Step 2:** Preview the completed forms.  
-  **Step 3:** Download or print the final forms. You will need to mail, email, efile or deliver them
-  to the court on your own.
-  
-  <i class="fas fa-file fa-2x"></i> This interview will produce a completed fee waiver form — Vermont court form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action. 
-  
-  Before you begin, check to be sure you actually need to pay a court filing fee. When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee. If you are submitting an Answer to a court action, you usually don't have a court filing fee. Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
-  
-    <i class="fas fa-stopwatch fa-2x"></i>  It may take you between 20 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
-
-  VTCourtForms was created by Legal Services Vermont, a nonprofit legal aid organization. It is **free** to use this tool.
-  
-  This site is not a lawyer. Visit the [VTLawHelp.org website](https://vtlawhelp.org) if you have legal questions. VTLawHelp.org is operated by Legal Services Vermont and Vermont Legal Aid.
-fields:
-  - To continue, you must accept our [terms of use](https://vtlawhelp.org/vlh-privacy): acknowledged_information_use
-    datatype: checkboxes
-    none of the above: False    
-    minlength: 1
-    choices:
-      - I accept the terms of use.
-    validation messages:
-      minlength: |
-        You cannot continue unless you agree to the terms of use.        
-continue button field: al_intro_screen
-terms:
-  green words: |
-    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words
-    
----    
-comment: |
-  This question is used to introduce your interview. 
-id: Fee_waiver__Vermont__Form_60000228
-continue button field: VT_fee_waiver_intro
-question: |
-  Fee waiver
-subquestion: |
-  To use this program you will need to know:
-  
-  * the public benefits that you get 
-  * your income in the past month
-  * your income over the past 12 months
-  * your monthly expenses, and
-  * the value of your belongings.
-
-  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
-
-  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
----
-id: important_notes_to_user
-question: |
-  Important
-subquestion: |
-  This program creates a form that asks to participate in a court case for free.
-  
-  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to do this yourself. We will give you instructions when you finish the form.
-  
-  <i class="fa fa-exclamation-circle fa-2x"></i>  This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
-    
-    To start the program, click on the Next button.
-continue button field: important_notes_to_user
----
-id: choose a court
-question: |
-  What court is your case in?
-fields:
-  - note: |
-      Choose the court division and the county court where you will file this form. 
-      
-      If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
-      
-      Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
-
-  - "Division": trial_court_division
-    input type: radio
-    choices:
-      - Family court: family
-      - Civil court: civil
-      - Probate court: probate
-
-  - County: trial_court_index
-    code: all_courts._load_courts()['address_county'].items()
----
-id: Court case information
-question: |
-  Court case information
-subquestion: |
-  What is the name of the court case you are involved in?
-fields:
-  - "Case name, as seen on your court papers (example: Kramer vs. Kramer)": case_name
-    maxlength: 80
----
-id: About you
-question: |
-  About you and your household
-subquestion: |
-  How many people live in your household? Include any spouse, partner, children and dependants.
-fields:
-  - "Household size": household_size
-    datatype: integer
-    min: 0
----
-id: your contact information
-question: |
-  What is your contact information?
-subquestion: |
-  Include at least **one** way to reach you other than by mail.
-
-####${ collapse_template(why_contact_info_needed_template) }
-
-fields:  
-  - Phone number: users[0].phone_number
-    required: False
-  - Email address: users[0].email    
-    datatype: email
-    required: False
-    help: |
-      If you do not have a phone number or email, use a trusted friend's phone number.
-      But the friend must be someone you can rely on to give you a
-      message.
-validation code: |
-  if (not showifdef('users[0].phone_number') and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
----
-id: Benefits
-question: |
-  Public benefits
-fields:
-  - "Does anyone get public benefits like Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
-    datatype: yesnoradio
-  - "Type of benefits / assistance": users1_benefits
-    show if: user_receives_benefits
-    maxlength: 34
-  - "Amount every month": users1_benefits_monthly_amount
-    datatype: currency
-    show if: user_receives_benefits
-    min: 0
----
-id: user qualifies due to benefits
-continue button field: user_qualifies_interstitial
-question: |
-  You should qualify
-subquestion: |
-  Because you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
-  
-  We can skip some of the income, expenses and assets questions in the form. 
-  
-  Click Next to answer a couple final questions.
----
-id: Work
-question: |
-  Work
-fields:
-  - "Do you get income from working?": employed
-    datatype: yesnoradio
-  - "Your employer's name or company name": users1_employer_0_name
-    maxlength: 25
-    show if: employed
-  - "Your employer's address": users1_employer_0_address_one_line
-    maxlength: 44
-    show if: employed
-  - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
-    maxlength: 25
-    show if: employed
-    required: False
-  - "Your 2nd employer's address": users1_employer_1_address_one_line
-    maxlength: 44
-    show if: employed
-    required: False
----
-id: Income
-continue button field: list_income
-question: |
-  Income
-subquestion: |
-  Select the income you get right now. Then enter the amount of each **per month**. 
-fields:
-  - "Wages": user_income_wages
-    datatype: yesno    
-  - "Amount": users1_income_employment_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_wages
-  - "Self employment": user_income_self_employment
-    datatype: yesno
-  - "Amount": users1_income_self_employment_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_self_employment
-  - "Unemployment benefits": user_income_unemployment
-    datatype: yesno    
-  - "Amount": users1_income_unemployment_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_unemployment
-  - "Child support": user_income_child_support
-    datatype: yesno    
-  - "Amount": users1_income_child_support_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_child_support
-  - "Other income": user_income_other
-    datatype: yesno    
-  - "Amount": users1_income_other_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_other
-  - "**I don't have any income**": user_income_none
-    datatype: yesno
----
-mandatory: True
-code: |
-  users1_income_monthly_total = sum_if_defined('users1_income_employment_monthly_amount',
-      'users1_income_self_employment_monthly_amount',
-      'users1_income_unemployment_monthly_amount',
-      'users1_income_child_support_monthly_amount',
-      'users1_income_other_monthly_amount')
-
----
-###To multiply for annual income###
-mandatory: True
-code: |
-  users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
----
-id: Show income monthly and annual totals
-mandatory: True
-continue button field: user_sees_income_total
-question: |
-  Total income
-subquestion: |
-  You said that your total income each month is:
-    ${ currency(users1_income_monthly_total) }
-    
-  Therefore, your total income each year is:
-    ${ currency(users1_income_annual_total) }
-    
-  If this is not correct, go back one screen.
----
-id: Expenses
-continue button field: list_expenses
-question: |
-  Expenses
-subquestion: |
-  Select the expenses you have right now. Then enter the amount of each of those expenses **per month**.
-fields:
-  - "Rent or mortgage": user_expense_rent_mortgage
-    datatype: yesno    
-  - "Amount": users1_expenses_rent_mortgage_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_rent_mortgage
-  - "Electric": user_expense_electric
-    datatype: yesno     
-  - "Amount": users1_expenses_electric_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_electric
-  - "Phone": user_expense_phone
-    datatype: yesno    
-  - "Amount": users1_expenses_phone_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_phone
-  - "Fuel": user_expense_fuel
-    datatype: yesno    
-  - "Amount": users1_expenses_fuel_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_fuel
-  - "Food": user_expense_food
-    datatype: yesno    
-  - "Amount": users1_expenses_food_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_food
-  - "Clothes": user_expense_clothes
-    datatype: yesno    
-  - "Amount": users1_expenses_clothes_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_clothes
-  - "Medical / medicine": user_expense_medicine
-    datatype: yesno
-  - "Amount": users1_expenses_medical_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_medicine
-  - "Child support": user_expense_child_support
-    datatype: yesno    
-  - "Amount": users1_expenses_child_support_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_child_support
-  - "Auto loan": user_expense_child_auto_loan
-    datatype: yesno    
-  - "Amount": users1_expenses_auto_loan_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_child_auto_loan
-  - "Property taxes": user_expense_property_tax
-    datatype: yesno  
-  - "Amount": users1_expenses_property_tax_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_property_tax
-  - "All kinds of insurance": user_expense_insurance
-    datatype: yesno    
-  - "Amount":  users1_expenses_all_insurance_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_insurance
-  - "Other": user_expense_other
-    datatype: yesno    
-  - "Amount": users1_expenses_other_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_other
-  - "**I don't have any expenses**": user_expense_none
-    datatype: yesno
----
-mandatory: True
-code: | 
-  users1_expenses_monthly_total = sum_if_defined('users1_expenses_rent_mortgage_monthly_amount', 
-      'users1_expenses_electric_monthly_amount',
-      'users1_expenses_phone_monthly_amount',
-      'users1_expenses_fuel_monthly_amount',
-      'users1_expenses_food_monthly_amount',
-      'users1_expenses_clothes_monthly_amount',
-      'users1_expenses_medical_monthly_amount',
-      'users1_expenses_child_support_monthly_amount',
-      'users1_expenses_auto_loan_monthly_amount',
-      'users1_expenses_property_tax_monthly_amount',
-      'users1_expenses_all_insurance_monthly_amount',    
-      'users1_expenses_other_monthly_amount')
----
-###To multiply for annual expenses###
-mandatory: True
-code: |
-  users1_expenses_annual_total = sum_if_defined('users1_expenses_monthly_total') * 12
----
-id: Expenses monthly and annual totals
-mandatory: True
-continue button field: user_sees_expenses_total
-question: |
-  Total expenses
-subquestion: |
-  You said that your total expenses each month are:
-    ${ currency(users1_expenses_monthly_total) }
-    
-  Therefore, your total expenses each year are:
-    ${ currency(users1_expenses_annual_total) }
-    
-  If this is not correct, go back one screen.
-  
----
-#How check the box on form if they answer any of the asset questions???
-id: Assets
-mandatory: True
-continue button field: assets
-question: |
-  Assets
-subquestion: |
-  Now we will review the things that you own — your assets or property.
-  Click the Next button.
-
-
----    
-
     
 ---
 id: Bank accounts and cash
@@ -889,58 +860,13 @@ subquestion: |
        
   If this is not correct, go back one screen.
 ---
-#id: Other cash assets
-#mandatory: True
-#question: |
-#  Other assets
-#subquestion: |
-#  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
-#fields:
-#  - "Do you have other assets?": assets_other
-#    datatype: yesnoradio
-#  - "Description of other asset": users1_assets_other_0_description
-#    maxlength: 17
-#    show if: assets_other
-#  - "Market value": users1_assets_other_0_market_value
-#    datatype: currency
-#    min: 0
-#    show if: assets_other
-#  - "Description of 2nd other asset": users1_assets_other_1_description
-#    maxlength: 17
-#    show if: assets_other
-#    required: False
-#  - "Market value": users1_assets_other_1_market_value
-#    datatype: currency
-#    min: 0
-#    show if: assets_other
-#    required: False
-#---
-#mandatory: True
-#code: | 
-#  users1_assets_other_total = sum_if_defined('users1_assets_other_0_market_value', 
-#      'users1_assets_other_1_market_value')
-#---
-#id: Total other assets
-#mandatory: True
-#show if: assets_other
-#continue button field: user_sees_other_assets_total
-#question: |
-#  Total other assets
-#subquestion: |
-#  Examples are specialized tools, equipment, recreational vehicles, major electronics, stocks or bonds.
-#  
-#  You said that your total other assets are worth:
-#    ${ currency(users1_assets_other_total) }
-#       
-#  If this is not correct, go back one screen.
----
 id: More information
 question: |
   More information
 subquestion: |
   Tell us about other reasons why you cannot afford the court fees. (optional)
 fields:
-  - "Why you cannot afford": other_reasons_why_cannot_afford
+  - "Reason(s)": other_reasons_why_cannot_afford
     input type: area
     maxlength: 550
     required: False
@@ -1003,7 +929,7 @@ review:
       ${ docket_number }      
   - Edit: case_name
     button: |
-      **Case name, as seen on your court papers (example: Kramer vs. Kramer)**:
+      **Case name**:
       ${ case_name }
   - Edit: users.revisit
     button: |
@@ -1240,7 +1166,7 @@ columns:
   - Email: |
       row_item.email if defined("row_item.email") else ""
   - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
+      row_item.daytime_phone_number if defined("row_item.daytime_phone_number") else ""
   - Signature: |
       row_item.signature if defined("row_item.signature") else ""
 edit:
@@ -1248,7 +1174,7 @@ edit:
   - address.address
   - mailing_address.address
   - email
-  - phone_number
+  - daytime_phone_number
   - signature
 confirm: True
 ---
@@ -1329,9 +1255,12 @@ attachments:
       - "users1_name_full__1": ${ users[0] }
       - "users1_address_line_one": ${ users[0].address.line_one() }
       - "users1_address_line_two": ${ users[0].address.line_two() }
-      - "users1_mailing_address_on_one_line": ${ users[0].mailing_address.on_one_line() }
+      - "users1_mailing_address_on_one_line": |
+          % if users1_mailing_address_different:
+          ${ users[0].mailing_address.on_one_line() }
+          % endif
       - "users1_email": ${ users[0].email }
-      - "users1_phone_number": ${ users[0].phone_number }
+      - "users1_phone_number": ${ users[0].daytime_phone_number }
       - "household_size": ${ household_size }
       - "employed_yes": ${ employed }
       - "employed_no": ${ not employed }
