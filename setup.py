@@ -43,19 +43,19 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
                 out.setdefault(package, []).append(prefix+name)
     return out
 
-setup(name='docassemble.VtFeeWaiver',
+setup(name='docassemble.VTFeeWaiver',
       version='1.0',
       description=('Fee waiver - Vermont - Form 600-00228'),
       long_description='# docassemble.VtFeeWaiver\r\n\r\nFee waiver - Vermont - Form 600-00228\r\n\r\n## Author\r\n\r\nGuided interview by Legal Services Vermont / VTLawHelp.org website\r\n\r\n',
       long_description_content_type='text/markdown',
-      author='Guided interview by Legal Services Vermont / VTLawHelp.org website',
-      author_email='ksurette@lawlinevt.org',
+      author='Guided interview by Legal Services Vermont / VTCourtForms',
+      author_email='ksurette@legalservicesvt.org',
       license='The MIT License',
-      url='https://courtformsonline.org',
+      url='https://VTLawHelp.org/VTCourtForms',
       packages=find_packages(),
       namespace_packages=['docassemble'],
-      install_requires=['docassemble.ALToolbox>=0.10.1', 'docassemble.AssemblyLine>=2.27.2', 'docassemble.VTFeedback', 'docassemble.VTSharedYMLFile'],
+      install_requires=['docassemble.ALToolbox>=0.10.1', 'docassemble.AssemblyLine>=2.28.1', 'docassemble.GithubFeedbackForm>=0.4.0', 'docassemble.VTFeedback', 'docassemble.VTSharedYMLFile'],
       zip_safe=False,
-      package_data=find_package_data(where='docassemble/VtFeeWaiver/', package='docassemble.VtFeeWaiver'),
+      package_data=find_package_data(where='docassemble/VTFeeWaiver/', package='docassemble.VTFeeWaiver'),
      )
 
