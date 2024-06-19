@@ -105,7 +105,7 @@ code: |
     employed
     jobs.gather()
     review_jobs
-    list_income
+    list_other_income
     users1_income_monthly_total
     users1_income_annual_total
     user_sees_income_total
@@ -557,7 +557,7 @@ fields:
 #    required: False
 ---
 id: Income
-continue button field: list_income
+continue button field: list_other_income
 question: |
   Types of income
 subquestion: |
@@ -596,12 +596,20 @@ fields:
   - "**I don't have any of these**": user_other_income_none
     datatype: yesno
 ---
+#mandatory: True
+#code: |
+#  users1_gross_monthly_wages = currency(jobs.total(source=["full time","part time"],times_per_year=12)))
+---
 mandatory: True
 code: |
-  users1_income_monthly_total = sum_if_defined('users1_income_unemployment_monthly_amount',
+  users1_other_income_monthly_subtotal = sum_if_defined('users1_income_unemployment_monthly_amount',
       'users1_income_child_support_monthly_amount',
       'users1_income_other_monthly_amount')
-
+---
+mandatory: True
+code: |
+  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12))',
+      'users1_other_income_monthly_subtotal')
 ---
 ###To multiply for annual income###
 mandatory: True
@@ -622,7 +630,7 @@ subquestion: |
   % endfor
   
   And your total other income each month is:
-    ${ currency(users1_income_monthly_total) } 
+    ${ currency(users1_other_income_monthly_total) } 
     
   Therefore, for the year it is:
     ${ currency(users1_income_annual_total) }
@@ -1225,10 +1233,8 @@ review:
     button: |
       **Child support**:
       ${ currency(users1_expenses_child_support_monthly_amount) }
-#  - Edit: users1_income_monthly_total
-#    button: |
-#      **Total income each month**:
-#      ${ currency(users1_income_monthly_total) }
+
+
   - Edit: users1_expenses_auto_loan_monthly_amount
     button: |
       **Auto loan**:
@@ -1251,26 +1257,34 @@ review:
       **Assets**    
   - Edit: vehicles.revisit
     button: |
-      **Vehicles**
-
+      Vehicles:
+      
       % for item in vehicles:
-        **${ item.description }** 
-        
-        * Market value = ${ currency(item.market_value) }
-        * Amount owed = ${ currency(item.amount_owed) }
-        * Net value = ${ currency(item.net_value) }
-    
+        **${ item.description }**
+          
+        - Market value: ${ currency(item.market_value) }
+          
+        - Amount owed: ${ currency(item.amount_owed) }
+          
+        - Net value: ${ currency(item.net_value) }
+          
       % endfor
+      % if not vehicles.there_are_any:
+        No
+      % endif
   - Edit: real_estate.revisit
     button: |
-      **Real estate**
+      Real estate:
 
       % for item in real_estate:
         **${ item.description }** 
         
         * Net value = ${ currency(item.net_value) }
         
-        % endfor
+      % endfor
+      % if not real_estate.there_are_any:
+        No
+      % endif
   - Edit: users1_assets_checking_accounts
     button: |
       **Checking accounts**:
@@ -1450,29 +1464,30 @@ attachments:
       - "users1_receives_benefits_no": ${ not user_receives_benefits }
       - "users1_benefits": ${ users1_benefits }
       - "users1_benefits_monthly_amount": ${ currency(users1_benefits_monthly_amount) }
-      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
-      - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }
+
       
-      - "users1_income_employment_monthly_amount": ${ currency(jobs[0].gross_total(times_per_year=12)) }
-      
-      - "users1_expenses_phone_monthly_amount": ${ currency(users1_expenses_phone_monthly_amount) }
+      - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
       - "users1_income_unemployment_monthly_amount": ${ currency(users1_income_unemployment_monthly_amount) }
-      - "users1_expenses_fuel_monthly_amount": ${ currency(users1_expenses_fuel_monthly_amount) }
       - "users1_income_child_support_monthly_amount": ${ currency(users1_income_child_support_monthly_amount) }
-      - "users1_expenses_food_monthly_amount": ${ currency(users1_expenses_food_monthly_amount) }
       - "users1_income_other_monthly_amount": ${ currency(users1_income_other_monthly_amount) }
+      - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
+      - "users1_income_monthly_total": ${ currency(users1_income_monthly_total) }
+      - "users1_income_annual_total": ${ currency(users1_income_annual_total) }
+      
+      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
+      - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }      
+      - "users1_expenses_phone_monthly_amount": ${ currency(users1_expenses_phone_monthly_amount) }
+      - "users1_expenses_fuel_monthly_amount": ${ currency(users1_expenses_fuel_monthly_amount) }
+      - "users1_expenses_food_monthly_amount": ${ currency(users1_expenses_food_monthly_amount) }
       - "users1_expenses_clothes_monthly_amount": ${ currency(users1_expenses_clothes_monthly_amount) }
       - "users1_expenses_medical_monthly_amount": ${ currency(users1_expenses_medical_monthly_amount) }
-      - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
       - "users1_expenses_child_support_monthly_amount": ${ currency(users1_expenses_child_support_monthly_amount) }
-      
-      - "users1_income_monthly_total": ${ currency(users1_income_monthly_total) }
       - "users1_expenses_auto_loan_monthly_amount": ${ currency(users1_expenses_auto_loan_monthly_amount) }
-      - "users1_income_annual_total": ${ currency(users1_income_annual_total) }
       - "users1_expenses_property_tax_monthly_amount": ${ currency(users1_expenses_property_tax_monthly_amount) }
       - "users1_expenses_all_insurance_monthly_amount": ${ currency(users1_expenses_all_insurance_monthly_amount) }
       - "users1_expenses_other_monthly_amount": ${ currency(users1_expenses_other_monthly_amount) }
       - "users1_expenses_monthly_total": ${ currency(users1_expenses_monthly_total) }
+      
       - "assets_yes": |
           % if vehicles.target_number > 0:
           ${ "True" }
