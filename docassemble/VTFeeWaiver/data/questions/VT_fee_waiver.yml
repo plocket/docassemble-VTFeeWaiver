@@ -51,7 +51,7 @@ code: |
     package_updated_on = None  
 ---
 code: |
-  interview_short_title = "Ask to waive filing and service fees in Vermont"
+  interview_short_title = "Ask to waive court filing and service fees in Vermont"
 ---
 code: |
   al_form_type = "existing_case" 
@@ -61,7 +61,7 @@ objects:
   - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
-  #- jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
+  - jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
 ---
 sections:
   - intro: Is this interview right for you
@@ -108,9 +108,13 @@ code: |
   if user_receives_benefits:
     user_qualifies_interstitial
     employed
+    jobs.gather()
+    review_jobs
   else:
     set_progress(33)
     employed
+    jobs.gather()
+    review_jobs
     list_income
     users1_income_monthly_total
     users1_income_annual_total
@@ -178,6 +182,34 @@ code: |
   nav.set_section('download')
   VT_fee_waiver_download
 ---
+
+
+
+id: job review
+question: |
+  Are you employed?
+fields:
+  - Are you employed?: employed
+    datatype: yesnoradio
+---
+---
+id: job review
+question: |
+  Review your jobs
+subquestion: |
+  Here is what you've told us about your jobs. You can add more or continue
+  to the next question.
+
+  ${ jobs.table }
+
+  ${ jobs.add_action() }
+field: review_jobs
+---
+
+
+
+
+
 id: basic questions intro screen
 decoration: form-lineal
 question: |
@@ -357,7 +389,7 @@ continue button field: user_qualifies_interstitial
 question: |
   You should qualify
 subquestion: |
-  Because you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
+  If you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
   
   We can skip some of the questions in the form. 
   
@@ -369,40 +401,40 @@ question: |
 fields:
   - "Do you get income from working?": employed
     datatype: yesnoradio
-  - "Your employer's name or company name": users1_employer_0_name
-    maxlength: 25
-    show if: employed
-  - "Your employer's address (street, city, state)": users1_employer_0_address_one_line
-    maxlength: 44
-    show if: employed
-  - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
-    maxlength: 25
-    show if: employed
-    required: False
-  - "Your 2nd employer's address (street, city, state)": users1_employer_1_address_one_line
-    maxlength: 44
-    show if: employed
-    required: False
+#  - "Your employer's name or company name": users1_employer_0_name
+#    maxlength: 25
+#    show if: employed
+#  - "Your employer's address (street, city, state)": users1_employer_0_address_one_line
+#    maxlength: 44
+#    show if: employed
+#  - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
+#    maxlength: 25
+#    show if: employed
+#    required: False
+#  - "Your 2nd employer's address (street, city, state)": users1_employer_1_address_one_line
+#    maxlength: 44
+#    show if: employed
+#    required: False
 ---
 id: Income
 continue button field: list_income
 question: |
   Income
 subquestion: |
-  Select the income you get right now. Then enter the amount of each **per month**. 
+  Select any of these kinds of income you get right now. Then enter the amount of each **per month**. 
 fields:
-  - "Wages": user_income_wages
-    datatype: yesno    
-  - "Amount of your gross wages -- before taxes are taken out": users1_income_employment_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_wages
-  - "Self employment": user_income_self_employment
-    datatype: yesno
-  - "Amount of your net business income -- after expenses and taxes are taken out": users1_income_self_employment_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_self_employment
+  #- "Wages": user_income_wages
+  #  datatype: yesno    
+  #- "Amount of your gross wages -- before taxes are taken out": users1_income_employment_monthly_amount
+  #  datatype: currency
+  #  min: 0
+  #  show if: user_income_wages
+  #- "Self employment": user_income_self_employment
+  #  datatype: yesno
+  #- "Amount of your net business income -- after expenses and taxes are taken out": users1_income_self_employment_monthly_amount
+  #  datatype: currency
+  #  min: 0
+  #  show if: user_income_self_employment
   - "Unemployment benefits": user_income_unemployment
     datatype: yesno    
   - "Amount": users1_income_unemployment_monthly_amount
@@ -421,7 +453,7 @@ fields:
     datatype: currency
     min: 0
     show if: user_income_other
-  - "**I don't have any income**": user_income_none
+  - "**No other income**": user_income_none
     datatype: yesno
 ---
 mandatory: True
@@ -442,12 +474,12 @@ id: Show income monthly and annual totals
 mandatory: True
 continue button field: user_sees_income_total
 question: |
-  Total income
+  Total of this income
 subquestion: |
-  You said that your total income each month is:
+  You just reported income each month as:
     ${ currency(users1_income_monthly_total) }
     
-  Therefore, your total income each year is:
+  Therefore, for the year it is:
     ${ currency(users1_income_annual_total) }
     
   If this is not correct, go back one screen.
@@ -477,7 +509,7 @@ fields:
     datatype: currency
     min: 0
     show if: user_expense_phone
-  - "Fuel": user_expense_fuel
+  - "Fuel to heat your home, water or to cook": user_expense_fuel
     datatype: yesno    
   - "Amount": users1_expenses_fuel_monthly_amount
     datatype: currency
@@ -1246,10 +1278,13 @@ attachments:
       - "household_size": ${ household_size }
       - "employed_yes": ${ employed }
       - "employed_no": ${ not employed }
-      - "users1_employer_0_address_one_line": ${ users1_employer_0_address_one_line }
-      - "users1_employer_0_name": ${ users1_employer_0_name }
-      - "users1_employer_1_name": ${ users1_employer_1_name }
-      - "users1_employer_1_address_one_line": ${ users1_employer_1_address_one_line }
+      
+      - "users1_employer_0_name": ${ jobs[0].employer }
+      - "users1_employer_0_address_one_line": ${ jobs[0].employer_name_address_phone() }
+
+      - "users1_employer_1_name": ${ jobs[1].employer }
+      - "users1_employer_1_address_one_line": ${ jobs[1].employer_name_address_phone() }
+      
       - "users1_receives_benefits_yes": ${ user_receives_benefits }
       - "users1_receives_benefits_no": ${ not user_receives_benefits }
       - "users1_benefits": ${ users1_benefits }
