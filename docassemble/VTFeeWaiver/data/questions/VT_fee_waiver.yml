@@ -61,7 +61,7 @@ objects:
   - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
-  - jobs: ALItemizedJobList.using(complete_attribute='complete', ask_number=True)
+  - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
 ---
 sections:
   - intro: Is this interview right for you
@@ -92,16 +92,6 @@ code: |
   #user_ask_role
   nav.set_section('case_info')
   case_name
-  trial_court_division
-  docket_number
-  set_progress(16)
-  nav.set_section('about_you')
-  users.gather()
-  set_parts(subtitle=str(users))
-  users[0].address.address
-  users[0].daytime_phone_number
-  users[0].email
-  household_size
   
   nav.set_section('income')
   user_receives_benefits
@@ -119,36 +109,48 @@ code: |
     users1_income_monthly_total
     users1_income_annual_total
     user_sees_income_total
-    set_progress(50)
-    
-    nav.set_section('expenses')
-    list_expenses
-    users1_expenses_monthly_total
-    users1_expenses_annual_total
-    user_sees_expenses_total
-    set_progress(70)
- 
-    nav.set_section('assets')
-    assets
-    vehicles.there_are_any
-    if vehicles.there_are_any: 
-      vehicles.gather()
-      user_sees_vehicle_net_values
-    real_estate.there_are_any
-    if real_estate.there_are_any: 
-      real_estate.gather()
-      user_sees_real_estate_net_values
-    accounts_cash
-    if accounts_cash:
-      users1_assets_cash_total
-      user_sees_cash_assets_total
-    other_assets.there_are_any
-    if other_assets.there_are_any: 
-      other_assets.gather()
-      user_sees_other_assets_values
- 
-    set_progress(85)
-    nav.set_section('reasons')
+    set_progress(50)  
+  
+  trial_court_division
+  docket_number
+  set_progress(16)
+  nav.set_section('about_you')
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].address.address
+  users[0].daytime_phone_number
+  users[0].email
+  household_size
+  
+
+  
+  nav.set_section('expenses')
+  list_expenses
+  users1_expenses_monthly_total
+  users1_expenses_annual_total
+  user_sees_expenses_total
+  set_progress(70)
+  nav.set_section('assets')
+  assets
+  vehicles.there_are_any
+  if vehicles.there_are_any: 
+    vehicles.gather()
+    user_sees_vehicle_net_values
+  real_estate.there_are_any
+  if real_estate.there_are_any: 
+    real_estate.gather()
+    user_sees_real_estate_net_values
+  accounts_cash
+  if accounts_cash:
+    users1_assets_cash_total
+    user_sees_cash_assets_total
+  other_assets.there_are_any
+  if other_assets.there_are_any: 
+    other_assets.gather()
+    user_sees_other_assets_values
+  set_progress(85)
+  
+  nav.set_section('reasons')
   other_reasons_why_cannot_afford
   set_progress(98)
   interview_order_VT_fee_waiver = True
@@ -192,6 +194,110 @@ fields:
   - Are you employed?: employed
     datatype: yesnoradio
 ---
+sets:
+  - x.employer.name.first
+id: employer
+generic object: ALItemizedJob
+question: |
+  Tell us who employs you as a ${ x.source }
+fields:
+  - I am self-employed: x.is_self_employed
+    datatype: yesno
+  - Employer's name: x.employer.name.first
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - note: |
+      ---
+
+      Employer's contact information
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - Street address: x.employer.address.address
+    address autocomplete: True
+    required: False
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - Unit: x.employer.address.unit
+    required: False
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - City: x.employer.address.city
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - State: x.employer.address.state
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - Zip or postal code: x.employer.address.zip
+    required: False
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - Phone number: x.employer.phone_number
+    required: False
+    show if:
+      variable: x.is_self_employed
+      is: False
+---
+id: itemized job line items
+generic object: ALItemizedJob
+question: |
+    Enter info from your paystub for your job as a ${ x.source }
+fields:
+    - label: |
+        % if x.is_hourly:
+        What is your hourly pay for this job?
+        % else:
+        What are your wages for this job?
+        % endif
+      field: x.to_add['full time'].value
+      datatype: currency
+      show if:
+        code: x.is_part_time is False
+    - label: |
+        % if x.is_hourly:
+        What is your hourly pay for this job?
+        % else:
+        What are your wages for this job?
+        % endif
+      field: x.to_add['part time'].value
+      datatype: currency
+      show if:
+        code: x.is_part_time is True
+    #- Did the job have other income like tips, commissions or bonuses in the last month?: tips_commissions
+    #  datatype: yesnoradio
+    #- Which of these do you have: x.which_tips_commissions
+    #  datatype: checkboxes
+    #  choices:
+    #    - Tips: tips
+    #    - Commissions: commissions
+    #    - Bonuses: bonuses
+    #  show if: tips_commissions
+    #- How much do you get in tips, commissions or bonuses? (Q2): x.to_add['tips_commissions'].value
+    #  datatype: currency
+    #  show if: tips_commissions
+---
+id: other itemized job income value
+generic object: ALItemizedJob
+question: |
+  Adding and subtracting -- ALIncome wants to ask more questions so I made this question block
+fields:
+  #- Amount: x.to_add[i].value
+  #  datatype: currency
+  #- How often do you get paid this amount?: x.to_add[i].times_per_year
+  #  input type: radio
+  #  code: |
+  #    times_per_year_list
+  #  datatype: integer
+  - Do you have another source of income?: x.to_add.there_is_another
+    datatype: yesnoradio
+  - Do you have anything you should subtract from your pay?: x.to_subtract.there_are_any
+    datatype: yesnoradio
 ---
 id: job review
 question: |
@@ -201,15 +307,51 @@ subquestion: |
   to the next question.
 
   ${ jobs.table }
+  
 
   ${ jobs.add_action() }
 field: review_jobs
 ---
+generic object: ALItemizedJobList
+table: x.table
+rows: x
+columns:
+  - Title: |
+      row_item.source
+  - Employer: |
+      row_item.employer.name if hasattr(row_item.employer.name, "first") else ""
+  - Address: |
+      row_item.employer.address.city if hasattr(row_item.employer.address.city, "first") else ""
+  - Monthly Gross Income: |
+      currency(row_item.gross_total(times_per_year=12))
+
+edit:
+  - source
+  - employer.name.first
+  - employer.address.city
+  - to_add.revisit
+  - to_subtract.revisit
+confirm: True
+---
+generic object: ALItemizedValueDict
+table: x.table
+rows: x
+columns:
+  - Type: |
+      str(row_index).replace("_", " ").lower().capitalize()
+  - Amount: |
+      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
+  
+edit:
+  #- exists
+  - is_part_time
+  - is_hourly
+  - times_per_year
+  - value
 
 
 
-
-
+---
 id: basic questions intro screen
 decoration: form-lineal
 question: |
@@ -453,14 +595,12 @@ fields:
     datatype: currency
     min: 0
     show if: user_income_other
-  - "**No other income**": user_income_none
+  - "**I don't have any of these**": user_other_income_none
     datatype: yesno
 ---
 mandatory: True
 code: |
-  users1_income_monthly_total = sum_if_defined('users1_income_employment_monthly_amount',
-      'users1_income_self_employment_monthly_amount',
-      'users1_income_unemployment_monthly_amount',
+  users1_income_monthly_total = sum_if_defined('users1_income_unemployment_monthly_amount',
       'users1_income_child_support_monthly_amount',
       'users1_income_other_monthly_amount')
 
@@ -476,13 +616,21 @@ continue button field: user_sees_income_total
 question: |
   Total of this income
 subquestion: |
-  You just reported income each month as:
-    ${ currency(users1_income_monthly_total) }
+
+  You said that your wages each month are:
+  
+  % for item in jobs:
+    - ${ item.employer }: ${ currency(item.gross_total(times_per_year=12)) }
+  % endfor
+  
+  And your total other income each month is:
+    ${ currency(users1_income_monthly_total) } 
     
   Therefore, for the year it is:
     ${ currency(users1_income_annual_total) }
+
     
-  If this is not correct, go back one screen.
+  If this is not correct, go back and correct things.
 ---
 id: Expenses
 continue button field: list_expenses
@@ -1280,7 +1428,7 @@ attachments:
       - "employed_no": ${ not employed }
       
       - "users1_employer_0_name": ${ jobs[0].employer }
-      - "users1_employer_0_address_one_line": ${ jobs[0].employer_name_address_phone() }
+      - "users1_employer_0_address_one_line": ${ jobs[0].employer.address.on_one_line() }
 
       - "users1_employer_1_name": ${ jobs[1].employer }
       - "users1_employer_1_address_one_line": ${ jobs[1].employer_name_address_phone() }
@@ -1291,7 +1439,9 @@ attachments:
       - "users1_benefits_monthly_amount": ${ currency(users1_benefits_monthly_amount) }
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
       - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }
-      - "users1_income_employment_monthly_amount": ${ currency(users1_income_employment_monthly_amount) }
+      
+      - "users1_income_employment_monthly_amount": ${ currency(jobs[0].gross_total(times_per_year=12)) }
+      
       - "users1_expenses_phone_monthly_amount": ${ currency(users1_expenses_phone_monthly_amount) }
       - "users1_income_unemployment_monthly_amount": ${ currency(users1_income_unemployment_monthly_amount) }
       - "users1_expenses_fuel_monthly_amount": ${ currency(users1_expenses_fuel_monthly_amount) }
@@ -1302,6 +1452,7 @@ attachments:
       - "users1_expenses_medical_monthly_amount": ${ currency(users1_expenses_medical_monthly_amount) }
       - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
       - "users1_expenses_child_support_monthly_amount": ${ currency(users1_expenses_child_support_monthly_amount) }
+      
       - "users1_income_monthly_total": ${ currency(users1_income_monthly_total) }
       - "users1_expenses_auto_loan_monthly_amount": ${ currency(users1_expenses_auto_loan_monthly_amount) }
       - "users1_income_annual_total": ${ currency(users1_income_annual_total) }
