@@ -187,7 +187,7 @@ code: |
 
 
 
-id: job review
+id: are you employed
 question: |
   Are you employed?
 fields:
@@ -316,12 +316,10 @@ generic object: ALItemizedJobList
 table: x.table
 rows: x
 columns:
-  - Title: |
+  - Job title: |
       row_item.source
   - Employer: |
       row_item.employer.name if hasattr(row_item.employer.name, "first") else ""
-  - Address: |
-      row_item.employer.address.city if hasattr(row_item.employer.address.city, "first") else ""
   - Monthly Gross Income: |
       currency(row_item.gross_total(times_per_year=12))
 
@@ -561,7 +559,7 @@ fields:
 id: Income
 continue button field: list_income
 question: |
-  Income
+  Types of income
 subquestion: |
   Select any of these kinds of income you get right now. Then enter the amount of each **per month**. 
 fields:
@@ -1114,40 +1112,27 @@ review:
     button: |
       **Case name**:
       ${ case_name }
+      
+  - note: |
+      **About you**
   - Edit: users.revisit
     button: |
-      **Users**
+      **Your name**
 
       % for item in users:
         * ${ item }
       % endfor
   - Edit: household_size
     button: |
-      **Household size**:
+      **Number of people in your household**:
       ${ household_size }
-  - Edit: employed
-    button: |
-      **Employed**:
-      ${ word(yesno(employed)) }
-  - Edit: users1_employer_0_address_one_line
-    button: |
-      **Employer\'s address**:
-      ${ users1_employer_0_address_one_line }
-  - Edit: users1_employer_0_name
-    button: |
-      **Employer\'s name / Company name**:
-      ${ users1_employer_0_name }
-  - Edit: users1_employer_1_name
-    button: |
-      **2nd Employer\'s name / Company name (if you have a second job)**:
-      ${ users1_employer_1_name }
-  - Edit: users1_employer_1_address_one_line
-    button: |
-      **Employer\'s address**:
-      ${ users1_employer_1_address_one_line }
+      
+      
+  - note: |
+      **Income**
   - Edit: user_receives_benefits
     button: |
-      **Receives benefits**:
+      **You get public benefits**:
       ${ word(yesno(user_receives_benefits)) }
   - Edit: users1_benefits
     button: |
@@ -1157,6 +1142,53 @@ review:
     button: |
       **The amount you get every month**:
       ${ currency(users1_benefits_monthly_amount) }
+  - Edit: employed
+    button: |
+      **Employed**:
+      ${ word(yesno(employed)) }
+  - Edit: jobs.revisit
+    button: |
+      **Jobs**
+
+      % for job in jobs:
+      * ${ job.source } at ${ job.employer.name }
+      % endfor      
+  - Edit: user_income_unemployment
+    button: |
+      **Unemployment benefits**:
+      % if user_income_unemployment:
+        ${ currency(users1_income_unemployment_monthly_amount) }
+      % else:
+        No
+      % endif      
+  - Edit: user_income_child_support
+    button: |
+      **Child support**:
+      % if user_income_child_support:
+        ${ currency(users1_income_child_support_monthly_amount) }
+      % else:
+        No
+      % endif     
+  - Edit: user_income_other
+    button: |
+      **Other income**:
+      % if user_income_other:
+        ${ currency(users1_income_other_monthly_amount) }
+      % else:
+        No
+      % endif     
+  - Edit: users1_income_self_employment_monthly_amount
+    button: |
+      **Self employment**:
+      % if defined("users1_income_self_employment_monthly_amount)"):
+        ${ currency(users1_income_self_employment_monthly_amount) }      
+      % else:
+        No
+      % endif     
+      
+      
+  - note: |
+      **Expenses**      
   - Edit: users1_expenses_rent_mortgage_monthly_amount
     button: |
       **Rent or mortgage**:
@@ -1173,26 +1205,14 @@ review:
     button: |
       **Phone**:
       ${ currency(users1_expenses_phone_monthly_amount) }
-  - Edit: users1_income_unemployment_monthly_amount
-    button: |
-      **Unemployment benefits**:
-      ${ currency(users1_income_unemployment_monthly_amount) }
   - Edit: users1_expenses_fuel_monthly_amount
     button: |
       **Fuel**:
       ${ currency(users1_expenses_fuel_monthly_amount) }
-  - Edit: users1_income_child_support_monthly_amount
-    button: |
-      **Child support**:
-      ${ currency(users1_income_child_support_monthly_amount) }
   - Edit: users1_expenses_food_monthly_amount
     button: |
       **Food**:
       ${ currency(users1_expenses_food_monthly_amount) }
-  - Edit: users1_income_other_monthly_amount
-    button: |
-      **Other**:
-      ${ currency(users1_income_other_monthly_amount) }
   - Edit: users1_expenses_clothes_monthly_amount
     button: |
       **Clothes**:
@@ -1201,10 +1221,6 @@ review:
     button: |
       **Medical / medicine**:
       ${ currency(users1_expenses_medical_monthly_amount) }
-  - Edit: users1_income_self_employment_monthly_amount
-    button: |
-      **Self employment**:
-      ${ currency(users1_income_self_employment_monthly_amount) }
   - Edit: users1_expenses_child_support_monthly_amount
     button: |
       **Child support**:
@@ -1217,10 +1233,6 @@ review:
     button: |
       **Auto loan**:
       ${ currency(users1_expenses_auto_loan_monthly_amount) }
-  - Edit: users1_income_annual_total
-    button: |
-      **Total income each year**:
-      ${ currency(users1_income_annual_total) }
   - Edit: users1_expenses_property_tax_monthly_amount
     button: |
       **Property taxes**:
@@ -1231,12 +1243,12 @@ review:
       ${ currency(users1_expenses_all_insurance_monthly_amount) }
   - Edit: users1_expenses_other_monthly_amount
     button: |
-      **Other**:
+      **Other expenses**:
       ${ currency(users1_expenses_other_monthly_amount) }
-  - Edit: users1_expenses_monthly_total
-    button: |
-      **Total expenses each month**:
-      ${ currency(users1_expenses_monthly_total) }
+
+      
+  - note: |
+      **Assets**    
   - Edit: vehicles.revisit
     button: |
       **Vehicles**
@@ -1287,6 +1299,7 @@ review:
     button: |
       **2nd Other asset - description**:
       ${ users1_assets_other_1_description }
+      
   - Edit: other_reasons_why_cannot_afford
     button: |
       **Other reason(s) you cannot afford the fees (optional question)**:
@@ -1297,7 +1310,7 @@ review:
       % endif
   - Edit: signature_date
     button: |
-      **Date of signature**:
+      **Date of signature for these forms**:
       ${ signature_date }
 
 ---
@@ -1431,7 +1444,7 @@ attachments:
       - "users1_employer_0_address_one_line": ${ jobs[0].employer.address.on_one_line() }
 
       - "users1_employer_1_name": ${ jobs[1].employer }
-      - "users1_employer_1_address_one_line": ${ jobs[1].employer_name_address_phone() }
+      - "users1_employer_1_address_one_line": ${ jobs[1].employer.address.on_one_line() }
       
       - "users1_receives_benefits_yes": ${ user_receives_benefits }
       - "users1_receives_benefits_no": ${ not user_receives_benefits }
