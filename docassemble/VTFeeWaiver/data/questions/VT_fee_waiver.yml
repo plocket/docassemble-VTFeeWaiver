@@ -217,20 +217,19 @@ fields:
 ---
 variable name: non_wage_income_terms
 data: !!omap
-  - SSR: "Social Security Retirement Benefits"
-      - Unemployment: unemployment_income
-      - Child support: child_support_income
-      - Rental income: rental_income
-      - Annuities: annuities_income
-      - Retirement/pension: retirement_income
-      - Workers compensation or disability insurance: workers_comp_income
-      - Social Security benefits: social_security_income
-      - Veterans benefits: veterans_income
-      - Interest or dividend income: interest_income
-      - Gifts or prize money (including lottery): gifts_income        
-      - Spousal maintenance (from other party in this court action): alimony_from_OP_income
-      - Spousal maintenance (from someone else): alimony_from_other_income     
-      - Other (for example, capital gains on stocks): other_income  
+  - unemployment_income: "Unemployment"
+  - child_support_income: "Child support"
+  - rental_income: "Rental income"
+  - annuities_income: "Annuities"
+  - retirement_income: "Retirement/pension"
+  - workers_comp_income: "Workers comp or disability insurance"
+  - social_security_income: "Social Security benefits"
+  - veterans_income: "Veterans benefits"
+  - interest_income: "Interest or dividend income"
+  - gifts_income: "Gifts or prize money (including lottery)"   
+  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
+  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
+  - other_income: "Other (for example, capital gains on stocks)"
 
 ---
 id: are you employed
@@ -1209,11 +1208,13 @@ review:
       % endfor      
       
       
-  - Edit: which_other_incomes
+  - Edit: other_incomes
     button: |
       Other kinds of income
       
       ${ other_incomes.sources() }
+      
+      Total: ${ other_incomes.total(times_per_year=12) }
       
   - Edit: user_income_unemployment
     button: |
@@ -1521,7 +1522,9 @@ attachments:
 
       
       - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
-      - "users1_income_unemployment_monthly_amount": ${ currency(users1_income_unemployment_monthly_amount) }
+      
+      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(times_per_year=12)) }
+      
       - "users1_income_child_support_monthly_amount": ${ currency(users1_income_child_support_monthly_amount) }
       - "users1_income_other_monthly_amount": ${ currency(users1_income_other_monthly_amount) }
       - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
