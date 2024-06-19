@@ -51,7 +51,7 @@ code: |
     package_updated_on = None  
 ---
 code: |
-  interview_short_title = "Ask to waive filing and service fees in Vermont"
+  interview_short_title = "Ask to waive court filing and service fees in Vermont"
 ---
 code: |
   al_form_type = "existing_case" 
@@ -614,8 +614,9 @@ id: Show income monthly and annual totals
 mandatory: True
 continue button field: user_sees_income_total
 question: |
-  Total income
+  Total of this income
 subquestion: |
+
   You said that your wages each month are:
   
   % for item in jobs:
@@ -624,6 +625,10 @@ subquestion: |
   
   And your total other income each month is:
     ${ currency(users1_income_monthly_total) } 
+    
+  Therefore, for the year it is:
+    ${ currency(users1_income_annual_total) }
+
     
   If this is not correct, go back and correct things.
 ---
@@ -652,7 +657,7 @@ fields:
     datatype: currency
     min: 0
     show if: user_expense_phone
-  - "Fuel": user_expense_fuel
+  - "Fuel to heat your home, water or to cook": user_expense_fuel
     datatype: yesno    
   - "Amount": users1_expenses_fuel_monthly_amount
     datatype: currency
@@ -1421,11 +1426,12 @@ attachments:
       - "household_size": ${ household_size }
       - "employed_yes": ${ employed }
       - "employed_no": ${ not employed }
-
+      
       - "users1_employer_0_name": ${ jobs[0].employer }
-      - "users1_employer_1_name": ${ jobs[1].employer }
       - "users1_employer_0_address_one_line": ${ jobs[0].employer.address.on_one_line() }
-      - "users1_employer_1_address_one_line": ${ jobs[1].employer.address.on_one_line() }
+
+      - "users1_employer_1_name": ${ jobs[1].employer }
+      - "users1_employer_1_address_one_line": ${ jobs[1].employer_name_address_phone() }
       
       - "users1_receives_benefits_yes": ${ user_receives_benefits }
       - "users1_receives_benefits_no": ${ not user_receives_benefits }
