@@ -1114,6 +1114,8 @@ question: |
 subquestion: |
   Here is a preview of the form you will sign on the next page. 
   
+  ${ currency(other_incomes.total(times_per_year=12)) }
+  
   ${ al_court_bundle.as_pdf(key='preview') }
 
   Click the image to open it in a new tab. Click the "Edit your answers" button
@@ -1523,12 +1525,13 @@ attachments:
       
       - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
       
-      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(times_per_year=12)) }
+      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment_income"],times_per_year=12)) }
       
       - "users1_income_child_support_monthly_amount": ${ currency(users1_income_child_support_monthly_amount) }
-      - "users1_income_other_monthly_amount": ${ currency(users1_income_other_monthly_amount) }
+      - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12)) }
       - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
-      - "users1_income_monthly_total": ${ currency(users1_income_monthly_total) }
+      
+      - "users1_income_monthly_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
       - "users1_income_annual_total": ${ currency(users1_income_annual_total) }
       
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
