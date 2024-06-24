@@ -192,42 +192,14 @@ code: |
   VT_fee_waiver_download
 ---
 
----
-id: are there other incomes
-#other_incomes
-question: |
-  Do you have other incomes?
-subquestion: |
-  Do not include employment income.
-fields:
-  - no label: x.selected_types
-    datatype: checkboxes
-    code: |
-      non_wage_income_terms_ordered
 
 
 
 
-  #- Do you have any of these incomes?: other_incomes.selected_types
-    #datatype: checkboxes
-    #choices:
-      #- Unemployment benefits: unemployment_income
-      #- Child support: child_support_income
-      #- Rental income: rental_income
-      #- Annuities: annuities_income
-      #- Retirement/pension: retirement_income
-      #- Workers compensation or disability insurance: workers_comp_income
-      #- Social Security benefits: social_security_income
-      #- Veterans benefits: veterans_income
-      #- Interest or dividend income: interest_income
-      #- Gifts or prize money (including lottery): gifts_income        
-      #- Spousal maintenance (from other party in this court action): alimony_from_OP_income
-      #- Spousal maintenance (from someone else): alimony_from_other_income     
-      #- Other (for example, capital gains on stocks): other_income  
 ---
 variable name: non_wage_income_terms
 data: !!omap
-  - unemployment_income: "Unemployment benefits (enter gross amount -- before taxes were taken out)"
+  - unemployment_income: "Unemployment benefits"
   - child_support_income: "Child support"
   - rental_income: "Rental income"
   - annuities_income: "Annuities"
@@ -240,6 +212,56 @@ data: !!omap
   - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
   - alimony_from_other_income: "Spousal maintenance (from someone else)"  
   - other_income: "Other (for example, capital gains on stocks)"
+---
+variable name: help_text
+data: !!omap
+  - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
+  - default: " "
+
+---
+id: are there other incomes
+#other_incomes
+question: |
+  Do you have other incomes?
+subquestion: |
+  Do not include employment income.
+fields:
+  - no label: x.selected_types
+    datatype: checkboxes
+    code: |
+      non_wage_income_terms_ordered
+---
+id: income info for list
+generic object: ALIncomeList
+question: |
+  Tell us about your ${ ordinal(i) } income
+subquestion: |
+  % if i > 1:
+  You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  % elif i > 0:
+  You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  % endif
+fields:
+  - Source of income: x[i].source
+    input type: dropdown
+    code: |
+      non_wage_income_terms_ordered
+    default: other
+  - What type of income?: x[i].source
+    show if:
+      variable: x[i].source
+      is: other
+  - Times per year you receive this income: x[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+  - Amount of income: x[i].value
+    datatype: currency
+  - note: |
+      ${ help_text['unemployment_income'] }
+    show if:
+      variable: x[i].source
+      is: unemployment_income
 
 ---
 id: are you employed
