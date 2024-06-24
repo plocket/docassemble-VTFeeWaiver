@@ -197,27 +197,37 @@ id: are there other incomes
 #other_incomes
 question: |
   Do you have other incomes?
+subquestion: |
+  Do not include employment income.
 fields:
-  - Do you have any of these incomes?: other_incomes.selected_types
+  - no label: x.selected_types
     datatype: checkboxes
-    choices:
-      - Unemployment: unemployment_income
-      - Child support: child_support_income
-      - Rental income: rental_income
-      - Annuities: annuities_income
-      - Retirement/pension: retirement_income
-      - Workers compensation or disability insurance: workers_comp_income
-      - Social Security benefits: social_security_income
-      - Veterans benefits: veterans_income
-      - Interest or dividend income: interest_income
-      - Gifts or prize money (including lottery): gifts_income        
-      - Spousal maintenance (from other party in this court action): alimony_from_OP_income
-      - Spousal maintenance (from someone else): alimony_from_other_income     
-      - Other (for example, capital gains on stocks): other_income  
+    code: |
+      non_wage_income_terms_ordered
+
+
+
+
+  #- Do you have any of these incomes?: other_incomes.selected_types
+    #datatype: checkboxes
+    #choices:
+      #- Unemployment benefits: unemployment_income
+      #- Child support: child_support_income
+      #- Rental income: rental_income
+      #- Annuities: annuities_income
+      #- Retirement/pension: retirement_income
+      #- Workers compensation or disability insurance: workers_comp_income
+      #- Social Security benefits: social_security_income
+      #- Veterans benefits: veterans_income
+      #- Interest or dividend income: interest_income
+      #- Gifts or prize money (including lottery): gifts_income        
+      #- Spousal maintenance (from other party in this court action): alimony_from_OP_income
+      #- Spousal maintenance (from someone else): alimony_from_other_income     
+      #- Other (for example, capital gains on stocks): other_income  
 ---
 variable name: non_wage_income_terms
 data: !!omap
-  - unemployment_income: "Unemployment"
+  - unemployment_income: "Unemployment benefits (enter gross amount -- before taxes were taken out)"
   - child_support_income: "Child support"
   - rental_income: "Rental income"
   - annuities_income: "Annuities"
@@ -447,7 +457,7 @@ subquestion: |
 
   If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
 
-  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
+  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. (If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
 ---
 id: important_notes_to_user
 question: |
@@ -559,7 +569,7 @@ id: Benefits
 question: |
   Public benefits
 fields:
-  - "Does anyone get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
+  - "Does anyone in your household get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
     datatype: yesnoradio
   - "Type(s) of benefits / assistance": users1_benefits
     show if: user_receives_benefits
@@ -586,20 +596,6 @@ question: |
 fields:
   - "Do you get income from working?": employed
     datatype: yesnoradio
-#  - "Your employer's name or company name": users1_employer_0_name
-#    maxlength: 25
-#    show if: employed
-#  - "Your employer's address (street, city, state)": users1_employer_0_address_one_line
-#    maxlength: 44
-#    show if: employed
-#  - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
-#    maxlength: 25
-#    show if: employed
-#    required: False
-#  - "Your 2nd employer's address (street, city, state)": users1_employer_1_address_one_line
-#    maxlength: 44
-#    show if: employed
-#    required: False
 ---
 id: Income
 continue button field: list_other_income
