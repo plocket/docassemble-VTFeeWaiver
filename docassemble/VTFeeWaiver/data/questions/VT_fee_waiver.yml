@@ -63,6 +63,7 @@ objects:
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
   - other_incomes: ALIncomeList
+  - public_benefits: ALIncomeList
 ---
 sections:
   - intro: Is this interview right for you
@@ -92,10 +93,21 @@ code: |
   important_notes_to_user
   #user_ask_role
   
+  if public_benefits.selected_types.any_true():
+    public_benefits.there_are_any = True
+    public_benefits.gathered
+
+  if public_benefits.selected_types.any_true():
+    public_benefits.there_are_any = True
+    public_benefits.gathered
+  
   if other_incomes.selected_types.any_true():
     other_incomes.there_are_any = True
     other_incomes.gathered
-  #list_other_income
+
+  if other_incomes.selected_types.any_true():
+    other_incomes.there_are_any = True
+    other_incomes.gathered  
     
   nav.set_section('case_info')
   case_name
@@ -192,10 +204,65 @@ code: |
   VT_fee_waiver_download
 ---
 
+---
+variable name: public_benefits_terms
+data: !!omap
+  - reach_up: "Reach Up (or RUFA, TANF)"
+  - dr_dynasaur: "Dr. Dynasaur / Blue First"
+  - fuel_assistance: "Fuel Assistance"
+  - general_assistance: "General Assistance (GA)"
+  - medicaid: "Medicaid"
+  - medicare: "Medicare"
+  - 3squaresvt: "3SquaresVT"
+  - ssi: "Supplemental Security Income​ (SSI)"
+  - vhap: "VHAP"
+  - housing_assistance: "Housing Assistance"   
+  - other_benefit: "Other"
+---
+#variable name: help_text
+#data: !!omap
+  #- unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
+  #- default: " "
+---
+id: are there public benefits
+#public_benefits
+question: |
+  Do you get public benefits?
+fields:
+  - no label: public_benefits.selected_types
+    datatype: checkboxes
+    code: |
+      public_benefits_terms_ordered
+---
+---
+id: public benefits info for list
+generic object: ALIncomeList
+question: |
+  Tell us about your ${ ordinal(i) } benefits
+subquestion: |
+  % if i > 1:
+  You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
+  % elif i > 0:
+  You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
+  % endif
+fields:
+  - Source of income: x[i].source
+    input type: dropdown
+    code: |
+      public_benefits_terms_ordered
+    default: other
+  - What type of income?: x[i].source
+    show if:
+      variable: x[i].source
+      is: other
+  - Times per year you receive this income: x[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+  - Amount of income: x[i].value
+    datatype: currency
 
-
-
-
+---
 ---
 variable name: non_wage_income_terms
 data: !!omap
@@ -226,12 +293,12 @@ question: |
 subquestion: |
   Do not include employment income.
 fields:
-  - no label: x.selected_types
+  - no label: other_incomes.selected_types
     datatype: checkboxes
     code: |
       non_wage_income_terms_ordered
 ---
-id: income info for list
+id: other income info for list
 generic object: ALIncomeList
 question: |
   Tell us about your ${ ordinal(i) } income
@@ -626,18 +693,6 @@ question: |
 subquestion: |
   Select any of these kinds of income you get right now. Then enter the amount of each **per month**. 
 fields:
-  #- "Wages": user_income_wages
-  #  datatype: yesno    
-  #- "Amount of your gross wages -- before taxes are taken out": users1_income_employment_monthly_amount
-  #  datatype: currency
-  #  min: 0
-  #  show if: user_income_wages
-  #- "Self employment": user_income_self_employment
-  #  datatype: yesno
-  #- "Amount of your net business income -- after expenses and taxes are taken out": users1_income_self_employment_monthly_amount
-  #  datatype: currency
-  #  min: 0
-  #  show if: user_income_self_employment
   - "Unemployment benefits": user_income_unemployment
     datatype: yesno    
   - "Amount": users1_income_unemployment_monthly_amount
@@ -1207,10 +1262,16 @@ review:
     button: |
       **You get public benefits**:
       ${ word(yesno(user_receives_benefits)) }
-  - Edit: users1_benefits
+      
+  - Edit: public_benefits
     button: |
-      **Type of benefits / assistance**:
-      ${ users1_benefits }
+      Public benefits you get
+      
+      ${ public_benefits.sources() }
+      
+      Total: ${ public_benefits.total(times_per_year=12) }
+
+
   - Edit: users1_benefits_monthly_amount
     button: |
       **The amount you get every month**:
