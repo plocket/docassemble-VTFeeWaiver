@@ -62,6 +62,7 @@ objects:
   - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
+  - other_incomes: ALIncomeList
 ---
 sections:
   - intro: Is this interview right for you
@@ -90,6 +91,12 @@ code: |
   nav.set_section('intro')
   important_notes_to_user
   #user_ask_role
+  
+  if other_incomes.selected_types.any_true():
+    other_incomes.there_are_any = True
+    other_incomes.gathered
+  #list_other_income
+    
   nav.set_section('case_info')
   case_name
   
@@ -105,7 +112,7 @@ code: |
     employed
     jobs.gather()
     review_jobs
-    list_other_income
+
     users1_income_monthly_total
     users1_income_annual_total
     user_sees_income_total
@@ -187,6 +194,76 @@ code: |
 
 
 
+
+
+---
+variable name: non_wage_income_terms
+data: !!omap
+  - unemployment_income: "Unemployment benefits"
+  - child_support_income: "Child support"
+  - rental_income: "Rental income"
+  - annuities_income: "Annuities"
+  - retirement_income: "Retirement/pension"
+  - workers_comp_income: "Workers comp or disability insurance"
+  - social_security_income: "Social Security benefits"
+  - veterans_income: "Veterans benefits"
+  - interest_income: "Interest or dividend income"
+  - gifts_income: "Gifts or prize money (including lottery)"   
+  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
+  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
+  - other_income: "Other (for example, capital gains on stocks)"
+---
+variable name: help_text
+data: !!omap
+  - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
+  - default: " "
+
+---
+id: are there other incomes
+#other_incomes
+question: |
+  Do you have other incomes?
+subquestion: |
+  Do not include employment income.
+fields:
+  - no label: x.selected_types
+    datatype: checkboxes
+    code: |
+      non_wage_income_terms_ordered
+---
+id: income info for list
+generic object: ALIncomeList
+question: |
+  Tell us about your ${ ordinal(i) } income
+subquestion: |
+  % if i > 1:
+  You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  % elif i > 0:
+  You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  % endif
+fields:
+  - Source of income: x[i].source
+    input type: dropdown
+    code: |
+      non_wage_income_terms_ordered
+    default: other
+  - What type of income?: x[i].source
+    show if:
+      variable: x[i].source
+      is: other
+  - Times per year you receive this income: x[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+  - Amount of income: x[i].value
+    datatype: currency
+  - note: |
+      ${ help_text['unemployment_income'] }
+    show if:
+      variable: x[i].source
+      is: unemployment_income
+
+---
 id: are you employed
 question: |
   Are you employed?
@@ -402,7 +479,7 @@ subquestion: |
 
   If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
 
-  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. 
+  You will also need to know information about the court case for which you want a fee waiver. You can find this information on other court papers you have about this case. (If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
 ---
 id: important_notes_to_user
 question: |
@@ -514,7 +591,7 @@ id: Benefits
 question: |
   Public benefits
 fields:
-  - "Does anyone get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
+  - "Does anyone in your household get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
     datatype: yesnoradio
   - "Type(s) of benefits / assistance": users1_benefits
     show if: user_receives_benefits
@@ -541,20 +618,6 @@ question: |
 fields:
   - "Do you get income from working?": employed
     datatype: yesnoradio
-#  - "Your employer's name or company name": users1_employer_0_name
-#    maxlength: 25
-#    show if: employed
-#  - "Your employer's address (street, city, state)": users1_employer_0_address_one_line
-#    maxlength: 44
-#    show if: employed
-#  - "If you have a second job: Your 2nd employer's name or company name": users1_employer_1_name
-#    maxlength: 25
-#    show if: employed
-#    required: False
-#  - "Your 2nd employer's address (street, city, state)": users1_employer_1_address_one_line
-#    maxlength: 44
-#    show if: employed
-#    required: False
 ---
 id: Income
 continue button field: list_other_income
@@ -1069,6 +1132,8 @@ question: |
 subquestion: |
   Here is a preview of the form you will sign on the next page. 
   
+  ${ currency(other_incomes.total(times_per_year=12)) }
+  
   ${ al_court_bundle.as_pdf(key='preview') }
 
   Click the image to open it in a new tab. Click the "Edit your answers" button
@@ -1161,6 +1226,16 @@ review:
       % for job in jobs:
       * ${ job.source } at ${ job.employer.name }
       % endfor      
+      
+      
+  - Edit: other_incomes
+    button: |
+      Other kinds of income
+      
+      ${ other_incomes.sources() }
+      
+      Total: ${ other_incomes.total(times_per_year=12) }
+      
   - Edit: user_income_unemployment
     button: |
       **Unemployment benefits**:
@@ -1467,11 +1542,14 @@ attachments:
 
       
       - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
-      - "users1_income_unemployment_monthly_amount": ${ currency(users1_income_unemployment_monthly_amount) }
+      
+      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment_income"],times_per_year=12)) }
+      
       - "users1_income_child_support_monthly_amount": ${ currency(users1_income_child_support_monthly_amount) }
-      - "users1_income_other_monthly_amount": ${ currency(users1_income_other_monthly_amount) }
+      - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12)) }
       - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
-      - "users1_income_monthly_total": ${ currency(users1_income_monthly_total) }
+      
+      - "users1_income_monthly_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
       - "users1_income_annual_total": ${ currency(users1_income_annual_total) }
       
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
