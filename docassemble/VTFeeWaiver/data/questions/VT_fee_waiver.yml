@@ -5,6 +5,15 @@ include:
   - docassemble.ALToolbox:al_income.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
 ---
+objects:
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
+  #- other_incomes: ALIncomeList
+  - public_benefits: ALIncomeList
+---
 comment: |
   Global interview metadata
 metadata:
@@ -56,22 +65,13 @@ code: |
 code: |
   al_form_type = "existing_case" 
 ---
-objects:
-  - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
-  - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
-  - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
-  - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
-  - other_incomes: ALIncomeList
-  - public_benefits: ALIncomeList
----
 sections:
   - intro: Is this interview right for you
   - case_info: Court case info
   - about_you: You and your household
-  - income: Your income
-  - expenses: Your expenses
-  - assets: Your property and assets
+  - your_income: Your income
+  - your_expenses: Your expenses
+  - your_assets: Your property and assets
   - reasons: Other info
   - review_VT_fee_waiver: Review your answers
   - signature: Sign your document
@@ -97,24 +97,16 @@ code: |
     public_benefits.there_are_any = True
     public_benefits.gathered
 
-  if public_benefits.selected_types.any_true():
-    public_benefits.there_are_any = True
-    public_benefits.gathered
-  
-  if other_incomes.selected_types.any_true():
-    other_incomes.there_are_any = True
-    other_incomes.gathered
-
-  if other_incomes.selected_types.any_true():
-    other_incomes.there_are_any = True
-    other_incomes.gathered  
+  #if other_incomes.selected_types.any_true():
+    #other_incomes.there_are_any = True
+    #other_incomes.gathered  
     
   nav.set_section('case_info')
   case_name
   
-  nav.set_section('income')
-  user_receives_benefits
-  if user_receives_benefits:
+  nav.set_section('your_income')
+  
+  if public_benefits.there_are_any:
     user_qualifies_interstitial
     employed
     jobs.gather()
@@ -143,13 +135,13 @@ code: |
   
 
   
-  nav.set_section('expenses')
+  nav.set_section('your_expenses')
   list_expenses
   users1_expenses_monthly_total
   users1_expenses_annual_total
   user_sees_expenses_total
   set_progress(70)
-  nav.set_section('assets')
+  nav.set_section('your_assets')
   assets
   vehicles.there_are_any
   if vehicles.there_are_any: 
@@ -205,7 +197,7 @@ code: |
 ---
 
 ---
-variable name: public_benefits_terms
+variable name: public_benefits_terms_ordered
 data: !!omap
   - reach_up: "Reach Up (or RUFA, TANF)"
   - dr_dynasaur: "Dr. Dynasaur / Blue First"
@@ -228,6 +220,8 @@ id: are there public benefits
 #public_benefits
 question: |
   Do you get public benefits?
+subquestion: |
+   Check any that apply to you.
 fields:
   - no label: public_benefits.selected_types
     datatype: checkboxes
@@ -239,12 +233,12 @@ id: public benefits info for list
 generic object: ALIncomeList
 question: |
   Tell us about your ${ ordinal(i) } benefits
-subquestion: |
-  % if i > 1:
-  You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
-  % elif i > 0:
-  You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
-  % endif
+#subquestion: |
+  #% if i > 1:
+  #You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
+  #% elif i > 0:
+  #You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
+  #% endif
 fields:
   - Source of income: x[i].source
     input type: dropdown
@@ -263,72 +257,71 @@ fields:
     datatype: currency
 
 ---
----
-variable name: non_wage_income_terms
-data: !!omap
-  - unemployment_income: "Unemployment benefits"
-  - child_support_income: "Child support"
-  - rental_income: "Rental income"
-  - annuities_income: "Annuities"
-  - retirement_income: "Retirement/pension"
-  - workers_comp_income: "Workers comp or disability insurance"
-  - social_security_income: "Social Security benefits"
-  - veterans_income: "Veterans benefits"
-  - interest_income: "Interest or dividend income"
-  - gifts_income: "Gifts or prize money (including lottery)"   
-  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
-  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
-  - other_income: "Other (for example, capital gains on stocks)"
----
-variable name: help_text
-data: !!omap
-  - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
-  - default: " "
-
----
-id: are there other incomes
-#other_incomes
-question: |
-  Do you have other incomes?
-subquestion: |
-  Do not include employment income.
-fields:
-  - no label: other_incomes.selected_types
-    datatype: checkboxes
-    code: |
-      non_wage_income_terms_ordered
----
-id: other income info for list
-generic object: ALIncomeList
-question: |
-  Tell us about your ${ ordinal(i) } income
-subquestion: |
-  % if i > 1:
-  You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
-  % elif i > 0:
-  You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
-  % endif
-fields:
-  - Source of income: x[i].source
-    input type: dropdown
-    code: |
-      non_wage_income_terms_ordered
-    default: other
-  - What type of income?: x[i].source
-    show if:
-      variable: x[i].source
-      is: other
-  - Times per year you receive this income: x[i].times_per_year
-    input type: radio
-    code: |
-      times_per_year_list
-  - Amount of income: x[i].value
-    datatype: currency
-  - note: |
-      ${ help_text['unemployment_income'] }
-    show if:
-      variable: x[i].source
-      is: unemployment_income
+#variable name: other_income_terms
+#data: !!omap
+#  - unemployment_income: "Unemployment benefits"
+#  - child_support_income: "Child support"
+#  - rental_income: "Rental income"
+#  - annuities_income: "Annuities"
+#  - retirement_income: "Retirement/pension"
+#  - workers_comp_income: "Workers comp or disability insurance"
+#  - social_security_income: "Social Security benefits"
+#  - veterans_income: "Veterans benefits"
+#  - interest_income: "Interest or dividend income"
+#  - gifts_income: "Gifts or prize money (including lottery)"   
+#  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
+#  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
+#  - other_income: "Other (for example, capital gains on stocks)"
+#---
+#variable name: help_text
+#data: !!omap
+#  - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
+#  - default: " "
+#
+#---
+#id: are there other incomes
+##other_incomes
+#question: |
+#  Do you have other incomes?
+#subquestion: |
+#  Do not include employment income.
+#fields:
+#  - no label: other_incomes.selected_types
+#    datatype: checkboxes
+#    code: |
+#      other_income_terms_ordered
+#---
+#id: other income info for list
+#generic object: ALIncomeList
+#question: |
+#  Tell us about your ${ ordinal(i) } income
+#subquestion: |
+#  % if i > 1:
+#  You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+#  % elif i > 0:
+#  You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+#  % endif
+#fields:
+#  - Source of income: x[i].source
+#    input type: dropdown
+#    code: |
+#      other_income_terms_ordered
+#    default: other
+#  - What type of income?: x[i].source
+#    show if:
+#      variable: x[i].source
+#      is: other
+#  - Times per year you receive this income: x[i].times_per_year
+#    input type: radio
+#    code: |
+#      times_per_year_list
+#  - Amount of income: x[i].value
+#    datatype: currency
+#  - note: |
+#      ${ help_text['unemployment_income'] }
+#    show if:
+#      variable: x[i].source
+#      is: unemployment_income
 
 ---
 id: are you employed
@@ -654,19 +647,19 @@ validation code: |
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
-id: Benefits
-question: |
-  Public benefits
-fields:
-  - "Does anyone in your household get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
-    datatype: yesnoradio
-  - "Type(s) of benefits / assistance": users1_benefits
-    show if: user_receives_benefits
-    maxlength: 34
-  - "Total amount every month": users1_benefits_monthly_amount
-    datatype: currency
-    show if: user_receives_benefits
-    min: 0
+#id: Benefits
+#question: |
+#  Public benefits
+#fields:
+#  - "Does anyone in your household get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
+#    datatype: yesnoradio
+#  - "Type(s) of benefits / assistance": users1_benefits
+#    show if: user_receives_benefits
+#    maxlength: 34
+#  - "Total amount every month": users1_benefits_monthly_amount
+#    datatype: currency
+#    show if: user_receives_benefits
+#    min: 0
 ---
 id: user qualifies due to benefits
 continue button field: user_qualifies_interstitial
@@ -1258,10 +1251,11 @@ review:
       
   - note: |
       **Income**
-  - Edit: user_receives_benefits
-    button: |
-      **You get public benefits**:
-      ${ word(yesno(user_receives_benefits)) }
+      
+#  - Edit: user_receives_benefits
+#    button: |
+#      **You get public benefits**:
+#      ${ word(yesno(user_receives_benefits)) }
       
   - Edit: public_benefits
     button: |
@@ -1596,8 +1590,8 @@ attachments:
       - "users1_employer_1_name": ${ jobs[1].employer }
       - "users1_employer_1_address_one_line": ${ jobs[1].employer.address.on_one_line() }
       
-      - "users1_receives_benefits_yes": ${ user_receives_benefits }
-      - "users1_receives_benefits_no": ${ not user_receives_benefits }
+      - "users1_receives_benefits_yes": ${ public_benefits.there_are_any }
+      - "users1_receives_benefits_no": ${ not public_benefits.there_are_any }
       - "users1_benefits": ${ users1_benefits }
       - "users1_benefits_monthly_amount": ${ currency(users1_benefits_monthly_amount) }
 
