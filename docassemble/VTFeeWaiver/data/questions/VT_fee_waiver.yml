@@ -1,4 +1,4 @@
-#Fix this error       code: |  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',      'users1_other_income_monthly_subtotal')
+#Working on getting public benefits and income fields to fill in
 
 
 ---
@@ -120,10 +120,10 @@ code: |
     other_incomes.there_are_any = True
     other_incomes.gathered  
 
-    users1_income_monthly_total
-    users1_income_annual_total
-    user_sees_income_total
-    set_progress(50)  
+  #users1_income_monthly_total
+  #users1_income_annual_total
+  #user_sees_income_total
+  #set_progress(50)  
   
   trial_court_division
   docket_number
@@ -716,16 +716,16 @@ fields:
 #code: |
 #  users1_gross_monthly_wages = currency(jobs.total(source=["full time","part time"],times_per_year=12)))
 ---
-mandatory: True
-code: |
-  users1_other_income_monthly_subtotal = sum_if_defined('users1_income_unemployment_monthly_amount',
-      'users1_income_child_support_monthly_amount',
-      'users1_income_other_monthly_amount')
+#mandatory: True
+#code: |
+#  users1_other_income_monthly_subtotal = sum_if_defined('users1_income_unemployment_monthly_amount',
+#      'users1_income_child_support_monthly_amount',
+#      'users1_income_other_monthly_amount')
 ---
-mandatory: True
-code: |
-  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',
-      'users1_other_income_monthly_subtotal')
+#mandatory: True
+#code: |
+#  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',
+#      'users1_other_income_monthly_subtotal')
 ---
 ###To multiply for annual income###
 mandatory: True
