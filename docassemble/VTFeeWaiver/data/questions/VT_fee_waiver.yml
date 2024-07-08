@@ -1,3 +1,6 @@
+#Fix this error       code: |  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',      'users1_other_income_monthly_subtotal')
+
+
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -11,8 +14,9 @@ objects:
   - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
-  #- other_incomes: ALIncomeList
   - public_benefits: ALIncomeList
+  - other_incomes: ALIncomeList
+
 ---
 comment: |
   Global interview metadata
@@ -93,18 +97,13 @@ code: |
   important_notes_to_user
   #user_ask_role
   
+  nav.set_section('your_income')
   if public_benefits.selected_types.any_true():
     public_benefits.there_are_any = True
     public_benefits.gathered
-
-  #if other_incomes.selected_types.any_true():
-    #other_incomes.there_are_any = True
-    #other_incomes.gathered  
     
   nav.set_section('case_info')
   case_name
-  
-  nav.set_section('your_income')
   
   if public_benefits.there_are_any:
     user_qualifies_interstitial
@@ -116,6 +115,10 @@ code: |
     employed
     jobs.gather()
     review_jobs
+
+  if other_incomes.selected_types.any_true():
+    other_incomes.there_are_any = True
+    other_incomes.gathered  
 
     users1_income_monthly_total
     users1_income_annual_total
@@ -230,7 +233,7 @@ fields:
 ---
 ---
 id: public benefits info for list
-generic object: ALIncomeList
+#generic object: ALIncomeList
 question: |
   Tell us about your ${ ordinal(i) } benefits
 #subquestion: |
@@ -240,88 +243,90 @@ question: |
   #You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
   #% endif
 fields:
-  - Source of income: x[i].source
+  - Source of income: public_benefits[i].source
     input type: dropdown
     code: |
       public_benefits_terms_ordered
     default: other
-  - What type of income?: x[i].source
+  - What type of income?: public_benefits[i].source
     show if:
-      variable: x[i].source
+      variable: public_benefits[i].source
       is: other
-  - Times per year you receive this income: x[i].times_per_year
+  - Times per year you receive this income: public_benefits[i].times_per_year
     input type: radio
     code: |
       times_per_year_list
-  - Amount of income: x[i].value
+  - Amount of income: public_benefits[i].value
     datatype: currency
 
 ---
-#variable name: other_income_terms
-#data: !!omap
-#  - unemployment_income: "Unemployment benefits"
-#  - child_support_income: "Child support"
-#  - rental_income: "Rental income"
-#  - annuities_income: "Annuities"
-#  - retirement_income: "Retirement/pension"
-#  - workers_comp_income: "Workers comp or disability insurance"
-#  - social_security_income: "Social Security benefits"
-#  - veterans_income: "Veterans benefits"
-#  - interest_income: "Interest or dividend income"
-#  - gifts_income: "Gifts or prize money (including lottery)"   
-#  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
-#  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
-#  - other_income: "Other (for example, capital gains on stocks)"
-#---
-#variable name: help_text
-#data: !!omap
-#  - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
-#  - default: " "
-#
-#---
-#id: are there other incomes
-##other_incomes
-#question: |
-#  Do you have other incomes?
-#subquestion: |
-#  Do not include employment income.
-#fields:
-#  - no label: other_incomes.selected_types
-#    datatype: checkboxes
-#    code: |
-#      other_income_terms_ordered
-#---
-#id: other income info for list
+variable name: other_income_terms_ordered
+data: !!omap
+  - unemployment_income: "Unemployment benefits"
+  - child_support_income: "Child support"
+  - rental_income: "Rental income"
+  - annuities_income: "Annuities"
+  - retirement_income: "Retirement/pension"
+  - workers_comp_income: "Workers comp or disability insurance"
+  - social_security_income: "Social Security benefits"
+  - veterans_income: "Veterans benefits"
+  - interest_income: "Interest or dividend income"
+  - gifts_income: "Gifts or prize money (including lottery)"   
+  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
+  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
+  - other_income: "Other (for example, capital gains on stocks)"
+---
+variable name: help_text
+data: !!omap
+  - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
+  - default: " "
+
+---
+id: are there other incomes
+#other_incomes
+question: |
+  Do you have other incomes?
+subquestion: |
+  Check any that apply to you.
+  
+  Do not include employment income.
+fields:
+  - no label: other_incomes.selected_types
+    datatype: checkboxes
+    code: |
+      other_income_terms_ordered
+---
+id: other income info for list
 #generic object: ALIncomeList
-#question: |
-#  Tell us about your ${ ordinal(i) } income
+question: |
+  Tell us about your ${ ordinal(i) } income
 #subquestion: |
-#  % if i > 1:
-#  You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
-#  % elif i > 0:
-#  You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
-#  % endif
-#fields:
-#  - Source of income: x[i].source
-#    input type: dropdown
-#    code: |
-#      other_income_terms_ordered
-#    default: other
-#  - What type of income?: x[i].source
-#    show if:
-#      variable: x[i].source
-#      is: other
-#  - Times per year you receive this income: x[i].times_per_year
-#    input type: radio
-#    code: |
-#      times_per_year_list
-#  - Amount of income: x[i].value
-#    datatype: currency
-#  - note: |
-#      ${ help_text['unemployment_income'] }
-#    show if:
-#      variable: x[i].source
-#      is: unemployment_income
+  #% if i > 1:
+  #You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  #% elif i > 0:
+  #You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  #% endif
+fields:
+  - Source of income: other_incomes[i].source
+    input type: dropdown
+    code: |
+      other_income_terms_ordered
+    default: other
+  - What type of income?: other_incomes[i].source
+    show if:
+      variable: other_incomes[i].source
+      is: other
+  - Times per year you receive this income: other_incomes[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+  - Amount of income: other_incomes[i].value
+    datatype: currency
+  - note: |
+      ${ help_text['unemployment_income'] }
+    show if:
+      variable: other_incomes[i].source
+      is: unemployment_income
 
 ---
 id: are you employed
@@ -719,7 +724,7 @@ code: |
 ---
 mandatory: True
 code: |
-  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12))',
+  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',
       'users1_other_income_monthly_subtotal')
 ---
 ###To multiply for annual income###
