@@ -126,7 +126,9 @@ code: |
 
   if other_incomes.selected_types.any_true():
     other_incomes.there_are_any = True
-    other_incomes.gathered  
+    other_incomes.gathered
+  else:
+    other_incomes.there_are_any = False
 
   #users1_income_monthly_total
   #users1_income_annual_total
@@ -778,7 +780,7 @@ data: !!omap
   - auto insurance: "Auto insurance"
   - auto loan: "Auto loan payment"
   - child support: "Child support payment"
-  - other: "Other expenses"
+  - other: "Other expenses that you can describe"
 ---
 
 generic object: ALExpenseList
@@ -787,7 +789,7 @@ id: expenses types
 question: |
   What kind of expenses do you have?
 fields:
-  - no label: expenses.selected_types
+  - no label: x.selected_types
     datatype: checkboxes
     code: |
       expense_terms
@@ -805,33 +807,37 @@ subquestion: |
 fields:
   - Amount: x[i].value
     datatype: currency
+#  - Other (explain): x[i].source
+#    show if:
+#      variable: x[i].source
+#      is: other
   - How often do you pay this amount?: x[i].times_per_year
     input type: radio
     default: 12
     code: |
       times_per_year_for_expenses
 ---
-generic object: ALExpenseList
-id: expense information
-question: |
-  How much do you spend on your ${ ordinal(i) } household expense?
-fields: 
-  - Type of expense: x[i].source
-    code: |
-      expense_terms_ordered
-  - Other (explain): x[i].source
-    show if:
-      variable: x[i].source
-      is: other
-  - Amount: x[i].value
-    datatype: currency
-  - How often do you pay this amount?: x[i].times_per_year
-    input type: radio
-    default: 12
-    code: |
-      times_per_year_for_expenses
-validation code: |
-  x[i].display_name = expense_terms.get(x[i].source, x[i].source)
+#generic object: ALExpenseList
+#id: expense information
+#question: |
+#  How much do you spend on your ${ ordinal(i) } household expense?
+#fields: 
+#  - Type of expense: x[i].source
+#    code: |
+#      expense_terms
+#  - Other (explain): x[i].source
+#    show if:
+#      variable: x[i].source
+#      is: other
+#  - Amount: x[i].value
+#    datatype: currency
+#  - How often do you pay this amount?: x[i].times_per_year
+#    input type: radio
+#    default: 12
+#    code: |
+#      times_per_year_for_expenses
+#validation code: |
+#  x[i].display_name = expense_terms.get(x[i].source, x[i].source)
 ---
 id: expenses review
 question: |
@@ -1161,8 +1167,6 @@ question: |
 subquestion: |
   Here is a preview of the form you will sign on the next page. 
   
-  ${ currency(other_incomes.total(times_per_year=12)) }
-  
   ${ al_court_bundle.as_pdf(key='preview') }
 
   Click the image to open it in a new tab. Click the "Edit your answers" button
@@ -1232,70 +1236,43 @@ review:
       
   - note: |
       **Income**
-   
-     
-    
+
+      
   - Edit: public_benefits.revisit
     button: |
-      **You get public benefits**:
-      ${ word(yesno(public_benefits.there_are_any)) }
+      **Public benefits**
       
-      % if public_benefits.there_are_any:
-        % for item in public_benefits:
-          - ${ item.display_name } ${ item.value }, ${ item.times_per_year } times a year
-        % endfor
+      % for item in public_benefits:
+      * ${ item.display_name }
+      % endfor
+
+      % if not public_benefits.there_are_any:
+      - None
       % endif
 
-
-  - Edit: users1_benefits_monthly_amount
-    button: |
-      **The amount you get every month**:
-      ${ currency(users1_benefits_monthly_amount) }
-  - Edit: employed
-    button: |
-      **Employed**:
-      ${ word(yesno(employed)) }
   - Edit: jobs.revisit
     button: |
       **Jobs**
 
       % for job in jobs:
       * ${ job.source } at ${ job.employer.name }
-      % endfor      
+      % endfor
+      % if not jobs.there_are_any:
+      - None
+      % endif
       
       
-  - Edit: other_incomes
+  - Edit: other_incomes.revisit
     button: |
-      Other kinds of income
-      
-      ${ other_incomes.sources() }
-      
-      Total: ${ other_incomes.total(times_per_year=12) }
-      
-  - Edit: user_income_unemployment
-    button: |
-      **Unemployment benefits**:
-      % if user_income_unemployment:
-        ${ currency(users1_income_unemployment_monthly_amount) }
-      % else:
-        No
-      % endif      
-  - Edit: user_income_child_support
-    button: |
-      **Child support**:
-      % if user_income_child_support:
-        ${ currency(users1_income_child_support_monthly_amount) }
-      % else:
-        No
-      % endif     
-  - Edit: user_income_other
-    button: |
-      **Other income**:
-      % if user_income_other:
-        ${ currency(users1_income_other_monthly_amount) }
-      % else:
-        No
-      % endif     
+      **Other incomes**:
+
+      % for item in other_incomes:
+      * ${ item.display_name }
+      % endfor
+      % if not other_incomes.there_are_any:
+      - None
+      % endif
+         
   - Edit: users1_income_self_employment_monthly_amount
     button: |
       **Self employment**:
@@ -1313,36 +1290,20 @@ review:
       **Expenses**:
 
       % for item in expenses:
-      * ${ item.display_name }: ${ currency(item.value) }
+      * ${ item.display_name }
       % endfor
-      
-
-  - Edit: users1_expenses_auto_loan_monthly_amount
-    button: |
-      **Auto loan**:
-      ${ currency(users1_expenses_auto_loan_monthly_amount) }
-  - Edit: users1_expenses_property_tax_monthly_amount
-    button: |
-      **Property taxes**:
-      ${ currency(users1_expenses_property_tax_monthly_amount) }
-  - Edit: users1_expenses_all_insurance_monthly_amount
-    button: |
-      **All kinds of insurance**:
-      ${ currency(users1_expenses_all_insurance_monthly_amount) }
-  - Edit: users1_expenses_other_monthly_amount
-    button: |
-      **Other expenses**:
-      ${ currency(users1_expenses_other_monthly_amount) }
-
+      % if not expenses.there_are_any:
+      - None
+      % endif
       
   - note: |
       **Assets**    
   - Edit: vehicles.revisit
     button: |
-      Vehicles:
+      **Vehicles**
       
       % for item in vehicles:
-        **${ item.description }**
+        ${ item.description }
           
         - Market value: ${ currency(item.market_value) }
           
@@ -1352,21 +1313,24 @@ review:
           
       % endfor
       % if not vehicles.there_are_any:
-        No
+      - None
       % endif
   - Edit: real_estate.revisit
     button: |
-      Real estate:
+      **Real estate**
 
       % for item in real_estate:
-        **${ item.description }** 
+        ${ item.description }
         
         * Net value = ${ currency(item.net_value) }
         
       % endfor
       % if not real_estate.there_are_any:
-        No
+      - None
       % endif
+      
+      
+      
   - Edit: users1_assets_checking_accounts
     button: |
       **Checking accounts**:
@@ -1460,6 +1424,26 @@ columns:
 edit:
   - source
   - value
+---
+continue button field: other_incomes.revisit
+question: |
+  Edit other incomes
+subquestion: |
+  ${ other_incomes.table }
+
+  ${ other_incomes.add_action() }
+---
+table: other_incomes.table
+rows: other_incomes
+columns:
+  - Source: |
+      row_item.source if defined("row_item.source") else ""
+  - Value: |
+      currency(row_item.value) if defined("row_item.value") else ""
+edit:
+  - source
+  - value
+---
 ---
 continue button field: vehicles.revisit
 question: |
