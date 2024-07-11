@@ -1,4 +1,6 @@
-#Working on getting public benefits and income fields to fill in
+#Collect bank_accounts as a DAList
+#For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
+#Work on getting self employment to fill in
 
 
 ---
@@ -16,6 +18,7 @@ objects:
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
   - public_benefits: ALIncomeList
   - other_incomes: ALIncomeList
+  - expenses: ALExpenseList
 
 ---
 comment: |
@@ -96,6 +99,11 @@ code: |
   nav.set_section('intro')
   important_notes_to_user
   #user_ask_role
+
+  if expenses.selected_types.any_true():
+    expenses.there_are_any = True
+    expenses.gathered  
+  review_expenses
   
   nav.set_section('your_income')
   if public_benefits.selected_types.any_true():
@@ -118,7 +126,9 @@ code: |
 
   if other_incomes.selected_types.any_true():
     other_incomes.there_are_any = True
-    other_incomes.gathered  
+    other_incomes.gathered
+  else:
+    other_incomes.there_are_any = False
 
   #users1_income_monthly_total
   #users1_income_annual_total
@@ -139,10 +149,7 @@ code: |
 
   
   nav.set_section('your_expenses')
-  list_expenses
-  users1_expenses_monthly_total
-  users1_expenses_annual_total
-  user_sees_expenses_total
+
   set_progress(70)
   nav.set_section('your_assets')
   assets
@@ -209,7 +216,7 @@ data: !!omap
   - medicaid: "Medicaid"
   - medicare: "Medicare"
   - 3squaresvt: "3SquaresVT"
-  - ssi: "Supplemental Security Income​ (SSI)"
+  - ssi: "Supplemental Security Income (SSI)"
   - vhap: "VHAP"
   - housing_assistance: "Housing Assistance"   
   - other_benefit: "Other"
@@ -254,6 +261,7 @@ fields:
       is: other
   - Times per year you receive this income: public_benefits[i].times_per_year
     input type: radio
+    default: 12
     code: |
       times_per_year_list
   - Amount of income: public_benefits[i].value
@@ -753,122 +761,96 @@ subquestion: |
 
     
   If this is not correct, go back and correct things.
+
 ---
-id: Expenses
-continue button field: list_expenses
+# "!!omap" makes these terms ordered
+# their order here will be their same order when shown to users.
+variable name: expense_terms
+data: !!omap
+  - rent: "Rent"
+  - mortgage: "Mortgage"
+  - food: "Food"
+  - electric: "Electric"
+  - phone: "Phone"
+  - fuel: "Fuel (heat and/or gas)"
+  - clothing: "Clothing"
+  - property tax: "Property taxes"
+  - medical: "Medical costs"
+  - health insurance: "Health insurance"
+  - auto insurance: "Auto insurance"
+  - auto loan: "Auto loan payment"
+  - child support: "Child support payment"
+  - other: "Other expenses that you can describe"
+---
+
+generic object: ALExpenseList
+#expenses
+id: expenses types
 question: |
-  Expenses
-subquestion: |
-  Select the expenses you have right now. Then enter the amount of each of those expenses **per month**.
+  What kind of expenses do you have?
 fields:
-  - "Rent or mortgage": user_expense_rent_mortgage
-    datatype: yesno    
-  - "Amount": users1_expenses_rent_mortgage_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_rent_mortgage
-  - "Electric": user_expense_electric
-    datatype: yesno     
-  - "Amount": users1_expenses_electric_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_electric
-  - "Phone": user_expense_phone
-    datatype: yesno    
-  - "Amount": users1_expenses_phone_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_phone
-  - "Fuel to heat your home, water or to cook": user_expense_fuel
-    datatype: yesno    
-  - "Amount": users1_expenses_fuel_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_fuel
-  - "Food": user_expense_food
-    datatype: yesno    
-  - "Amount": users1_expenses_food_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_food
-  - "Clothes": user_expense_clothes
-    datatype: yesno    
-  - "Amount": users1_expenses_clothes_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_clothes
-  - "Medical / medicine": user_expense_medicine
-    datatype: yesno
-  - "Amount": users1_expenses_medical_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_medicine
-  - "Child support": user_expense_child_support
-    datatype: yesno    
-  - "Amount": users1_expenses_child_support_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_child_support
-  - "Auto loan": user_expense_child_auto_loan
-    datatype: yesno    
-  - "Amount": users1_expenses_auto_loan_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_child_auto_loan
-  - "Property taxes": user_expense_property_tax
-    datatype: yesno  
-  - "Amount": users1_expenses_property_tax_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_property_tax
-  - "All kinds of insurance": user_expense_insurance
-    datatype: yesno    
-  - "Amount":  users1_expenses_all_insurance_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_insurance
-  - "Other": user_expense_other
-    datatype: yesno    
-  - "Amount": users1_expenses_other_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_other
-  - "**I don't have any expenses**": user_expense_none
-    datatype: yesno
+  - no label: x.selected_types
+    datatype: checkboxes
+    code: |
+      expense_terms
 ---
-mandatory: True
-code: | 
-  users1_expenses_monthly_total = sum_if_defined('users1_expenses_rent_mortgage_monthly_amount', 
-      'users1_expenses_electric_monthly_amount',
-      'users1_expenses_phone_monthly_amount',
-      'users1_expenses_fuel_monthly_amount',
-      'users1_expenses_food_monthly_amount',
-      'users1_expenses_clothes_monthly_amount',
-      'users1_expenses_medical_monthly_amount',
-      'users1_expenses_child_support_monthly_amount',
-      'users1_expenses_auto_loan_monthly_amount',
-      'users1_expenses_property_tax_monthly_amount',
-      'users1_expenses_all_insurance_monthly_amount',    
-      'users1_expenses_other_monthly_amount')
----
-###To multiply for annual expenses###
-mandatory: True
-code: |
-  users1_expenses_annual_total = sum_if_defined('users1_expenses_monthly_total') * 12
----
-id: Expenses monthly and annual totals
-mandatory: True
-continue button field: user_sees_expenses_total
+generic object: ALExpenseList
+need:
+  - x[i].source
+  - x[i].display_name
+id: expense information, prefilled
 question: |
-  Total expenses
+  How much do you spend on ${ x[i].display_name.lower() }?
 subquestion: |
-  You said that your total expenses each month are:
-    ${ currency(users1_expenses_monthly_total) }
-    
-  Therefore, your total expenses each year are:
-    ${ currency(users1_expenses_annual_total) }
-    
-  If this is not correct, go back one screen.
+  If you have more than one ${ x[i].display_name.lower() }
+  expense in your household, you'll have a chance to add another later on.
+fields:
+  - Amount: x[i].value
+    datatype: currency
+#  - Other (explain): x[i].source
+#    show if:
+#      variable: x[i].source
+#      is: other
+  - How often do you pay this amount?: x[i].times_per_year
+    input type: radio
+    default: 12
+    code: |
+      times_per_year_for_expenses
+---
+#generic object: ALExpenseList
+#id: expense information
+#question: |
+#  How much do you spend on your ${ ordinal(i) } household expense?
+#fields: 
+#  - Type of expense: x[i].source
+#    code: |
+#      expense_terms
+#  - Other (explain): x[i].source
+#    show if:
+#      variable: x[i].source
+#      is: other
+#  - Amount: x[i].value
+#    datatype: currency
+#  - How often do you pay this amount?: x[i].times_per_year
+#    input type: radio
+#    default: 12
+#    code: |
+#      times_per_year_for_expenses
+#validation code: |
+#  x[i].display_name = expense_terms.get(x[i].source, x[i].source)
+---
+id: expenses review
+question: |
+  Review your expenses
+subquestion: |
+  Here is what you've told us about your monthly expenses. You can add more or continue
+  to the next question.
+
+  ${ expenses.table }
+
+  ${ expenses.add_action() }
+continue button field: review_expenses
+
   
 ---
 #How check the box on form if they answer any of the asset questions???
@@ -1185,8 +1167,6 @@ question: |
 subquestion: |
   Here is a preview of the form you will sign on the next page. 
   
-  ${ currency(other_incomes.total(times_per_year=12)) }
-  
   ${ al_court_bundle.as_pdf(key='preview') }
 
   Click the image to open it in a new tab. Click the "Edit your answers" button
@@ -1256,70 +1236,43 @@ review:
       
   - note: |
       **Income**
-   
-     
-    
+
+      
   - Edit: public_benefits.revisit
     button: |
-      **You get public benefits**:
-      ${ word(yesno(public_benefits.there_are_any)) }
+      **Public benefits**
       
-      % if public_benefits.there_are_any:
-        % for item in public_benefits:
-          - ${ item.source } ${ item.value }, ${ item.times_per_year } times a year
-        % endfor
+      % for item in public_benefits:
+      * ${ item.display_name }
+      % endfor
+
+      % if not public_benefits.there_are_any:
+      - None
       % endif
 
-
-  - Edit: users1_benefits_monthly_amount
-    button: |
-      **The amount you get every month**:
-      ${ currency(users1_benefits_monthly_amount) }
-  - Edit: employed
-    button: |
-      **Employed**:
-      ${ word(yesno(employed)) }
   - Edit: jobs.revisit
     button: |
       **Jobs**
 
       % for job in jobs:
       * ${ job.source } at ${ job.employer.name }
-      % endfor      
+      % endfor
+      % if not jobs.there_are_any:
+      - None
+      % endif
       
       
-  - Edit: other_incomes
+  - Edit: other_incomes.revisit
     button: |
-      Other kinds of income
-      
-      ${ other_incomes.sources() }
-      
-      Total: ${ other_incomes.total(times_per_year=12) }
-      
-  - Edit: user_income_unemployment
-    button: |
-      **Unemployment benefits**:
-      % if user_income_unemployment:
-        ${ currency(users1_income_unemployment_monthly_amount) }
-      % else:
-        No
-      % endif      
-  - Edit: user_income_child_support
-    button: |
-      **Child support**:
-      % if user_income_child_support:
-        ${ currency(users1_income_child_support_monthly_amount) }
-      % else:
-        No
-      % endif     
-  - Edit: user_income_other
-    button: |
-      **Other income**:
-      % if user_income_other:
-        ${ currency(users1_income_other_monthly_amount) }
-      % else:
-        No
-      % endif     
+      **Other incomes**:
+
+      % for item in other_incomes:
+      * ${ item.display_name }
+      % endfor
+      % if not other_incomes.there_are_any:
+      - None
+      % endif
+         
   - Edit: users1_income_self_employment_monthly_amount
     button: |
       **Self employment**:
@@ -1331,95 +1284,43 @@ review:
       
       
   - note: |
-      **Expenses**      
-  - Edit: users1_expenses_rent_mortgage_monthly_amount
+      **Expenses**   
+  - Edit: expenses.revisit
     button: |
-      **Rent or mortgage**:
-      ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
-  - Edit: users1_expenses_electric_monthly_amount
-    button: |
-      **Electric**:
-      ${ currency(users1_expenses_electric_monthly_amount) }
-  - Edit: users1_income_employment_monthly_amount
-    button: |
-      **Wages**:
-      ${ currency(users1_income_employment_monthly_amount) }
-  - Edit: users1_expenses_phone_monthly_amount
-    button: |
-      **Phone**:
-      ${ currency(users1_expenses_phone_monthly_amount) }
-  - Edit: users1_expenses_fuel_monthly_amount
-    button: |
-      **Fuel**:
-      ${ currency(users1_expenses_fuel_monthly_amount) }
-  - Edit: users1_expenses_food_monthly_amount
-    button: |
-      **Food**:
-      ${ currency(users1_expenses_food_monthly_amount) }
-  - Edit: users1_expenses_clothes_monthly_amount
-    button: |
-      **Clothes**:
-      ${ currency(users1_expenses_clothes_monthly_amount) }
-  - Edit: users1_expenses_medical_monthly_amount
-    button: |
-      **Medical / medicine**:
-      ${ currency(users1_expenses_medical_monthly_amount) }
-  - Edit: users1_expenses_child_support_monthly_amount
-    button: |
-      **Child support**:
-      ${ currency(users1_expenses_child_support_monthly_amount) }
+      **Expenses**:
 
-
-  - Edit: users1_expenses_auto_loan_monthly_amount
-    button: |
-      **Auto loan**:
-      ${ currency(users1_expenses_auto_loan_monthly_amount) }
-  - Edit: users1_expenses_property_tax_monthly_amount
-    button: |
-      **Property taxes**:
-      ${ currency(users1_expenses_property_tax_monthly_amount) }
-  - Edit: users1_expenses_all_insurance_monthly_amount
-    button: |
-      **All kinds of insurance**:
-      ${ currency(users1_expenses_all_insurance_monthly_amount) }
-  - Edit: users1_expenses_other_monthly_amount
-    button: |
-      **Other expenses**:
-      ${ currency(users1_expenses_other_monthly_amount) }
-
+      % for item in expenses:
+      * ${ item.display_name }
+      % endfor
+      % if not expenses.there_are_any:
+      - None
+      % endif
       
   - note: |
       **Assets**    
   - Edit: vehicles.revisit
     button: |
-      Vehicles:
+      **Vehicles**
       
       % for item in vehicles:
-        **${ item.description }**
-          
-        - Market value: ${ currency(item.market_value) }
-          
-        - Amount owed: ${ currency(item.amount_owed) }
-          
-        - Net value: ${ currency(item.net_value) }
-          
+      * ${ item.description }          
       % endfor
       % if not vehicles.there_are_any:
-        No
+      - None
       % endif
   - Edit: real_estate.revisit
     button: |
-      Real estate:
+      **Real estate**
 
       % for item in real_estate:
-        **${ item.description }** 
-        
-        * Net value = ${ currency(item.net_value) }
-        
+      * ${ item.description }       
       % endfor
       % if not real_estate.there_are_any:
-        No
+      - None
       % endif
+      
+      
+      
   - Edit: users1_assets_checking_accounts
     button: |
       **Checking accounts**:
@@ -1514,6 +1415,26 @@ edit:
   - source
   - value
 ---
+continue button field: other_incomes.revisit
+question: |
+  Edit other incomes
+subquestion: |
+  ${ other_incomes.table }
+
+  ${ other_incomes.add_action() }
+---
+table: other_incomes.table
+rows: other_incomes
+columns:
+  - Source: |
+      row_item.source if defined("row_item.source") else ""
+  - Value: |
+      currency(row_item.value) if defined("row_item.value") else ""
+edit:
+  - source
+  - value
+---
+---
 continue button field: vehicles.revisit
 question: |
   Edit vehicles
@@ -1538,6 +1459,31 @@ edit:
   - market_value
   - amount_owed
 ---
+---
+continue button field: real_estate.revisit
+question: |
+  Edit real estate
+subquestion: |
+  ${ real_estate.table }
+
+  ${ real_estate.add_action() }
+---
+table: real_estate.table
+rows: real_estate
+columns:
+  - Description: |
+      row_item.description if defined("row_item.description") else ""
+  - Market value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+  - Amount owed: |
+      currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
+  - Net value: |
+      currency(row_item.net_value) if defined("row_item.net_value") else ""
+edit:
+  - description
+  - market_value
+  - amount_owed
+---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
 question: |
@@ -1545,7 +1491,7 @@ question: |
 subquestion: |
   ${ download_screen_instructions }
 
-  ${ action_button_html(url_action('review_divorce'), label='Edit your answers', color='info') }
+  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
   
   ${ al_user_bundle.download_list_html() }
@@ -1563,7 +1509,7 @@ progress: 100
 ---
 objects:
   - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Instructions", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - VT_fee_waiver_attachment: ALDocument.using(title="Fee Waiver — Vermont court form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_attachment: ALDocument.using(title="Fee waiver form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[VT_fee_waiver_post_interview_instructions,VT_fee_waiver_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
@@ -1585,11 +1531,11 @@ attachments:
           % if defined("trial_court.division_abbr"):
             ${ trial_court.division_abbr.upper()  }
           % elif trial_court_division == "family":
-          FAMILY          
+          **FAMILY**          
           % elif trial_court_division == "probate":
-          PROBATE          
+          **PROBATE**          
           % elif trial_court_division == "civil":
-          CIVIL          
+          **CIVIL**          
           % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${(trial_court.address.county)}
@@ -1619,7 +1565,7 @@ attachments:
       - "users1_benefits": |
           % if public_benefits.there_are_any:
             % for item in public_benefits:
-            ${ item.source }
+            ${ item.display_name }
             % endfor
           % endif
       - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12)) }
