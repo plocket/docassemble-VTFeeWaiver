@@ -1,4 +1,4 @@
-#Fix this error       code: |  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',      'users1_other_income_monthly_subtotal')
+#Working on getting public benefits and income fields to fill in
 
 
 ---
@@ -120,10 +120,10 @@ code: |
     other_incomes.there_are_any = True
     other_incomes.gathered  
 
-    users1_income_monthly_total
-    users1_income_annual_total
-    user_sees_income_total
-    set_progress(50)  
+  #users1_income_monthly_total
+  #users1_income_annual_total
+  #user_sees_income_total
+  #set_progress(50)  
   
   trial_court_division
   docket_number
@@ -716,16 +716,16 @@ fields:
 #code: |
 #  users1_gross_monthly_wages = currency(jobs.total(source=["full time","part time"],times_per_year=12)))
 ---
-mandatory: True
-code: |
-  users1_other_income_monthly_subtotal = sum_if_defined('users1_income_unemployment_monthly_amount',
-      'users1_income_child_support_monthly_amount',
-      'users1_income_other_monthly_amount')
+#mandatory: True
+#code: |
+#  users1_other_income_monthly_subtotal = sum_if_defined('users1_income_unemployment_monthly_amount',
+#      'users1_income_child_support_monthly_amount',
+#      'users1_income_other_monthly_amount')
 ---
-mandatory: True
-code: |
-  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',
-      'users1_other_income_monthly_subtotal')
+#mandatory: True
+#code: |
+#  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',
+#      'users1_other_income_monthly_subtotal')
 ---
 ###To multiply for annual income###
 mandatory: True
@@ -1256,19 +1256,19 @@ review:
       
   - note: |
       **Income**
-      
-#  - Edit: user_receives_benefits
-#    button: |
-#      **You get public benefits**:
-#      ${ word(yesno(user_receives_benefits)) }
-      
-  - Edit: public_benefits
+   
+     
+    
+  - Edit: public_benefits.revisit
     button: |
-      Public benefits you get
+      **You get public benefits**:
+      ${ word(yesno(public_benefits.there_are_any)) }
       
-      ${ public_benefits.sources() }
-      
-      Total: ${ public_benefits.total(times_per_year=12) }
+      % if public_benefits.there_are_any:
+        % for item in public_benefits:
+          - ${ item.source } ${ item.value }, ${ item.times_per_year } times a year
+        % endfor
+      % endif
 
 
   - Edit: users1_benefits_monthly_amount
@@ -1495,6 +1495,25 @@ edit:
   - signature
 confirm: True
 ---
+continue button field: public_benefits.revisit
+question: |
+  Edit public benefits
+subquestion: |
+  ${ public_benefits.table }
+
+  ${ public_benefits.add_action() }
+---
+table: public_benefits.table
+rows: public_benefits
+columns:
+  - Source: |
+      row_item.source if defined("row_item.source") else ""
+  - Value: |
+      currency(row_item.value) if defined("row_item.value") else ""
+edit:
+  - source
+  - value
+---
 continue button field: vehicles.revisit
 question: |
   Edit vehicles
@@ -1597,20 +1616,25 @@ attachments:
       
       - "users1_receives_benefits_yes": ${ public_benefits.there_are_any }
       - "users1_receives_benefits_no": ${ not public_benefits.there_are_any }
-      - "users1_benefits": ${ users1_benefits }
-      - "users1_benefits_monthly_amount": ${ currency(users1_benefits_monthly_amount) }
+      - "users1_benefits": |
+          % if public_benefits.there_are_any:
+            % for item in public_benefits:
+            ${ item.source }
+            % endfor
+          % endif
+      - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12)) }
 
       
       - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
       
       - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment_income"],times_per_year=12)) }
+      - "users1_income_child_support_monthly_amount": ${ currency(other_incomes.total(source=["child_support"],times_per_year=12)) }
       
-      - "users1_income_child_support_monthly_amount": ${ currency(users1_income_child_support_monthly_amount) }
       - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12)) }
       - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
       
       - "users1_income_monthly_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
-      - "users1_income_annual_total": ${ currency(users1_income_annual_total) }
+      - "users1_income_annual_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) }
       
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
       - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }      
