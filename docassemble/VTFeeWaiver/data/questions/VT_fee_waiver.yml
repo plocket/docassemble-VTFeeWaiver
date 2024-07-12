@@ -20,7 +20,25 @@ objects:
   - public_benefits: ALIncomeList
   - expenses: ALExpenseList
   - bank_assets: ALAssetList
-
+---
+---
+generic object: ALAssetList
+code: |
+  x.selected_types
+  x.move_checks_to_list(selected_terms=x.terms_ordered)
+  x.moved = True
+---
+generic object: ALIncomeList
+code: |
+  x.selected_types
+  x.move_checks_to_list(selected_terms=x.terms_ordered)
+  x.moved = True
+---
+generic object: ALExpenseList
+code: |
+  x.selected_types
+  x.move_checks_to_list(selected_terms=x.terms_ordered)
+  x.moved = True
 ---
 comment: |
   Global interview metadata
@@ -212,19 +230,19 @@ code: |
 ---
   #trial_court.address.county
 ---
-variable name: public_benefits_terms_ordered
+variable name: public_benefits.terms_ordered
 data: !!omap
-  - reach_up: "Reach Up (or RUFA, TANF)"
-  - dr_dynasaur: "Dr. Dynasaur / Blue First"
-  - fuel_assistance: "Fuel Assistance"
-  - general_assistance: "General Assistance (GA)"
+  - reach up: "Reach Up (or RUFA, TANF)"
+  - dr dynasaur: "Dr. Dynasaur / Blue First"
+  - fuel assistance: "Fuel Assistance"
+  - general assistance: "General Assistance (GA)"
   - medicaid: "Medicaid"
   - medicare: "Medicare"
   - 3squaresvt: "3SquaresVT"
   - ssi: "Supplemental Security Income (SSI)"
   - vhap: "VHAP"
-  - housing_assistance: "Housing Assistance"   
-  - other_benefit: "Other"
+  - housing assistance: "Housing Assistance"   
+  - other benefit: "Other"
 ---
 #variable name: help_text
 #data: !!omap
@@ -241,8 +259,8 @@ fields:
   - no label: public_benefits.selected_types
     datatype: checkboxes
     code: |
-      public_benefits_terms_ordered
----
+      public_benefits.terms_ordered
+
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
@@ -258,7 +276,7 @@ fields:
   - Source of income: public_benefits[i].source
     input type: dropdown
     code: |
-      public_benefits_terms_ordered
+      public_benefits.terms_ordered
     default: other
   - What type of income?: public_benefits[i].source
     show if:
@@ -273,7 +291,7 @@ fields:
     datatype: currency
 
 ---
-variable name: other_income_terms_ordered
+variable name: other_income.terms_ordered
 data: !!omap
   - unemployment_income: "Unemployment benefits"
   - child_support_income: "Child support"
@@ -307,7 +325,7 @@ fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
     code: |
-      other_income_terms_ordered
+      other_income.terms_ordered
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -323,7 +341,7 @@ fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
     code: |
-      other_income_terms_ordered
+      other_income.terms_ordered
     default: other
   - What type of income?: other_incomes[i].source
     show if:
@@ -790,7 +808,7 @@ subquestion: |
 ---
 # "!!omap" makes these terms ordered
 # their order here will be their same order when shown to users.
-variable name: expense_terms
+variable name: expenses.terms_ordered
 data: !!omap
   - rent: "Rent"
   - mortgage: "Mortgage"
@@ -817,7 +835,7 @@ fields:
   - no label: x.selected_types
     datatype: checkboxes
     code: |
-      expense_terms
+      expenses.terms_ordered
 ---
 generic object: ALExpenseList
 need:
@@ -849,7 +867,7 @@ fields:
 #fields: 
 #  - Type of expense: x[i].source
 #    code: |
-#      expense_terms
+#      expenses.terms_ordered
 #  - Other (explain): x[i].source
 #    show if:
 #      variable: x[i].source
@@ -862,7 +880,7 @@ fields:
 #    code: |
 #      times_per_year_for_expenses
 #validation code: |
-#  x[i].display_name = expense_terms.get(x[i].source, x[i].source)
+#  x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
 ---
 id: expenses review
 question: |
@@ -1122,7 +1140,7 @@ subquestion: |
 
 ###############BANK ASSETS####################
 ---
-variable name: bank_assets_terms_ordered
+variable name: bank_assets.terms_ordered
 data: !!omap
   - checking account: "Checking account"
   - savings account: "Savings account"
@@ -1138,7 +1156,7 @@ fields:
   - no label: bank_assets.selected_types
     datatype: checkboxes
     code: |
-      bank_assets_terms_ordered
+      bank_assets.terms_ordered
 ---
 id: info for each asset
 generic object: ALAssetList
