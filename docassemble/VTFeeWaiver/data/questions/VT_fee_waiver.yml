@@ -16,8 +16,8 @@ objects:
   - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
-  - public_benefits: ALIncomeList
   - other_incomes: ALIncomeList
+  - public_benefits: ALIncomeList
   - expenses: ALExpenseList
   - bank_assets: ALAssetList
 
@@ -1613,7 +1613,7 @@ attachments:
       - "users1_income_monthly_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
       - "users1_income_annual_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) }
       
-      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(users1_expenses_rent_mortgage_monthly_amount) }
+      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12)) }
       - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }      
       - "users1_expenses_phone_monthly_amount": ${ currency(users1_expenses_phone_monthly_amount) }
       - "users1_expenses_fuel_monthly_amount": ${ currency(users1_expenses_fuel_monthly_amount) }
@@ -1669,10 +1669,10 @@ attachments:
       - "users1_assets_real_estate_1_market_value": ${ currency(users1_assets_real_estate_1_market_value) }
       - "users1_assets_real_estate_1_amount_owed": ${ currency(users1_assets_real_estate_1_amount_owed) }
       - "users1_assets_real_estate_1_net_value": ${ currency(users1_assets_real_estate_1_net_value) }
-      - "users1_assets_checking_accounts": ${ currency(users1_assets_checking_accounts) }
-      - "users1_assets_cash_on_hand": ${ currency(users1_assets_cash_on_hand) }
-      - "users1_assets_savings_accounts": ${ currency(users1_assets_savings_accounts) }
-      - "users1_assets_cash_total": ${ currency(users1_assets_cash_total) }
+      - "users1_assets_checking_accounts": ${ currency(bank_assets.market_value(source=["checking account"])) }
+      - "users1_assets_cash_on_hand": ${ currency(bank_assets.market_value(source=["cash on hand"])) }
+      - "users1_assets_savings_accounts": ${ currency(bank_assets.market_value(source=["savings account"])) }
+      - "users1_assets_cash_total": ${ currency(bank_assets.market_value) }
       - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value) }
       - "users1_assets_other_0_description": ${ other_assets[0].description }
       - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value) }
