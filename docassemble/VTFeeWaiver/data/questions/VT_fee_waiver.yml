@@ -117,6 +117,7 @@ code: |
   signature_fields = ['users[0].signature']
 ---
 #################### INTERVIEW ORDER #####################
+---
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VT_fee_waiver
@@ -131,81 +132,77 @@ code: |
   #user_ask_role
 
   if which_financial_forms == "fee_waiver_form":
-
-    if vehicles.selected_types.any_true():
-      vehicles.there_are_any = True
-      vehicles.gathered
-
-    if real_estate.selected_types.any_true():
-      real_estate.there_are_any = True
-      real_estate.gathered
-      
-    if bank_assets.selected_types.any_true():
-      bank_assets.there_are_any = True
-      bank_assets.gathered
-      
-    if expenses.selected_types.any_true():
-      expenses.there_are_any = True
-      expenses.gathered
-  
-
+    nav.set_section('your_income')
+    
     if public_benefits.selected_types.any_true():
       public_benefits.there_are_any = True
       public_benefits.gathered
+      
+      user_qualifies_interstitial
+      
+      if employed:
+        jobs.target_number
+        if jobs.target_number == 1:
+          jobs[0].employer.name.first
+        if jobs.target_number > 1:
+          jobs[0].employer.name.first
+          jobs[1].employer.name.first
+    else:
+      employed
+      jobs.gather()
+      review_jobs
+
+      if other_incomes.selected_types.any_true():
+        other_incomes.there_are_any = True
+        other_incomes.gathered
+      else:
+        other_incomes.there_are_any = False
+  
+      nav.set_section('your_expenses')
+      if expenses.selected_types.any_true():
+        expenses.there_are_any = True
+        expenses.gathered
     
-    interview_order_VT_fee_waiver = True
---- 
-#    nav.set_section('your_income')
-#    if public_benefits.there_are_any:
-#      user_qualifies_interstitial
-#      employed
-#      jobs.gather()
-#      review_jobs
-#    else:
-#      set_progress(33)
-#      employed
-#      jobs.gather()
-#      review_jobs
-#  
-#    if other_incomes.selected_types.any_true():
-#      other_incomes.there_are_any = True
-#      other_incomes.gathered
-#    else:
-#      other_incomes.there_are_any = False
-#  
-#
-#    #set_progress(50)  
-#    
-#
-#    set_progress(16)
-#    nav.set_section('about_you')
-#    users.gather()
-#    set_parts(subtitle=str(users))
-#    users[0].address.address
-#    users[0].daytime_phone_number
-#    users[0].email
-#    household_size
-#    nav.set_section('case_info')
-#    case_name
-#    trial_court_division
-#    docket_number
-#  
-#    
-#    nav.set_section('your_expenses')
-#  
-#    set_progress(70)
-#    nav.set_section('your_assets')
-#
-#  
-#    other_assets.there_are_any
-#    if other_assets.there_are_any: 
-#      other_assets.gather()
-#      user_sees_other_assets_values
-#    set_progress(85)
-#    
-#    nav.set_section('reasons')
-#    other_reasons_why_cannot_afford
-#    set_progress(98)
+    
+      set_progress(60)
+      nav.set_section('your_assets')
+  
+      if vehicles.selected_types.any_true():
+        vehicles.there_are_any = True
+        vehicles.gathered
+  
+      if real_estate.selected_types.any_true():
+        real_estate.there_are_any = True
+        real_estate.gathered
+        
+      set_progress(70)
+      if bank_assets.selected_types.any_true():
+        bank_assets.there_are_any = True
+        bank_assets.gathered
+        
+      if other_assets.there_are_any: 
+        other_assets.gather()
+        user_sees_other_assets_values
+
+      nav.set_section('reasons')
+      other_reasons_why_cannot_afford
+      
+    set_progress(80)
+    nav.set_section('about_you')
+    users.gather()
+    set_parts(subtitle=str(users))
+    users[0].address.address
+    users[0].daytime_phone_number
+    users[0].email
+    household_size
+    nav.set_section('case_info')
+    case_name
+    trial_court_division
+    docket_number
+
+    
+  set_progress(90)
+  interview_order_VT_fee_waiver = True
 
 
 ---
@@ -376,10 +373,10 @@ fields:
   - Are you employed?: employed
     datatype: yesnoradio
 ---
-sets:
-  - x.employer.name.first
 id: employer
 generic object: ALItemizedJob
+sets:
+  - x.employer.name.first
 question: |
   Tell us who employs you as a ${ x.source }
 fields:
@@ -425,6 +422,18 @@ fields:
     show if:
       variable: x.is_self_employed
       is: False
+---
+id: self employed income
+question: |
+  What do you make in self-employed income each month?
+subquestion: |
+  Net income is gross income minus your business expenses.
+fields:
+  - Your monthly net income: users1_income_self_employment_monthly_amount
+    datatype: currency
+---
+
+
 ---
 id: itemized job line items
 generic object: ALItemizedJob
