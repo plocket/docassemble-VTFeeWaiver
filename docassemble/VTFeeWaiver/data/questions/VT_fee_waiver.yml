@@ -1,5 +1,6 @@
 #Need to get other assets yes/no checkboxes to fill
 #Work on getting self employment to fill in
+#I don't think I need to collect employer phone numbers
 #Possible to get $0 not to show in some places?
 #Will need to create overflow and addendum
 #For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
@@ -22,7 +23,7 @@ objects:
   - bank_assets: ALAssetList
   - vehicles: ALVehicleList
   - real_estate: ALAssetList
-  - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - other_assets: ALAssetList
 ---
 generic object: ALIncomeList
 code: |
@@ -180,9 +181,9 @@ code: |
         bank_assets.there_are_any = True
         bank_assets.gathered
         
-      if other_assets.there_are_any: 
-        other_assets.gather()
-        user_sees_other_assets_values
+      if other_assets.selected_types.any_true():
+        other_assets.there_are_any = True
+        other_assets.gathered
 
       nav.set_section('reasons')
       other_reasons_why_cannot_afford
@@ -297,21 +298,21 @@ fields:
     datatype: currency
 
 ---
-variable name: other_income.terms_ordered
+variable name: other_incomes.terms_ordered
 data: !!omap
-  - unemployment_income: "Unemployment benefits"
-  - child_support_income: "Child support"
-  - rental_income: "Rental income"
-  - annuities_income: "Annuities"
-  - retirement_income: "Retirement/pension"
-  - workers_comp_income: "Workers comp or disability insurance"
-  - social_security_income: "Social Security benefits"
-  - veterans_income: "Veterans benefits"
-  - interest_income: "Interest or dividend income"
-  - gifts_income: "Gifts or prize money (including lottery)"   
-  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
-  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
-  - other_income: "Other (for example, capital gains on stocks)"
+  - unemployment income: "Unemployment benefits"
+  - child support income: "Child support"
+  - rental income: "Rental income"
+  - annuities income: "Annuities"
+  - retirement income: "Retirement/pension"
+  - workers comp income: "Workers comp or disability insurance"
+  - social security income: "Social Security benefits"
+  - veterans income: "Veterans benefits"
+  - interest income: "Interest or dividend income"
+  - gifts income: "Gifts or prize money (including lottery)"   
+  - alimony from OP income: "Spousal maintenance (from other party in this court action)"
+  - alimony from other income: "Spousal maintenance (from someone else)"  
+  - other: "Other (for example, capital gains on stocks)"
 ---
 variable name: help_text
 data: !!omap
@@ -331,7 +332,7 @@ fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
     code: |
-      other_income.terms_ordered
+      other_incomes.terms_ordered
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -347,7 +348,7 @@ fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
     code: |
-      other_income.terms_ordered
+      other_incomes.terms_ordered
     default: other
   - What type of income?: other_incomes[i].source
     show if:
@@ -485,7 +486,7 @@ fields:
   #  code: |
   #    times_per_year_list
   #  datatype: integer
-  - Do you have another source of income?: x.to_add.there_is_another
+  - Do you have another source of income from this job, like tips or bonuses?: x.to_add.there_is_another
     datatype: yesnoradio
   - Do you have anything you should subtract from your pay?: x.to_subtract.there_are_any
     datatype: yesnoradio
@@ -1092,9 +1093,9 @@ id: Other assets
 question: |
   Other assets -- things that you own
 subquestion: |  
-  These may be things like tools, equipment, recreational vehicles, electronics, stocks, bonds, etc.)? — what about retirement account?
+  These may be things like tools, equipment, electronics, stocks, bonds, etc.)? — what about retirement account?
 fields:
-  - "Do you have other assets that you haven't entered already?  -- what about retirement account?": other_assets.there_are_any
+  - "Do you have other assets that you haven't entered already?": other_assets.there_are_any
     input type: radio
     choices:
       - Yes: True
@@ -1134,23 +1135,6 @@ fields:
   - What is it's market value? How much would you get if you sold it?: other_assets[i].market_value
     maxlength: 76
     datatype: currency
----
-id: Display other asset values
-continue button field: user_sees_other_assets_values
-question: |
-  Values of your other assets
-subquestion: |
-  You said these are the values of your other assets.
-  
-  If any of these are not correct, go back a screen or two and change your numbers.
-
-  % for item in other_assets:
-    **${ item.description }** 
-    
-    * Market value = ${ currency(item.market_value) }
-
-    
-  % endfor
 ---
 
 
