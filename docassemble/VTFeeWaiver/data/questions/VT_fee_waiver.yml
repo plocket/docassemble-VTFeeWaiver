@@ -1,6 +1,8 @@
-#Create ALAssetLists for bank, real estate and vehicle? or use ALVehicle?
-#For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
+
+#Create ALAssetList for vehicles? or use ALVehicle?
 #Work on getting self employment to fill in
+#For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
+
 
 
 ---
@@ -12,21 +14,14 @@ include:
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
-  - real_estate: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
-  - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - public_benefits: ALIncomeList
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
   - other_incomes: ALIncomeList
-  - public_benefits: ALIncomeList
   - expenses: ALExpenseList
   - bank_assets: ALAssetList
----
----
-generic object: ALAssetList
-code: |
-  x.selected_types
-  x.move_checks_to_list(selected_terms=x.terms_ordered)
-  x.moved = True
+  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - real_estate: ALAssetList
+  - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
 ---
 generic object: ALIncomeList
 code: |
@@ -39,6 +34,13 @@ code: |
   x.selected_types
   x.move_checks_to_list(selected_terms=x.terms_ordered)
   x.moved = True
+---
+generic object: ALAssetList
+code: |
+  x.selected_types
+  x.move_checks_to_list(selected_terms=x.terms_ordered)
+  x.moved = True
+---
 ---
 comment: |
   Global interview metadata
@@ -123,6 +125,10 @@ code: |
 
   if which_financial_forms == "fee_waiver_form":
 
+    if real_estate.selected_types.any_true():
+      real_estate.there_are_any = True
+      real_estate.gathered
+      
     if bank_assets.selected_types.any_true():
       bank_assets.there_are_any = True
       bank_assets.gathered
@@ -183,10 +189,6 @@ code: |
 #    if vehicles.there_are_any: 
 #      vehicles.gather()
 #      user_sees_vehicle_net_values
-#    real_estate.there_are_any
-#    if real_estate.there_are_any: 
-#      real_estate.gather()
-#      user_sees_real_estate_net_values
 #  
 #    other_assets.there_are_any
 #    if other_assets.there_are_any: 
@@ -820,8 +822,9 @@ data: !!omap
   - property tax: "Property taxes"
   - medical: "Medical costs"
   - health insurance: "Health insurance"
-  - auto insurance: "Auto insurance"
   - auto loan: "Auto loan payment"
+  - auto insurance: "Auto insurance"
+  - other insurance: "Other insurance"
   - child support: "Child support payment"
   - other: "Other expenses that you can describe"
 ---
@@ -983,94 +986,50 @@ subquestion: |
     
   % endfor
   
-################ Gather real estate info ################
+################ REAL ESTATE ################
 ---
-code: |
-  real_estate[i].description
-  real_estate[i].amount_owed
-  real_estate[i].complete=True
+variable name: real_estate.terms_ordered
+data: !!omap
+  - primary residence: "Primary residence (home or condo where you live most of the time?)"
+  - mobile home: "Mobile home (where you live full-time or part-time?)"
+  - second home: "Second home"
+  - camp: "Camp"
+  - timeshare: "Timeshare"
+  - land: "Unimproved land"
+  - rental: "Residential rental property you own"
+  - commercial: "Commercial real estate"
+  - other: "Other real estate"
 ---
-###To determine the net value for real estate###
-code: |
-  total = real_estate[i].market_value
-  total -= real_estate[i].amount_owed
-  real_estate[i].net_value = total
----
-id: Real estate
+id: is there real estate
+#real_estate
 question: |
-  Real estate
+  Do you have any real estate? Do you own your home?
+subquestion: |
+   Check any that apply to you.
 fields:
-  - "Do you have any real estate like a house, building or land?": real_estate.there_are_any
-    input type: radio
-    choices:
-      - Yes: True
-      - No: False
-      
-validation code: |
-  if not real_estate.there_are_any:
-    real_estate.target_number = 0
+  - no label: real_estate.selected_types
+    datatype: checkboxes
+    code: |
+      real_estate.terms_ordered
 ---
-id: How many real estate
+id: info for each real estate
 question: |
-  How many pieces of real estate
-fields:      
-  - How many houses, buildings or land parcels do you own?: real_estate.target_number
-    datatype: integer
-  - note: |
-      We will ask for the value of each.
-    
----
-id: Describe real estate
-question: |
-  Describe the ${ ordinal(i) } piece of real esate
-subquestion: |
-
-  % if i > 0:
-  You have told us about these already:
-  
-  % for item in real_estate.complete_elements():
-  * ${ item.description }
-  
-  Now tell us about the next piece of real estate.
-  % endfor
-  % endif
-fields:     
-  - Short description of real estate. Examples -- house I live in, condo I live in, mobile home I live in, vacation camp, home I rent out, building for my business, land I own: real_estate[i].description
-    maxlength: 76
-  - What is it's market value? How much would you get if you sold it?: real_estate[i].market_value
-    maxlength: 76
+  About your ${ real_estate[i].source }
+fields:
+  - What is its market value? How much would you get if you sold it?: real_estate[i].market_value
     datatype: currency
-  - If you have a mortgage or owe money on the real estate, how much do you owe? Enter 0 if you own it outright.: real_estate[i].amount_owed
-    maxlength: 76
+  - If you have a mortgage, lien or owe money on the real estate, how much do you owe? Enter 0 if you own it outright.: real_estate[i].balance
     datatype: currency
----
-id: Display real estate net values
-continue button field: user_sees_real_estate_net_values
-question: |
-  Net value of your real estate
-subquestion: |
-  With the numbers you entered, these are the **net** values of your real estate. The net value is what you get when you subtract the amount you owe from the full market value of your real estate.
-  
-  If any of these are not correct, go back a screen or two and change your numbers.
+  - Short description of real estate. Examples -- house I live in, mobile home I live in, condo I live in, vacation camp, home I rent out, building for my business, land I own: real_estate[i].description
+    maxlength: 76
 
-  % for item in real_estate:
-    **${ item.description }** 
-    
-    * Net value = ${ currency(item.net_value) }
-    
-  % endfor
+
 ################ Gathering other assets info ################
 ---
 code: |
   other_assets[i].description
   other_assets[i].market_value
   other_assets[i].complete=True
----
-###To determine the net value### Not needed on form
-#code: |
-#  total = other_assets[i].market_value
-#  total -= other_assets[i].amount_owed
-#  other_assets[i].net_value = total
 ---
 id: Other assets
 question: |
@@ -1531,7 +1490,7 @@ columns:
 edit:
   - description
   - market_value
-  - amount_owed
+  - balance
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
@@ -1631,19 +1590,19 @@ attachments:
       - "users1_income_monthly_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
       - "users1_income_annual_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) }
       
-      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12)) }
-      - "users1_expenses_electric_monthly_amount": ${ currency(users1_expenses_electric_monthly_amount) }      
-      - "users1_expenses_phone_monthly_amount": ${ currency(users1_expenses_phone_monthly_amount) }
-      - "users1_expenses_fuel_monthly_amount": ${ currency(users1_expenses_fuel_monthly_amount) }
-      - "users1_expenses_food_monthly_amount": ${ currency(users1_expenses_food_monthly_amount) }
-      - "users1_expenses_clothes_monthly_amount": ${ currency(users1_expenses_clothes_monthly_amount) }
-      - "users1_expenses_medical_monthly_amount": ${ currency(users1_expenses_medical_monthly_amount) }
-      - "users1_expenses_child_support_monthly_amount": ${ currency(users1_expenses_child_support_monthly_amount) }
-      - "users1_expenses_auto_loan_monthly_amount": ${ currency(users1_expenses_auto_loan_monthly_amount) }
-      - "users1_expenses_property_tax_monthly_amount": ${ currency(users1_expenses_property_tax_monthly_amount) }
-      - "users1_expenses_all_insurance_monthly_amount": ${ currency(users1_expenses_all_insurance_monthly_amount) }
-      - "users1_expenses_other_monthly_amount": ${ currency(users1_expenses_other_monthly_amount) }
-      - "users1_expenses_monthly_total": ${ currency(users1_expenses_monthly_total) }
+      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12)) }   
+      - "users1_expenses_electric_monthly_amount": ${ currency(expenses.total(source=["electric"],times_per_year=12)) }    
+      - "users1_expenses_phone_monthly_amount": ${ currency(expenses.total(source=["phone"],times_per_year=12)) }
+      - "users1_expenses_fuel_monthly_amount": ${ currency(expenses.total(source=["fuel"],times_per_year=12)) }
+      - "users1_expenses_food_monthly_amount": ${ currency(expenses.total(source=["food"],times_per_year=12)) }
+      - "users1_expenses_clothes_monthly_amount": ${ currency(expenses.total(source=["clothing"],times_per_year=12)) }
+      - "users1_expenses_medical_monthly_amount": ${ currency(expenses.total(source=["medical"],times_per_year=12)) }
+      - "users1_expenses_child_support_monthly_amount": ${ currency(expenses.total(source=["child support"],times_per_year=12)) }
+      - "users1_expenses_auto_loan_monthly_amount": ${ currency(expenses.total(source=["auto loan"],times_per_year=12)) }
+      - "users1_expenses_property_tax_monthly_amount": ${ currency(expenses.total(source=["property tax"],times_per_year=12)) }
+      - "users1_expenses_all_insurance_monthly_amount": ${ currency(expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12)) }
+      - "users1_expenses_other_monthly_amount": ${ currency(expenses.total(source=["other"],times_per_year=12)) }
+      - "users1_expenses_monthly_total": ${ currency(expenses.total(times_per_year=12)) }
       
       - "assets_yes": |
           % if vehicles.target_number > 0:
@@ -1679,22 +1638,27 @@ attachments:
       - "users1_assets_vehicle_3_market_value": ${ currency(users1_assets_vehicle_3_market_value) }
       - "users1_assets_vehicle_3_amount_owed": ${ currency(users1_assets_vehicle_3_amount_owed) }
       - "users1_assets_vehicle_3_net_value": ${ currency(users1_assets_vehicle_3_net_value) }
+      
       - "users1_assets_real_estate_0_description": ${ real_estate[0].description }
-      - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].amount_owed) }
-      - "users1_assets_real_estate_0_net_value": ${ currency(real_estate[0].net_value) }
       - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
+      - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance) }
+      - "users1_assets_real_estate_0_net_value": ${ currency((real_estate[0].market_value) - (real_estate[0].balance)) }
+
       - "users1_assets_real_estate_1_description": ${ real_estate[1].description }
-      - "users1_assets_real_estate_1_market_value": ${ currency(users1_assets_real_estate_1_market_value) }
-      - "users1_assets_real_estate_1_amount_owed": ${ currency(users1_assets_real_estate_1_amount_owed) }
-      - "users1_assets_real_estate_1_net_value": ${ currency(users1_assets_real_estate_1_net_value) }
+      - "users1_assets_real_estate_1_market_value": ${ currency(real_estate[1].market_value) }
+      - "users1_assets_real_estate_1_amount_owed": ${ currency(real_estate[1].balance) }
+      - "users1_assets_real_estate_1_net_value": ${ currency((real_estate[1].market_value) - (real_estate[1].balance)) }
+      
       - "users1_assets_checking_accounts": ${ currency(bank_assets.market_value(source=["checking account"])) }
       - "users1_assets_cash_on_hand": ${ currency(bank_assets.market_value(source=["cash on hand"])) }
       - "users1_assets_savings_accounts": ${ currency(bank_assets.market_value(source=["savings account"])) }
-      - "users1_assets_cash_total": ${ currency(bank_assets.market_value) }
+      - "users1_assets_cash_total": ${ currency(bank_assets.market_value()) }
+      
       - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value) }
       - "users1_assets_other_0_description": ${ other_assets[0].description }
       - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value) }
       - "users1_assets_other_1_description": ${ other_assets[1].description }
+      
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
