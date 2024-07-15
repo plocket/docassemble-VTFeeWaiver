@@ -1,5 +1,6 @@
 #Need to get other assets yes/no checkboxes to fill
 #Work on getting self employment to fill in
+#Work on review screen
 #I don't think I need to collect employer phone numbers
 #Possible to get $0 not to show in some places?
 #Will need to create overflow and addendum
@@ -1082,40 +1083,34 @@ fields:
     maxlength: 76
 
 
-################ Gathering other assets info ################
+################ OTHER ASSETS ################
 ---
-code: |
-  other_assets[i].description
-  other_assets[i].market_value
-  other_assets[i].complete=True
+# "!!omap" makes these terms ordered
+# their order here will be their same order when shown to users.
+variable name: other_assets.terms_ordered
+data: !!omap
+  - tools: "Tools"
+  - electronics: "Electronics"
+  - stocks: "Stocks"
+  - bonds: "Bonds"
+  - other: "Other"
 ---
-id: Other assets
+---
+id: other assets
 question: |
-  Other assets -- things that you own
+  Other assets that you have not entered already
 subquestion: |  
-  These may be things like tools, equipment, electronics, stocks, bonds, etc.)? — what about retirement account?
+  These assets may be things like tools, equipment, electronics, stocks, bonds, etc.)? — what about retirement account?
+  
+  Check any that apply to you.
 fields:
-  - "Do you have other assets that you haven't entered already?": other_assets.there_are_any
-    input type: radio
-    choices:
-      - Yes: True
-      - No: False
-      
-validation code: |
-  if not other_assets.there_are_any:
-    other_assets.target_number = 0
+  - no label: other_assets.selected_types
+    datatype: checkboxes
+    code: |
+      other_assets.terms_ordered
+
 ---
-id: How many other assets
-question: |
-  How many other assets
-fields:      
-  - How many other assets do you have?: other_assets.target_number
-    datatype: integer
-  - note: |
-      We will ask for the value of each.
-    
----
-id: Describe other asset
+id: describe other asset
 question: |
   Describe the ${ ordinal(i) } other asset
 subquestion: |
@@ -1131,9 +1126,11 @@ subquestion: |
   % endif
 fields:     
   - What is the asset?: other_assets[i].description
+    maxlength: 40
+  - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
     maxlength: 76
-  - What is it's market value? How much would you get if you sold it?: other_assets[i].market_value
-    maxlength: 76
+    datatype: currency
+  - If you owe money on this asset, how much do you owe? Enter 0 if you own it outright.: other_assets[i].balance
     datatype: currency
 ---
 
@@ -1362,20 +1359,17 @@ review:
       - None
       % endif
       
-      
+  - Edit: other_assets.revisit
+    button: |
+      **Other assets**
+
+      % for item in other_assets:
+      * ${ item.description }       
+      % endfor
+      % if not other_assets.there_are_any:
+      - None
+      % endif      
      
-  - Edit: users1_assets_other_0_market_value
-    button: |
-      **Other asset - market value**:
-      ${ currency(users1_assets_other_0_market_value) }
-  - Edit: users1_assets_other_0_description
-    button: |
-      **Other asset - description**:
-      ${ users1_assets_other_0_description }
-  - Edit: users1_assets_other_1_description
-    button: |
-      **2nd Other asset - description**:
-      ${ users1_assets_other_1_description }
       
   - Edit: other_reasons_why_cannot_afford
     button: |
@@ -1525,12 +1519,36 @@ columns:
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
       currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
-  - Net value: |
-      currency(row_item.net_value) if defined("row_item.net_value") else ""
 edit:
   - description
   - market_value
   - balance
+  
+---
+---
+continue button field: other_assets.revisit
+question: |
+  Edit other assets
+subquestion: |
+  ${ other_assets.table }
+
+  ${ other_assets.add_action() }
+---
+table: other_assets.table
+rows: other_assets
+columns:
+  - Description: |
+      row_item.description if defined("row_item.description") else ""
+  - Market value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+  - Amount owed: |
+      currency(row_item.balance) if defined("row_item.balance") else ""
+edit:
+  - description
+  - market_value
+  - balance
+
+
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
@@ -1579,11 +1597,11 @@ attachments:
           % if defined("trial_court.division_abbr"):
             ${ trial_court.division_abbr.upper()  }
           % elif trial_court_division == "family":
-          **FAMILY**          
+          FAMILY          
           % elif trial_court_division == "probate":
-          **PROBATE**          
+          PROBATE         
           % elif trial_court_division == "civil":
-          **CIVIL**          
+          CIVIL       
           % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${(trial_court.address.county)}
