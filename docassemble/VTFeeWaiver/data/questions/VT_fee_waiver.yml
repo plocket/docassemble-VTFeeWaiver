@@ -1,5 +1,7 @@
-#Create ALAssetList for vehicles? or use ALVehicle?
+#Need to get other assets yes/no checkboxes to fill
 #Work on getting self employment to fill in
+#Possible to get $0 not to show in some places?
+#Will need to create overflow and addendum
 #For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
 
 
@@ -997,6 +999,13 @@ variable name: vehicles.terms_ordered
 data: !!omap
   - car: "Car"
   - truck: "Truck"
+  - motorcycle: "Motorcycle"
+  - boat: "Boat or jetski"
+  - snowmobile: "Snowmobile"
+  - atv: "ATV"
+  - camper: "Camper"
+  - RV: "RV"
+  - plane: "Plane"
   - other: "Other"
 ---
 id: are there vehicles
@@ -1344,7 +1353,7 @@ review:
       **Vehicles**
       
       % for item in vehicles:
-      * ${ item.description }          
+      * ${ item.year_make_model }          
       % endfor
       % if not vehicles.there_are_any:
       - None
@@ -1494,18 +1503,17 @@ table: vehicles.table
 rows: vehicles
 columns:
   - Description: |
-      row_item.description if defined("row_item.description") else ""
+      row_item.year_make_model if defined("row_item.year_make_model") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
-      currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
-  - Net value: |
-      currency(row_item.net_value) if defined("row_item.net_value") else ""
+      currency(row_item.balance) if defined("row_item.balance") else ""
 edit:
-  - description
+  - make
+  - model
+  - year
   - market_value
-  - amount_owed
----
+  - balance
 ---
 continue button field: real_estate.revisit
 question: |
@@ -1661,22 +1669,22 @@ attachments:
               % endif
             % endif
           % endif
-      - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].amount_owed) }
-      - "users1_assets_vehicle_0_description": ${ vehicles[0].description }
-      - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].net_value) }
+      - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].balance) }
+      - "users1_assets_vehicle_0_description": ${ vehicles[0].year_make_model() }
+      - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].market_value - vehicles[0].balance) }
       - "users1_assets_vehicle_0_market_value": ${ currency(vehicles[0].market_value) }
-      - "users1_assets_vehicle_1_description": ${ vehicles[1].description }
+      - "users1_assets_vehicle_1_description": ${ vehicles[1].year_make_model() }
       - "users1_assets_vehicle_1_market_value": ${ currency(vehicles[1].market_value) }
-      - "users1_assets_vehicle_1_amount_owed": ${ currency(vehicles[1].amount_owed) }
-      - "users1_assets_vehicle_1_net_value": ${ currency(users1_assets_vehicle_1_net_value) }
-      - "users1_assets_vehicle_2_description": ${ users1_assets_vehicle_2_description }
-      - "users1_assets_vehicle_2_amount_owed": ${ currency(users1_assets_vehicle_2_amount_owed) }
-      - "users1_assets_vehicle_2_net_value": ${ currency(users1_assets_vehicle_2_net_value) }
-      - "users1_assets_vehicle_2_market_value": ${ currency(users1_assets_vehicle_2_market_value) }
-      - "users1_assets_vehicle_3_description": ${ users1_assets_vehicle_3_description }
-      - "users1_assets_vehicle_3_market_value": ${ currency(users1_assets_vehicle_3_market_value) }
-      - "users1_assets_vehicle_3_amount_owed": ${ currency(users1_assets_vehicle_3_amount_owed) }
-      - "users1_assets_vehicle_3_net_value": ${ currency(users1_assets_vehicle_3_net_value) }
+      - "users1_assets_vehicle_1_amount_owed": ${ currency(vehicles[1].balance) }
+      - "users1_assets_vehicle_1_net_value": ${ currency(vehicles[1].market_value - vehicles[1].balance) }
+      - "users1_assets_vehicle_2_description": ${ vehicles[2].year_make_model() }
+      - "users1_assets_vehicle_2_amount_owed": ${ currency(vehicles[2].balance) }
+      - "users1_assets_vehicle_2_net_value": ${ currency(vehicles[2].market_value - vehicles[2].balance) }
+      - "users1_assets_vehicle_2_market_value": ${ currency(vehicles[2].market_value) }
+      - "users1_assets_vehicle_3_description": ${ vehicles[3].year_make_model() }
+      - "users1_assets_vehicle_3_market_value": ${ currency(vehicles[3].market_value) }
+      - "users1_assets_vehicle_3_amount_owed": ${ currency(vehicles[3].balance) }
+      - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[0].balance) }
       
       - "users1_assets_real_estate_0_description": ${ real_estate[0].description }
       - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
