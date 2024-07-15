@@ -1,4 +1,3 @@
-
 #Create ALAssetList for vehicles? or use ALVehicle?
 #Work on getting self employment to fill in
 #For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
@@ -19,7 +18,7 @@ objects:
   - other_incomes: ALIncomeList
   - expenses: ALExpenseList
   - bank_assets: ALAssetList
-  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - vehicles: ALVehicleList
   - real_estate: ALAssetList
   - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
 ---
@@ -36,6 +35,12 @@ code: |
   x.moved = True
 ---
 generic object: ALAssetList
+code: |
+  x.selected_types
+  x.move_checks_to_list(selected_terms=x.terms_ordered)
+  x.moved = True
+---
+generic object: ALVehicleList
 code: |
   x.selected_types
   x.move_checks_to_list(selected_terms=x.terms_ordered)
@@ -125,6 +130,10 @@ code: |
 
   if which_financial_forms == "fee_waiver_form":
 
+    if vehicles.selected_types.any_true():
+      vehicles.there_are_any = True
+      vehicles.gathered
+
     if real_estate.selected_types.any_true():
       real_estate.there_are_any = True
       real_estate.gathered
@@ -185,10 +194,6 @@ code: |
 #    set_progress(70)
 #    nav.set_section('your_assets')
 #
-#    vehicles.there_are_any
-#    if vehicles.there_are_any: 
-#      vehicles.gather()
-#      user_sees_vehicle_net_values
 #  
 #    other_assets.there_are_any
 #    if other_assets.there_are_any: 
@@ -910,82 +915,116 @@ subquestion: |
   Click the Next button.
 ---    
 ################ Gathering vehicle info ################
+#---
+#code: |
+#  vehicles[i].description
+#  vehicles[i].amount_owed
+#  vehicles[i].complete=True
+#---
+####To determine the net value for vehicle###
+#code: |
+#  total = vehicles[i].market_value
+#  total -= vehicles[i].amount_owed
+#  vehicles[i].net_value = total
+#---
+#id: Vehicles
+#question: |
+#  Vehicles
+#fields:
+#  - "Do you have a car, truck or other vehicle?": vehicles.there_are_any
+#    input type: radio
+#    choices:
+#      - Yes: True
+#      - No: False
+#      
+#validation code: |
+#  if not vehicles.there_are_any:
+#    vehicles.target_number = 0
+#---
+#id: How many vehicles
+#question: |
+#  How many vehicles
+#fields:      
+#  - How many cars, trucks or other vehicles do you have?: vehicles.target_number
+#    datatype: integer
+#  - note: |
+#      We will ask for the value of each.
+#    
+#---
+#id: Describe vehicle
+#question: |
+#  Describe the ${ ordinal(i) } vehicle
+#subquestion: |
+#
+#  % if i > 0:
+#  You have told us about these vehicles already:
+#  
+#  % for item in vehicles.complete_elements():
+#  * ${ item.description }
+#  
+#  Now tell us about the next vehicle.
+#  % endfor
+#  % endif
+#fields:     
+#  - Make, model and year of the car / truck / vehicle: vehicles[i].description
+#    maxlength: 76
+#  - What is it's market value? How much would you get if you sold it?: vehicles[i].market_value
+#    maxlength: 76
+#    datatype: currency
+#  - If you have a loan or owe money on the vehicle, how much do you owe? Enter 0 if you own it outright.: vehicles[i].amount_owed
+#    maxlength: 76
+#    datatype: currency
+#---
+#id: Display vehicle net values
+#continue button field: user_sees_vehicle_net_values
+#question: |
+#  Net value of your vehicles
+#subquestion: |
+#  With the numbers you entered, these are the **net** values of your vehicles. The net value is what you get when you subtract the amount you owe from the full market value of your vehicle.
+#  
+#  If any of these are not correct, go back a screen or two and change your numbers.
+#
+#  % for item in vehicles:
+#    **${ item.description }** 
+#    
+#    * Net value = ${ currency(item.net_value) }
+#    
+#  % endfor
+
+################ VEHICLES CARS TRUCKS ################
 ---
-code: |
-  vehicles[i].description
-  vehicles[i].amount_owed
-  vehicles[i].complete=True
+variable name: vehicles.terms_ordered
+data: !!omap
+  - car: "Car"
+  - truck: "Truck"
+  - other: "Other"
 ---
-###To determine the net value for vehicle###
-code: |
-  total = vehicles[i].market_value
-  total -= vehicles[i].amount_owed
-  vehicles[i].net_value = total
----
-id: Vehicles
+id: are there vehicles
+#vehicles
 question: |
-  Vehicles
+  Do you have any cars, trucks or other vehicles?
+subquestion: |
+   Check any that apply to you.
 fields:
-  - "Do you have a car, truck or other vehicle?": vehicles.there_are_any
-    input type: radio
-    choices:
-      - Yes: True
-      - No: False
-      
-validation code: |
-  if not vehicles.there_are_any:
-    vehicles.target_number = 0
----
-id: How many vehicles
-question: |
-  How many vehicles
-fields:      
-  - How many cars, trucks or other vehicles do you have?: vehicles.target_number
-    datatype: integer
-  - note: |
-      We will ask for the value of each.
-    
----
-id: Describe vehicle
-question: |
-  Describe the ${ ordinal(i) } vehicle
-subquestion: |
+  - no label: vehicles.selected_types
+    datatype: checkboxes
+    code: |
+      vehicles.terms_ordered
 
-  % if i > 0:
-  You have told us about these vehicles already:
-  
-  % for item in vehicles.complete_elements():
-  * ${ item.description }
-  
-  Now tell us about the next vehicle.
-  % endfor
-  % endif
-fields:     
-  - Make, model and year of the car / truck / vehicle: vehicles[i].description
-    maxlength: 76
-  - What is it's market value? How much would you get if you sold it?: vehicles[i].market_value
-    maxlength: 76
-    datatype: currency
-  - If you have a loan or owe money on the vehicle, how much do you owe? Enter 0 if you own it outright.: vehicles[i].amount_owed
-    maxlength: 76
-    datatype: currency
 ---
-id: Display vehicle net values
-continue button field: user_sees_vehicle_net_values
+id: info for each vehicle
 question: |
-  Net value of your vehicles
-subquestion: |
-  With the numbers you entered, these are the **net** values of your vehicles. The net value is what you get when you subtract the amount you owe from the full market value of your vehicle.
-  
-  If any of these are not correct, go back a screen or two and change your numbers.
+  About your ${ vehicles[i].source }
+fields:
+  - What make / manufacturer? (Examples - Honda or Ford): vehicles[i].make
+  - What model? (Examples - Civic or F-150): vehicles[i].model
+    maxlength: 20
+  - What year?: vehicles[i].year
+  - What is its market value? How much would you get if you sold it?: vehicles[i].market_value
+    datatype: currency
+  - If you have a loan or owe money on the ${ vehicles[i].source }, how much do you owe? Enter 0 if you own it outright.: vehicles[i].balance
+    datatype: currency
 
-  % for item in vehicles:
-    **${ item.description }** 
-    
-    * Net value = ${ currency(item.net_value) }
-    
-  % endfor
-  
 ################ REAL ESTATE ################
 ---
 variable name: real_estate.terms_ordered
