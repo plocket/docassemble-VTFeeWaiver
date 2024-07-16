@@ -1,6 +1,9 @@
-
-#Create ALAssetList for vehicles? or use ALVehicle?
+#Need to get other assets yes/no checkboxes to fill
 #Work on getting self employment to fill in
+#Work on review screen
+#I don't think I need to collect employer phone numbers
+#Possible to get $0 not to show in some places?
+#Will need to create overflow and addendum
 #For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
 
 
@@ -19,9 +22,9 @@ objects:
   - other_incomes: ALIncomeList
   - expenses: ALExpenseList
   - bank_assets: ALAssetList
-  - vehicles: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - vehicles: ALVehicleList
   - real_estate: ALAssetList
-  - other_assets: DAList.using(object_type=DAObject, complete_attribute="complete", ask_number=True)
+  - other_assets: ALAssetList
 ---
 generic object: ALIncomeList
 code: |
@@ -36,6 +39,12 @@ code: |
   x.moved = True
 ---
 generic object: ALAssetList
+code: |
+  x.selected_types
+  x.move_checks_to_list(selected_terms=x.terms_ordered)
+  x.moved = True
+---
+generic object: ALVehicleList
 code: |
   x.selected_types
   x.move_checks_to_list(selected_terms=x.terms_ordered)
@@ -110,6 +119,7 @@ code: |
   signature_fields = ['users[0].signature']
 ---
 #################### INTERVIEW ORDER #####################
+---
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VT_fee_waiver
@@ -124,81 +134,77 @@ code: |
   #user_ask_role
 
   if which_financial_forms == "fee_waiver_form":
-
-    if real_estate.selected_types.any_true():
-      real_estate.there_are_any = True
-      real_estate.gathered
-      
-    if bank_assets.selected_types.any_true():
-      bank_assets.there_are_any = True
-      bank_assets.gathered
-      
-    if expenses.selected_types.any_true():
-      expenses.there_are_any = True
-      expenses.gathered
-  
-
+    nav.set_section('your_income')
+    
     if public_benefits.selected_types.any_true():
       public_benefits.there_are_any = True
       public_benefits.gathered
+      
+      user_qualifies_interstitial
+      
+      if employed:
+        jobs.target_number
+        if jobs.target_number == 1:
+          jobs[0].employer.name.first
+        if jobs.target_number > 1:
+          jobs[0].employer.name.first
+          jobs[1].employer.name.first
+    else:
+      employed
+      jobs.gather()
+      review_jobs
+
+      if other_incomes.selected_types.any_true():
+        other_incomes.there_are_any = True
+        other_incomes.gathered
+      else:
+        other_incomes.there_are_any = False
+  
+      nav.set_section('your_expenses')
+      if expenses.selected_types.any_true():
+        expenses.there_are_any = True
+        expenses.gathered
     
-    interview_order_VT_fee_waiver = True
---- 
-#    nav.set_section('your_income')
-#    if public_benefits.there_are_any:
-#      user_qualifies_interstitial
-#      employed
-#      jobs.gather()
-#      review_jobs
-#    else:
-#      set_progress(33)
-#      employed
-#      jobs.gather()
-#      review_jobs
-#  
-#    if other_incomes.selected_types.any_true():
-#      other_incomes.there_are_any = True
-#      other_incomes.gathered
-#    else:
-#      other_incomes.there_are_any = False
-#  
-#
-#    #set_progress(50)  
-#    
-#
-#    set_progress(16)
-#    nav.set_section('about_you')
-#    users.gather()
-#    set_parts(subtitle=str(users))
-#    users[0].address.address
-#    users[0].daytime_phone_number
-#    users[0].email
-#    household_size
-#    nav.set_section('case_info')
-#    case_name
-#    trial_court_division
-#    docket_number
-#  
-#    
-#    nav.set_section('your_expenses')
-#  
-#    set_progress(70)
-#    nav.set_section('your_assets')
-#
-#    vehicles.there_are_any
-#    if vehicles.there_are_any: 
-#      vehicles.gather()
-#      user_sees_vehicle_net_values
-#  
-#    other_assets.there_are_any
-#    if other_assets.there_are_any: 
-#      other_assets.gather()
-#      user_sees_other_assets_values
-#    set_progress(85)
-#    
-#    nav.set_section('reasons')
-#    other_reasons_why_cannot_afford
-#    set_progress(98)
+    
+      set_progress(60)
+      nav.set_section('your_assets')
+  
+      if vehicles.selected_types.any_true():
+        vehicles.there_are_any = True
+        vehicles.gathered
+  
+      if real_estate.selected_types.any_true():
+        real_estate.there_are_any = True
+        real_estate.gathered
+        
+      set_progress(70)
+      if bank_assets.selected_types.any_true():
+        bank_assets.there_are_any = True
+        bank_assets.gathered
+        
+      if other_assets.selected_types.any_true():
+        other_assets.there_are_any = True
+        other_assets.gathered
+
+      nav.set_section('reasons')
+      other_reasons_why_cannot_afford
+      
+    set_progress(80)
+    nav.set_section('about_you')
+    users.gather()
+    set_parts(subtitle=str(users))
+    users[0].address.address
+    users[0].daytime_phone_number
+    users[0].email
+    household_size
+    nav.set_section('case_info')
+    case_name
+    trial_court_division
+    docket_number
+
+    
+  set_progress(90)
+  interview_order_VT_fee_waiver = True
 
 
 ---
@@ -293,21 +299,21 @@ fields:
     datatype: currency
 
 ---
-variable name: other_income.terms_ordered
+variable name: other_incomes.terms_ordered
 data: !!omap
-  - unemployment_income: "Unemployment benefits"
-  - child_support_income: "Child support"
-  - rental_income: "Rental income"
-  - annuities_income: "Annuities"
-  - retirement_income: "Retirement/pension"
-  - workers_comp_income: "Workers comp or disability insurance"
-  - social_security_income: "Social Security benefits"
-  - veterans_income: "Veterans benefits"
-  - interest_income: "Interest or dividend income"
-  - gifts_income: "Gifts or prize money (including lottery)"   
-  - alimony_from_OP_income: "Spousal maintenance (from other party in this court action)"
-  - alimony_from_other_income: "Spousal maintenance (from someone else)"  
-  - other_income: "Other (for example, capital gains on stocks)"
+  - unemployment income: "Unemployment benefits"
+  - child support income: "Child support"
+  - rental income: "Rental income"
+  - annuities income: "Annuities"
+  - retirement income: "Retirement/pension"
+  - workers comp income: "Workers comp or disability insurance"
+  - social security income: "Social Security benefits"
+  - veterans income: "Veterans benefits"
+  - interest income: "Interest or dividend income"
+  - gifts income: "Gifts or prize money (including lottery)"   
+  - alimony from OP income: "Spousal maintenance (from other party in this court action)"
+  - alimony from other income: "Spousal maintenance (from someone else)"  
+  - other: "Other (for example, capital gains on stocks)"
 ---
 variable name: help_text
 data: !!omap
@@ -327,7 +333,7 @@ fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
     code: |
-      other_income.terms_ordered
+      other_incomes.terms_ordered
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -343,7 +349,7 @@ fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
     code: |
-      other_income.terms_ordered
+      other_incomes.terms_ordered
     default: other
   - What type of income?: other_incomes[i].source
     show if:
@@ -369,10 +375,10 @@ fields:
   - Are you employed?: employed
     datatype: yesnoradio
 ---
-sets:
-  - x.employer.name.first
 id: employer
 generic object: ALItemizedJob
+sets:
+  - x.employer.name.first
 question: |
   Tell us who employs you as a ${ x.source }
 fields:
@@ -418,6 +424,18 @@ fields:
     show if:
       variable: x.is_self_employed
       is: False
+---
+id: self employed income
+question: |
+  What do you make in self-employed income each month?
+subquestion: |
+  Net income is gross income minus your business expenses.
+fields:
+  - Your monthly net income: users1_income_self_employment_monthly_amount
+    datatype: currency
+---
+
+
 ---
 id: itemized job line items
 generic object: ALItemizedJob
@@ -469,7 +487,7 @@ fields:
   #  code: |
   #    times_per_year_list
   #  datatype: integer
-  - Do you have another source of income?: x.to_add.there_is_another
+  - Do you have another source of income from this job, like tips or bonuses?: x.to_add.there_is_another
     datatype: yesnoradio
   - Do you have anything you should subtract from your pay?: x.to_subtract.there_are_any
     datatype: yesnoradio
@@ -910,82 +928,123 @@ subquestion: |
   Click the Next button.
 ---    
 ################ Gathering vehicle info ################
+#---
+#code: |
+#  vehicles[i].description
+#  vehicles[i].amount_owed
+#  vehicles[i].complete=True
+#---
+####To determine the net value for vehicle###
+#code: |
+#  total = vehicles[i].market_value
+#  total -= vehicles[i].amount_owed
+#  vehicles[i].net_value = total
+#---
+#id: Vehicles
+#question: |
+#  Vehicles
+#fields:
+#  - "Do you have a car, truck or other vehicle?": vehicles.there_are_any
+#    input type: radio
+#    choices:
+#      - Yes: True
+#      - No: False
+#      
+#validation code: |
+#  if not vehicles.there_are_any:
+#    vehicles.target_number = 0
+#---
+#id: How many vehicles
+#question: |
+#  How many vehicles
+#fields:      
+#  - How many cars, trucks or other vehicles do you have?: vehicles.target_number
+#    datatype: integer
+#  - note: |
+#      We will ask for the value of each.
+#    
+#---
+#id: Describe vehicle
+#question: |
+#  Describe the ${ ordinal(i) } vehicle
+#subquestion: |
+#
+#  % if i > 0:
+#  You have told us about these vehicles already:
+#  
+#  % for item in vehicles.complete_elements():
+#  * ${ item.description }
+#  
+#  Now tell us about the next vehicle.
+#  % endfor
+#  % endif
+#fields:     
+#  - Make, model and year of the car / truck / vehicle: vehicles[i].description
+#    maxlength: 76
+#  - What is it's market value? How much would you get if you sold it?: vehicles[i].market_value
+#    maxlength: 76
+#    datatype: currency
+#  - If you have a loan or owe money on the vehicle, how much do you owe? Enter 0 if you own it outright.: vehicles[i].amount_owed
+#    maxlength: 76
+#    datatype: currency
+#---
+#id: Display vehicle net values
+#continue button field: user_sees_vehicle_net_values
+#question: |
+#  Net value of your vehicles
+#subquestion: |
+#  With the numbers you entered, these are the **net** values of your vehicles. The net value is what you get when you subtract the amount you owe from the full market value of your vehicle.
+#  
+#  If any of these are not correct, go back a screen or two and change your numbers.
+#
+#  % for item in vehicles:
+#    **${ item.description }** 
+#    
+#    * Net value = ${ currency(item.net_value) }
+#    
+#  % endfor
+
+################ VEHICLES CARS TRUCKS ################
 ---
-code: |
-  vehicles[i].description
-  vehicles[i].amount_owed
-  vehicles[i].complete=True
+variable name: vehicles.terms_ordered
+data: !!omap
+  - car: "Car"
+  - truck: "Truck"
+  - motorcycle: "Motorcycle"
+  - boat: "Boat or jetski"
+  - snowmobile: "Snowmobile"
+  - atv: "ATV"
+  - camper: "Camper"
+  - RV: "RV"
+  - plane: "Plane"
+  - other: "Other"
 ---
-###To determine the net value for vehicle###
-code: |
-  total = vehicles[i].market_value
-  total -= vehicles[i].amount_owed
-  vehicles[i].net_value = total
----
-id: Vehicles
+id: are there vehicles
+#vehicles
 question: |
-  Vehicles
+  Do you have any cars, trucks or other vehicles?
+subquestion: |
+   Check any that apply to you.
 fields:
-  - "Do you have a car, truck or other vehicle?": vehicles.there_are_any
-    input type: radio
-    choices:
-      - Yes: True
-      - No: False
-      
-validation code: |
-  if not vehicles.there_are_any:
-    vehicles.target_number = 0
----
-id: How many vehicles
-question: |
-  How many vehicles
-fields:      
-  - How many cars, trucks or other vehicles do you have?: vehicles.target_number
-    datatype: integer
-  - note: |
-      We will ask for the value of each.
-    
----
-id: Describe vehicle
-question: |
-  Describe the ${ ordinal(i) } vehicle
-subquestion: |
+  - no label: vehicles.selected_types
+    datatype: checkboxes
+    code: |
+      vehicles.terms_ordered
 
-  % if i > 0:
-  You have told us about these vehicles already:
-  
-  % for item in vehicles.complete_elements():
-  * ${ item.description }
-  
-  Now tell us about the next vehicle.
-  % endfor
-  % endif
-fields:     
-  - Make, model and year of the car / truck / vehicle: vehicles[i].description
-    maxlength: 76
-  - What is it's market value? How much would you get if you sold it?: vehicles[i].market_value
-    maxlength: 76
-    datatype: currency
-  - If you have a loan or owe money on the vehicle, how much do you owe? Enter 0 if you own it outright.: vehicles[i].amount_owed
-    maxlength: 76
-    datatype: currency
 ---
-id: Display vehicle net values
-continue button field: user_sees_vehicle_net_values
+id: info for each vehicle
 question: |
-  Net value of your vehicles
-subquestion: |
-  With the numbers you entered, these are the **net** values of your vehicles. The net value is what you get when you subtract the amount you owe from the full market value of your vehicle.
-  
-  If any of these are not correct, go back a screen or two and change your numbers.
+  About your ${ vehicles[i].source }
+fields:
+  - What make / manufacturer? (Examples - Honda or Ford): vehicles[i].make
+  - What model? (Examples - Civic or F-150): vehicles[i].model
+    maxlength: 20
+  - What year?: vehicles[i].year
+  - What is its market value? How much would you get if you sold it?: vehicles[i].market_value
+    datatype: currency
+  - If you have a loan or owe money on the ${ vehicles[i].source }, how much do you owe? Enter 0 if you own it outright.: vehicles[i].balance
+    datatype: currency
 
-  % for item in vehicles:
-    **${ item.description }** 
-    
-    * Net value = ${ currency(item.net_value) }
-    
-  % endfor
-  
 ################ REAL ESTATE ################
 ---
 variable name: real_estate.terms_ordered
@@ -1024,40 +1083,34 @@ fields:
     maxlength: 76
 
 
-################ Gathering other assets info ################
+################ OTHER ASSETS ################
 ---
-code: |
-  other_assets[i].description
-  other_assets[i].market_value
-  other_assets[i].complete=True
+# "!!omap" makes these terms ordered
+# their order here will be their same order when shown to users.
+variable name: other_assets.terms_ordered
+data: !!omap
+  - tools: "Tools"
+  - electronics: "Electronics"
+  - stocks: "Stocks"
+  - bonds: "Bonds"
+  - other: "Other"
 ---
-id: Other assets
+---
+id: other assets
 question: |
-  Other assets -- things that you own
+  Other assets that you have not entered already
 subquestion: |  
-  These may be things like tools, equipment, recreational vehicles, electronics, stocks, bonds, etc.)? — what about retirement account?
+  These assets may be things like tools, equipment, electronics, stocks, bonds, etc.)? — what about retirement account?
+  
+  Check any that apply to you.
 fields:
-  - "Do you have other assets that you haven't entered already?  -- what about retirement account?": other_assets.there_are_any
-    input type: radio
-    choices:
-      - Yes: True
-      - No: False
-      
-validation code: |
-  if not other_assets.there_are_any:
-    other_assets.target_number = 0
+  - no label: other_assets.selected_types
+    datatype: checkboxes
+    code: |
+      other_assets.terms_ordered
+
 ---
-id: How many other assets
-question: |
-  How many other assets
-fields:      
-  - How many other assets do you have?: other_assets.target_number
-    datatype: integer
-  - note: |
-      We will ask for the value of each.
-    
----
-id: Describe other asset
+id: describe other asset
 question: |
   Describe the ${ ordinal(i) } other asset
 subquestion: |
@@ -1073,27 +1126,12 @@ subquestion: |
   % endif
 fields:     
   - What is the asset?: other_assets[i].description
-    maxlength: 76
-  - What is it's market value? How much would you get if you sold it?: other_assets[i].market_value
+    maxlength: 40
+  - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
     maxlength: 76
     datatype: currency
----
-id: Display other asset values
-continue button field: user_sees_other_assets_values
-question: |
-  Values of your other assets
-subquestion: |
-  You said these are the values of your other assets.
-  
-  If any of these are not correct, go back a screen or two and change your numbers.
-
-  % for item in other_assets:
-    **${ item.description }** 
-    
-    * Market value = ${ currency(item.market_value) }
-
-    
-  % endfor
+  - If you owe money on this asset, how much do you owe? Enter 0 if you own it outright.: other_assets[i].balance
+    datatype: currency
 ---
 
 
@@ -1305,7 +1343,7 @@ review:
       **Vehicles**
       
       % for item in vehicles:
-      * ${ item.description }          
+      * ${ item.year_make_model }          
       % endfor
       % if not vehicles.there_are_any:
       - None
@@ -1321,20 +1359,17 @@ review:
       - None
       % endif
       
-      
+  - Edit: other_assets.revisit
+    button: |
+      **Other assets**
+
+      % for item in other_assets:
+      * ${ item.description }       
+      % endfor
+      % if not other_assets.there_are_any:
+      - None
+      % endif      
      
-  - Edit: users1_assets_other_0_market_value
-    button: |
-      **Other asset - market value**:
-      ${ currency(users1_assets_other_0_market_value) }
-  - Edit: users1_assets_other_0_description
-    button: |
-      **Other asset - description**:
-      ${ users1_assets_other_0_description }
-  - Edit: users1_assets_other_1_description
-    button: |
-      **2nd Other asset - description**:
-      ${ users1_assets_other_1_description }
       
   - Edit: other_reasons_why_cannot_afford
     button: |
@@ -1455,18 +1490,17 @@ table: vehicles.table
 rows: vehicles
 columns:
   - Description: |
-      row_item.description if defined("row_item.description") else ""
+      row_item.year_make_model if defined("row_item.year_make_model") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
-      currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
-  - Net value: |
-      currency(row_item.net_value) if defined("row_item.net_value") else ""
+      currency(row_item.balance) if defined("row_item.balance") else ""
 edit:
-  - description
+  - make
+  - model
+  - year
   - market_value
-  - amount_owed
----
+  - balance
 ---
 continue button field: real_estate.revisit
 question: |
@@ -1485,12 +1519,36 @@ columns:
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
       currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
-  - Net value: |
-      currency(row_item.net_value) if defined("row_item.net_value") else ""
 edit:
   - description
   - market_value
   - balance
+  
+---
+---
+continue button field: other_assets.revisit
+question: |
+  Edit other assets
+subquestion: |
+  ${ other_assets.table }
+
+  ${ other_assets.add_action() }
+---
+table: other_assets.table
+rows: other_assets
+columns:
+  - Description: |
+      row_item.description if defined("row_item.description") else ""
+  - Market value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+  - Amount owed: |
+      currency(row_item.balance) if defined("row_item.balance") else ""
+edit:
+  - description
+  - market_value
+  - balance
+
+
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
@@ -1539,11 +1597,11 @@ attachments:
           % if defined("trial_court.division_abbr"):
             ${ trial_court.division_abbr.upper()  }
           % elif trial_court_division == "family":
-          **FAMILY**          
+          FAMILY          
           % elif trial_court_division == "probate":
-          **PROBATE**          
+          PROBATE         
           % elif trial_court_division == "civil":
-          **CIVIL**          
+          CIVIL       
           % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${(trial_court.address.county)}
@@ -1622,22 +1680,22 @@ attachments:
               % endif
             % endif
           % endif
-      - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].amount_owed) }
-      - "users1_assets_vehicle_0_description": ${ vehicles[0].description }
-      - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].net_value) }
+      - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].balance) }
+      - "users1_assets_vehicle_0_description": ${ vehicles[0].year_make_model() }
+      - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].market_value - vehicles[0].balance) }
       - "users1_assets_vehicle_0_market_value": ${ currency(vehicles[0].market_value) }
-      - "users1_assets_vehicle_1_description": ${ vehicles[1].description }
+      - "users1_assets_vehicle_1_description": ${ vehicles[1].year_make_model() }
       - "users1_assets_vehicle_1_market_value": ${ currency(vehicles[1].market_value) }
-      - "users1_assets_vehicle_1_amount_owed": ${ currency(vehicles[1].amount_owed) }
-      - "users1_assets_vehicle_1_net_value": ${ currency(users1_assets_vehicle_1_net_value) }
-      - "users1_assets_vehicle_2_description": ${ users1_assets_vehicle_2_description }
-      - "users1_assets_vehicle_2_amount_owed": ${ currency(users1_assets_vehicle_2_amount_owed) }
-      - "users1_assets_vehicle_2_net_value": ${ currency(users1_assets_vehicle_2_net_value) }
-      - "users1_assets_vehicle_2_market_value": ${ currency(users1_assets_vehicle_2_market_value) }
-      - "users1_assets_vehicle_3_description": ${ users1_assets_vehicle_3_description }
-      - "users1_assets_vehicle_3_market_value": ${ currency(users1_assets_vehicle_3_market_value) }
-      - "users1_assets_vehicle_3_amount_owed": ${ currency(users1_assets_vehicle_3_amount_owed) }
-      - "users1_assets_vehicle_3_net_value": ${ currency(users1_assets_vehicle_3_net_value) }
+      - "users1_assets_vehicle_1_amount_owed": ${ currency(vehicles[1].balance) }
+      - "users1_assets_vehicle_1_net_value": ${ currency(vehicles[1].market_value - vehicles[1].balance) }
+      - "users1_assets_vehicle_2_description": ${ vehicles[2].year_make_model() }
+      - "users1_assets_vehicle_2_amount_owed": ${ currency(vehicles[2].balance) }
+      - "users1_assets_vehicle_2_net_value": ${ currency(vehicles[2].market_value - vehicles[2].balance) }
+      - "users1_assets_vehicle_2_market_value": ${ currency(vehicles[2].market_value) }
+      - "users1_assets_vehicle_3_description": ${ vehicles[3].year_make_model() }
+      - "users1_assets_vehicle_3_market_value": ${ currency(vehicles[3].market_value) }
+      - "users1_assets_vehicle_3_amount_owed": ${ currency(vehicles[3].balance) }
+      - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[0].balance) }
       
       - "users1_assets_real_estate_0_description": ${ real_estate[0].description }
       - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
