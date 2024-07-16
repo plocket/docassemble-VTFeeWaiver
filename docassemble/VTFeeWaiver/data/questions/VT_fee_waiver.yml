@@ -1,6 +1,9 @@
-#Need to get other assets yes/no checkboxes to fill
+#I get error when entering 2 other assets
+#I get error when editing other_incomes
+#Need to get other assets yes/no checkboxes to fill and public benefits checkboxes to fill
 #Work on getting self employment to fill in
-#Work on review screen
+#Need to get court county to show on PDF
+#Work on review screen -- do I have all the items they might edit?
 #I don't think I need to collect employer phone numbers
 #Possible to get $0 not to show in some places?
 #Will need to create overflow and addendum
@@ -104,12 +107,12 @@ code: |
 ---
 sections:
   - intro: Is this interview right for you
-  - case_info: Court case info
-  - about_you: You and your household
   - your_income: Your income
   - your_expenses: Your expenses
   - your_assets: Your property and assets
   - reasons: Other info
+  - about_you: You and your household
+  - case_info: Court case info
   - review_VT_fee_waiver: Review your answers
   - signature: Sign your document
   - download: Download your document
@@ -204,6 +207,7 @@ code: |
 
     
   set_progress(90)
+  trial_court.address.county
   interview_order_VT_fee_waiver = True
 
 
@@ -216,7 +220,9 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_fee_waiver
-
+  nav.set_section('review_VT_fee_waiver')
+  VT_fee_waiver_preview_question
+  
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
@@ -226,9 +232,7 @@ code: |
           "num_forms": len(al_user_bundle.enabled_documents()),
       },
   )
-  nav.set_section('review_VT_fee_waiver')
 
-  VT_fee_waiver_preview_question
   nav.set_section('signature')
   signature_date
   basic_questions_signature_flow    
@@ -236,7 +240,7 @@ code: |
   nav.set_section('download')
   VT_fee_waiver_download
 ---
-  #trial_court.address.county
+
 ---
 variable name: public_benefits.terms_ordered
 data: !!omap
@@ -324,7 +328,7 @@ data: !!omap
 id: are there other incomes
 #other_incomes
 question: |
-  Do you have other incomes?
+  Do you have other sources of income?
 subquestion: |
   Check any that apply to you.
   
@@ -380,7 +384,7 @@ generic object: ALItemizedJob
 sets:
   - x.employer.name.first
 question: |
-  Tell us who employs you as a ${ x.source }
+  Who do you work for as a ${ x.source }?
 fields:
   - I am self-employed: x.is_self_employed
     datatype: yesno
@@ -425,6 +429,30 @@ fields:
       variable: x.is_self_employed
       is: False
 ---
+id: itemized job period
+generic object: ALItemizedJob
+question: |
+  Details about the ${ x.source } job
+fields:
+  - Is this a part time job?: x.is_part_time
+    datatype: yesnoradio
+  - Paid hourly or salary?: x.is_hourly
+    input type: radio
+    choices:
+      - Hourly: True
+      - Salary: False
+  - How often does ${ x.employer} pay?: x.times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+    datatype: integer
+  - How many hours are worked during that time?: x.hours_per_period
+    datatype: number
+    show if: x.is_hourly
+    validation messages:
+      number: |
+        Enter a number, like 40. If you don't know, enter your best guess.
+---
 id: self employed income
 question: |
   What do you make in self-employed income each month?
@@ -440,7 +468,7 @@ fields:
 id: itemized job line items
 generic object: ALItemizedJob
 question: |
-    Enter info from your paystub for your job as a ${ x.source }
+    Your pay at the ${ x.source } job
 fields:
     - label: |
         % if x.is_hourly:
@@ -478,7 +506,7 @@ fields:
 id: other itemized job income value
 generic object: ALItemizedJob
 question: |
-  Adding and subtracting -- ALIncome wants to ask more questions so I made this question block
+  Extra income or deductions from the ${ x.source } job
 fields:
   #- Amount: x.to_add[i].value
   #  datatype: currency
@@ -487,9 +515,38 @@ fields:
   #  code: |
   #    times_per_year_list
   #  datatype: integer
-  - Do you have another source of income from this job, like tips or bonuses?: x.to_add.there_is_another
+  - Do you have another source of income from this job, like tips, commissions or bonuses?: x.to_add.there_is_another
     datatype: yesnoradio
   - Do you have anything you should subtract from your pay?: x.to_subtract.there_are_any
+    datatype: yesnoradio
+---
+#id: other itemized job income name
+generic object: ALItemizedJob
+question: |
+  Other incomes from the ${ x.source } job
+subquestion: |
+  You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
+fields:
+  - Type of other income: x.to_add.new_item_name
+  - note: |
+      Examples: Tips, commissions or bonuses.
+validation code: |
+  if x.to_add.new_item_name in x.to_add.complete_elements().keys():
+    validation_error(f'You already told us about your <strong>{ job_items_names.get(x.to_add.new_item_name, x.to_add.new_item_name) }</strong> that pays { currency( x.to_add[ x.to_add.new_item_name ].value )}. Pick a different name.')
+---
+id: other itemized job income value
+generic object: ALItemizedJob
+question: |
+  How much do you get paid in ${ job_items_names.get(i, i) } at the ${ x.source } job?
+fields:
+  - Amount: x.to_add[i].value
+    datatype: currency
+  - How often do you get paid this amount?: x.to_add[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+    datatype: integer
+  - Do you have other income from the ${ x.source } job?: x.to_add.there_is_another
     datatype: yesnoradio
 ---
 id: job review
@@ -852,6 +909,8 @@ generic object: ALExpenseList
 id: expenses types
 question: |
   What kind of expenses do you have?
+subquestion: |
+  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
 fields:
   - no label: x.selected_types
     datatype: checkboxes
@@ -866,6 +925,8 @@ id: expense information, prefilled
 question: |
   How much do you spend on ${ x[i].display_name.lower() }?
 subquestion: |
+  **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
+  
   If you have more than one ${ x[i].display_name.lower() }
   expense in your household, you'll have a chance to add another later on.
 fields:
@@ -1062,8 +1123,10 @@ data: !!omap
 id: is there real estate
 #real_estate
 question: |
-  Do you have any real estate? Do you own your home?
+  Do you have any real estate?
 subquestion: |
+   For example, do you own your home?
+   
    Check any that apply to you.
 fields:
   - no label: real_estate.selected_types
@@ -1343,7 +1406,7 @@ review:
       **Vehicles**
       
       % for item in vehicles:
-      * ${ item.year_make_model }          
+      * ${ item.year_make_model() }          
       % endfor
       % if not vehicles.there_are_any:
       - None
@@ -1490,7 +1553,7 @@ table: vehicles.table
 rows: vehicles
 columns:
   - Description: |
-      row_item.year_make_model if defined("row_item.year_make_model") else ""
+      row_item.year_make_model() if defined("row_item.year_make_model()") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
@@ -1604,7 +1667,7 @@ attachments:
           CIVIL       
           % endif
       - "docket_number": ${ docket_number }
-      - "trial_court_county": ${(trial_court.address.county)}
+      - "trial_court_county": ${ trial_court.address.county }
       - "case_name": ${ case_name }
       - "users1_name_full": ${ users[0] }
       - "users1_name_full__1": ${ users[0] }
@@ -1627,7 +1690,10 @@ attachments:
       - "users1_employer_1_address_one_line": ${ jobs[1].employer.address.on_one_line() }
       
       - "users1_receives_benefits_yes": ${ public_benefits.there_are_any }
-      - "users1_receives_benefits_no": ${ not public_benefits.there_are_any }
+      - "users1_receives_benefits_no": |
+          % if public_benefits.target_number > 0:
+          ${True}
+          % endif
       - "users1_benefits": |
           % if public_benefits.there_are_any:
             % for item in public_benefits:
