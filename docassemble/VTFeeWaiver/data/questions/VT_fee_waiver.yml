@@ -1389,10 +1389,10 @@ review:
       ${ case_name }
       
   - note: |
-      **About you**
+      ###About you
   - Edit: users.revisit
     button: |
-      **Your name**
+      **Your name and contact information**
 
       % for item in users:
         * ${ item }
@@ -1404,7 +1404,7 @@ review:
       
       
   - note: |
-      **Income**
+      ###Income
 
       
   - Edit: public_benefits.revisit
@@ -1457,7 +1457,7 @@ review:
       
       
   - note: |
-      **Expenses**   
+      ###Expenses 
   - Edit: expenses.revisit
     button: |
       **Expenses**:
@@ -1470,7 +1470,7 @@ review:
       % endif
       
   - note: |
-      **Assets**    
+      ###Assets   
       
   - Edit: bank_assets.revisit
     button: |
