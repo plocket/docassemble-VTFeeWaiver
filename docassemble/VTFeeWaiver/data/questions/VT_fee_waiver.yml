@@ -1,11 +1,10 @@
-
 #Need to get other assets yes/no checkboxes to fill -- use selected items variable
 #Need to get my ordered lists ordered the way I set them
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
 #I get error when entering 2 other_assets
 #I get error when editing other_incomes
+#When you Edit incomes from web manager it doesn't let you edit hourly rate right
 #Work on review screen -- do I have all the items they might edit?
-#I don't think I need to collect employer phone numbers
 #Possible to get $0 not to show in some places?
 #To erase dollar sign, add ,symbol="")
 #Will need to create overflow and addendum
@@ -437,11 +436,6 @@ fields:
       variable: x.is_self_employed
       is: False
   - Zip or postal code: x.employer.address.zip
-    required: False
-    show if:
-      variable: x.is_self_employed
-      is: False
-  - Phone number: x.employer.phone_number
     required: False
     show if:
       variable: x.is_self_employed
@@ -912,9 +906,9 @@ data: !!omap
   - health insurance: "Health insurance"
   - auto loan: "Auto loan payment"
   - auto insurance: "Auto insurance"
-  - other insurance: "Other insurance like home, rental, business, life insurance"
+  - other insurance: "Other insurance"
   - child support: "Child support payment"
-  - other: "Other expenses like pets, kids activities, haircuts, entertainment and more"
+  - other: "Other expenses"
 ---
 
 generic object: ALExpenseList
@@ -929,6 +923,10 @@ fields:
     datatype: checkboxes
     code: |
       expenses.terms_ordered
+  - note: |
+      "Other expenses" you might enter: pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
+
+      "Other insurance" you might enter: dental, vision, home, rental, business, life insurance and more.
 ---
 generic object: ALExpenseList
 need:
@@ -976,6 +974,10 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
+  - note: |
+      "Other expenses" you might enter: pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
+
+      "Other insurance" you might enter: dental, vision, home, rental, business, life insurance and more.
 validation code: |
   x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
 ---
