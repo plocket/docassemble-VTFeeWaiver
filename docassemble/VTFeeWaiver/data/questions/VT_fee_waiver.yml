@@ -1,8 +1,14 @@
-#Need to get other assets yes/no checkboxes to fill
-#Work on getting self employment to fill in
-#Work on review screen
+#When I said I don't work, it asked for job info
+#Need to get other assets yes/no checkboxes to fill -- use selected items variable
+#Need to get my ordered lists ordered the way I set them
+#Need to allow for more than 2 jobs
+#I get error when entering 2 other_assets
+#I get error when editing other_incomes
+#Need to get court county to show on PDF
+#Work on review screen -- do I have all the items they might edit?
 #I don't think I need to collect employer phone numbers
 #Possible to get $0 not to show in some places?
+#To erase dollar sign, add ,symbol="")
 #Will need to create overflow and addendum
 #For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
 
@@ -104,12 +110,12 @@ code: |
 ---
 sections:
   - intro: Is this interview right for you
-  - case_info: Court case info
-  - about_you: You and your household
   - your_income: Your income
   - your_expenses: Your expenses
   - your_assets: Your property and assets
   - reasons: Other info
+  - about_you: You and your household
+  - case_info: Court case info
   - review_VT_fee_waiver: Review your answers
   - signature: Sign your document
   - download: Download your document
@@ -141,18 +147,28 @@ code: |
       public_benefits.gathered
       
       user_qualifies_interstitial
-      
+      #If they get public benefits ask if they work too and gather only employer info      
       if employed:
         jobs.target_number
         if jobs.target_number == 1:
           jobs[0].employer.name.first
-        if jobs.target_number > 1:
+        if jobs.target_number == 2:
           jobs[0].employer.name.first
           jobs[1].employer.name.first
+        if jobs.target_number == 3:
+          jobs[0].employer.name.first
+          jobs[1].employer.name.first
+          jobs[2].employer.name.first
+          
     else:
       employed
-      jobs.gather()
-      review_jobs
+      #If they say they are self-employed gather their monthly net income and set 
+      if jobs[0].is_self_employed:
+        users1_income_self_employment_monthly_amount
+        
+      else:
+        jobs.gather()
+        review_jobs
 
       if other_incomes.selected_types.any_true():
         other_incomes.there_are_any = True
@@ -204,6 +220,7 @@ code: |
 
     
   set_progress(90)
+  trial_court.address.county
   interview_order_VT_fee_waiver = True
 
 
@@ -216,7 +233,9 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_fee_waiver
-
+  nav.set_section('review_VT_fee_waiver')
+  VT_fee_waiver_preview_question
+  
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
@@ -226,9 +245,7 @@ code: |
           "num_forms": len(al_user_bundle.enabled_documents()),
       },
   )
-  nav.set_section('review_VT_fee_waiver')
 
-  VT_fee_waiver_preview_question
   nav.set_section('signature')
   signature_date
   basic_questions_signature_flow    
@@ -236,7 +253,7 @@ code: |
   nav.set_section('download')
   VT_fee_waiver_download
 ---
-  #trial_court.address.county
+
 ---
 variable name: public_benefits.terms_ordered
 data: !!omap
@@ -324,7 +341,7 @@ data: !!omap
 id: are there other incomes
 #other_incomes
 question: |
-  Do you have other incomes?
+  Do you have other sources of income?
 subquestion: |
   Check any that apply to you.
   
@@ -380,7 +397,7 @@ generic object: ALItemizedJob
 sets:
   - x.employer.name.first
 question: |
-  Tell us who employs you as a ${ x.source }
+  Who do you work for as a ${ x.source }?
 fields:
   - I am self-employed: x.is_self_employed
     datatype: yesno
@@ -425,11 +442,45 @@ fields:
       variable: x.is_self_employed
       is: False
 ---
+id: itemized job period
+generic object: ALItemizedJob
+question: |
+  Details about the ${ x.source } job
+fields:
+  - Is this a part time job?: x.is_part_time
+    datatype: yesnoradio
+  - Paid hourly or salary?: x.is_hourly
+    input type: radio
+    choices:
+      - Hourly: True
+      - Salary: False
+  - How often does ${ x.employer} pay?: x.times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+    datatype: integer
+  - How many hours are worked during that time?: x.hours_per_period
+    datatype: number
+    show if: x.is_hourly
+    validation messages:
+      number: |
+        Enter a number, like 40. If you don't know, enter your best guess.
+---
 id: self employed income
 question: |
   What do you make in self-employed income each month?
 subquestion: |
-  Net income is gross income minus your business expenses.
+  
+  To figure your monthly net income:
+  
+  - Look at your gross income over the last 12 months of self-employment. 
+  - Subtract your business expenses. 
+  - Then divide by 12. 
+  
+  Or you can:
+  
+  - Look at your most recent Schedule C form from your federal taxes.
+  - Divide the net income by 12.
 fields:
   - Your monthly net income: users1_income_self_employment_monthly_amount
     datatype: currency
@@ -440,7 +491,7 @@ fields:
 id: itemized job line items
 generic object: ALItemizedJob
 question: |
-    Enter info from your paystub for your job as a ${ x.source }
+    Your pay at the ${ x.source } job
 fields:
     - label: |
         % if x.is_hourly:
@@ -478,7 +529,7 @@ fields:
 id: other itemized job income value
 generic object: ALItemizedJob
 question: |
-  Adding and subtracting -- ALIncome wants to ask more questions so I made this question block
+  Extra income or deductions from the ${ x.source } job
 fields:
   #- Amount: x.to_add[i].value
   #  datatype: currency
@@ -487,9 +538,38 @@ fields:
   #  code: |
   #    times_per_year_list
   #  datatype: integer
-  - Do you have another source of income from this job, like tips or bonuses?: x.to_add.there_is_another
+  - Do you have another source of income from this job, like tips, commissions or bonuses?: x.to_add.there_is_another
     datatype: yesnoradio
   - Do you have anything you should subtract from your pay?: x.to_subtract.there_are_any
+    datatype: yesnoradio
+---
+#id: other itemized job income name
+generic object: ALItemizedJob
+question: |
+  Other incomes from the ${ x.source } job
+subquestion: |
+  You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
+fields:
+  - Type of other income: x.to_add.new_item_name
+  - note: |
+      Examples: Tips, commissions or bonuses.
+validation code: |
+  if x.to_add.new_item_name in x.to_add.complete_elements().keys():
+    validation_error(f'You already told us about your <strong>{ job_items_names.get(x.to_add.new_item_name, x.to_add.new_item_name) }</strong> that pays { currency( x.to_add[ x.to_add.new_item_name ].value )}. Pick a different name.')
+---
+id: other itemized job income value
+generic object: ALItemizedJob
+question: |
+  How much do you get paid in ${ job_items_names.get(i, i) } at the ${ x.source } job?
+fields:
+  - Amount: x.to_add[i].value
+    datatype: currency
+  - How often do you get paid this amount?: x.to_add[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+    datatype: integer
+  - Do you have other income from the ${ x.source } job?: x.to_add.there_is_another
     datatype: yesnoradio
 ---
 id: job review
@@ -786,24 +866,9 @@ fields:
 #mandatory: True
 #code: |
 #  users1_gross_monthly_wages = currency(jobs.total(source=["full time","part time"],times_per_year=12)))
+
 ---
-#mandatory: True
-#code: |
-#  users1_other_income_monthly_subtotal = sum_if_defined('users1_income_unemployment_monthly_amount',
-#      'users1_income_child_support_monthly_amount',
-#      'users1_income_other_monthly_amount')
----
-#mandatory: True
-#code: |
-#  users1_income_monthly_total = sum_if_defined('jobs.total(source=["full time","part time"],times_per_year=12)',
-#      'users1_other_income_monthly_subtotal')
----
-###To multiply for annual income###
-mandatory: True
-code: |
-  users1_income_annual_total = sum_if_defined('users1_income_monthly_total') * 12
----
-id: Show income monthly and annual totals
+id: show income monthly and annual totals
 mandatory: True
 continue button field: user_sees_income_total
 question: |
@@ -844,7 +909,7 @@ data: !!omap
   - auto insurance: "Auto insurance"
   - other insurance: "Other insurance"
   - child support: "Child support payment"
-  - other: "Other expenses that you can describe"
+  - other: "Other expenses like pets, kids activities, haircuts, entertainment"
 ---
 
 generic object: ALExpenseList
@@ -852,6 +917,8 @@ generic object: ALExpenseList
 id: expenses types
 question: |
   What kind of expenses do you have?
+subquestion: |
+  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
 fields:
   - no label: x.selected_types
     datatype: checkboxes
@@ -866,6 +933,8 @@ id: expense information, prefilled
 question: |
   How much do you spend on ${ x[i].display_name.lower() }?
 subquestion: |
+  **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
+  
   If you have more than one ${ x[i].display_name.lower() }
   expense in your household, you'll have a chance to add another later on.
 fields:
@@ -880,6 +949,30 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
+---
+generic object: ALExpenseList
+id: expense information
+question: |
+  How much do you spend on your ${ ordinal(i) } household expense?
+subquestion: |
+  **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
+fields: 
+  - Type of expense: x[i].source
+    code: |
+      expenses.terms_ordered
+  - Other (explain): x[i].source
+    show if:
+      variable: x[i].source
+      is: other
+  - Amount: x[i].value
+    datatype: currency
+  - How often do you pay this amount?: x[i].times_per_year
+    input type: radio
+    default: 12
+    code: |
+      times_per_year_for_expenses
+validation code: |
+  x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
 ---
 #generic object: ALExpenseList
 #id: expense information
@@ -1062,8 +1155,10 @@ data: !!omap
 id: is there real estate
 #real_estate
 question: |
-  Do you have any real estate? Do you own your home?
+  Do you have any real estate?
 subquestion: |
+   For example, do you own your home?
+   
    Check any that apply to you.
 fields:
   - no label: real_estate.selected_types
@@ -1190,6 +1285,7 @@ id: preview VT_fee_waiver
 question: |
   Preview your form before you sign it
 subquestion: |
+  
   Here is a preview of the form you will sign on the next page. 
   
   ${ al_court_bundle.as_pdf(key='preview') }
@@ -1271,7 +1367,7 @@ review:
       * ${ item.display_name }
       % endfor
 
-      % if not public_benefits.there_are_any:
+      % if not public_benefits.selected_types.any_true():
       - None
       % endif
 
@@ -1343,7 +1439,7 @@ review:
       **Vehicles**
       
       % for item in vehicles:
-      * ${ item.year_make_model }          
+      * ${ item.year_make_model() }          
       % endfor
       % if not vehicles.there_are_any:
       - None
@@ -1490,7 +1586,7 @@ table: vehicles.table
 rows: vehicles
 columns:
   - Description: |
-      row_item.year_make_model if defined("row_item.year_make_model") else ""
+      row_item.year_make_model() if defined("row_item.year_make_model()") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
@@ -1555,6 +1651,7 @@ event: VT_fee_waiver_download
 question: |
   Review your forms and download and/or print them
 subquestion: |
+  
   ${ download_screen_instructions }
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
@@ -1604,7 +1701,7 @@ attachments:
           CIVIL       
           % endif
       - "docket_number": ${ docket_number }
-      - "trial_court_county": ${(trial_court.address.county)}
+      - "trial_court_county": ${ trial_court.address.county }
       - "case_name": ${ case_name }
       - "users1_name_full": ${ users[0] }
       - "users1_name_full__1": ${ users[0] }
@@ -1620,21 +1717,33 @@ attachments:
       - "employed_yes": ${ employed }
       - "employed_no": ${ not employed }
       
-      - "users1_employer_0_name": ${ jobs[0].employer }
+      - "users1_employer_0_name": |
+          % if jobs[0].is_self_employed:
+            Self-employed
+          % else:
+            ${ jobs[0].employer }
+          % endif
       - "users1_employer_0_address_one_line": ${ jobs[0].employer.address.on_one_line() }
 
       - "users1_employer_1_name": ${ jobs[1].employer }
       - "users1_employer_1_address_one_line": ${ jobs[1].employer.address.on_one_line() }
       
-      - "users1_receives_benefits_yes": ${ public_benefits.there_are_any }
-      - "users1_receives_benefits_no": ${ not public_benefits.there_are_any }
-      - "users1_benefits": |
-          % if public_benefits.there_are_any:
-            % for item in public_benefits:
-            ${ item.display_name }
-            % endfor
+      - "users1_receives_benefits_yes": |
+          % if public_benefits.selected_types.any_true():
+          ${ True }
           % endif
-      - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12)) }
+      - "users1_receives_benefits_no": |
+          % if not public_benefits.selected_types.any_true():
+          ${ True }
+          % endif
+   
+      - "users1_benefits": |
+          % if public_benefits.selected_types.any_true():
+          % for item in public_benefits:
+          ${ item.display_name }
+          % endfor
+          % endif
+      - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
 
       
       - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
@@ -1644,11 +1753,15 @@ attachments:
       
       - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12)) }
       - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
+
+
+
+      - "users1_income_monthly_total": ${ float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount }
+      - "users1_income_annual_total": ${ float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12) }
       
-      - "users1_income_monthly_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
-      - "users1_income_annual_total": ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) }
       
-      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12)) }   
+      
+      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12),symbol="") }   
       - "users1_expenses_electric_monthly_amount": ${ currency(expenses.total(source=["electric"],times_per_year=12)) }    
       - "users1_expenses_phone_monthly_amount": ${ currency(expenses.total(source=["phone"],times_per_year=12)) }
       - "users1_expenses_fuel_monthly_amount": ${ currency(expenses.total(source=["fuel"],times_per_year=12)) }
