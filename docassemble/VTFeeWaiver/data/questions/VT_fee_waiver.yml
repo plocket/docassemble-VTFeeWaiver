@@ -1,10 +1,9 @@
-#When I said I don't work, it asked for job info
+#List out self-employment income on review screen and give chance to edit
 #Need to get other assets yes/no checkboxes to fill -- use selected items variable
 #Need to get my ordered lists ordered the way I set them
 #Need to allow for more than 2 jobs
 #I get error when entering 2 other_assets
 #I get error when editing other_incomes
-#Need to get court county to show on PDF
 #Work on review screen -- do I have all the items they might edit?
 #I don't think I need to collect employer phone numbers
 #Possible to get $0 not to show in some places?
@@ -161,14 +160,15 @@ code: |
           jobs[2].employer.name.first
           
     else:
-      employed
-      #If they say they are self-employed gather their monthly net income and set 
-      if jobs[0].is_self_employed:
-        users1_income_self_employment_monthly_amount
+      if employed:
+        jobs.target_number
+        #If they say they are self-employed gather their monthly net income and set 
+        if jobs[0].is_self_employed:
+          users1_income_self_employment_monthly_amount
         
-      else:
-        jobs.gather()
-        review_jobs
+        else:
+          jobs.gather()
+          review_jobs
 
       if other_incomes.selected_types.any_true():
         other_incomes.there_are_any = True
@@ -585,9 +585,9 @@ subquestion: |
   ${ jobs.add_action() }
 field: review_jobs
 ---
-generic object: ALItemizedJobList
-table: x.table
-rows: x
+
+table: jobs.table
+rows: jobs
 columns:
   - Job title: |
       row_item.source
@@ -1374,13 +1374,17 @@ review:
   - Edit: jobs.revisit
     button: |
       **Jobs**
-
-      % for job in jobs:
-      * ${ job.source } at ${ job.employer.name }
+      
+      % for item in jobs:
+      * ${ item.source } / ${ item.employer.name }
       % endfor
-      % if not jobs.there_are_any:
-      - None
-      % endif
+
+  - Edit: users1_income_self_employment_monthly_amount 
+    button: |
+      **Self employment:**
+
+      Monthly income from self-employment: 
+      ${ currency(showifdef("users1_income_self_employment_monthly_amount")) }
       
       
   - Edit: other_incomes.revisit
@@ -1531,6 +1535,8 @@ columns:
 edit:
   - source
   - value
+---
+
 ---
 continue button field: other_incomes.revisit
 question: |
@@ -1749,17 +1755,29 @@ attachments:
       - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
       
       - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment_income"],times_per_year=12)) }
+      
       - "users1_income_child_support_monthly_amount": ${ currency(other_incomes.total(source=["child_support"],times_per_year=12)) }
       
       - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12)) }
+      
       - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
 
 
 
-      - "users1_income_monthly_total": ${ float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount }
-      - "users1_income_annual_total": ${ float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12) }
-      
-      
+      - "users1_income_monthly_total": |
+          % if defined("users1_income_self_employment_monthly_amount"):
+          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount) }
+          % else:
+          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }      
+          % endif
+      - "users1_income_annual_total": |
+          % if defined("users1_income_self_employment_monthly_amount"):
+          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12)) }
+          % else:
+          ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) }      
+          % endif
+ 
+  
       
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12),symbol="") }   
       - "users1_expenses_electric_monthly_amount": ${ currency(expenses.total(source=["electric"],times_per_year=12)) }    
