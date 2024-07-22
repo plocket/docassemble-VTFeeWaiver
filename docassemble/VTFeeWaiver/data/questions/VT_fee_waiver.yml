@@ -1,5 +1,5 @@
-
 #Need to recompute or something when I edit the objects. The edits don't show up.
+#Cant seem to add a bank_asset in review screen
 #I get error when entering 2 other_assets
 #I get error when editing other_incomes
 #Generally I get errors when trying to edit things as a user
@@ -307,9 +307,6 @@ fields:
 objects:
   # workaround to get omap to be ordered
   - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
----
-code: |
-  public_benefits.there_is_another = False
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
@@ -1145,9 +1142,6 @@ fields:
     code: |
       vehicles.terms_ordered
 ---
-code: |
-  vehicles.there_is_another = False
----
 id: info for each vehicle
 question: |
   About your ${ vehicles[i].source }
@@ -1276,11 +1270,14 @@ fields:
       bank_assets.terms_ordered
 ---
 id: info for each asset
-generic object: ALAssetList
 question: |
-  About your ${ bank_assets[i].source }
+  About your cash and bank assets
 fields:
-  - Current value: x[i].market_value
+  - Source: bank_assets[i].source
+    input type: dropdown
+    code: |
+      bank_assets.terms_ordered
+  - Current value: bank_assets[i].market_value
     datatype: currency
     required: False
 ---
@@ -1358,6 +1355,18 @@ code: |
   # for matching address to court. Edit if court venue is based on 
   # a different address than the user's
   addresses_to_search = [user.address for user in users]
+  
+  
+  
+---
+#This code is to work around an error that you get when you edit these in review table
+code: |
+  public_benefits.there_is_another = False
+  other_incomes.there_is_another = False
+  expenses.there_is_another = False
+  vehicles.there_is_another = False
+  bank_assets.there_is_another = False
+
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
