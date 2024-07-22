@@ -1,16 +1,18 @@
-#Need to get other assets yes/no checkboxes to fill -- use selected items variable
-#Need to get my ordered lists ordered the way I set them
-#Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
+
+#Need to recompute or something when I edit the objects. The edits don't show up.
 #I get error when entering 2 other_assets
 #I get error when editing other_incomes
-#I get an error when trying to edit vehicle - needed definition of vehicles.there_is_another
+#Generally I get errors when trying to edit things as a user
 #When you Edit incomes from a job it doesn't let you edit hourly rate right
+
+#Need to get my ordered lists ordered the way I set them
+#Need to get other assets yes/no checkboxes to fill -- use selected items variable
+#Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
 #Work on review screen -- do I have all the items they might edit?
 #Possible to get $0 not to show in some places?
 #To erase dollar sign, add ,symbol="")
-#Will need to create overflow and addendum
+#Will need to create overflows and addendum -- including benefits
 #Add to snapshot "has_assets": showifdef("....."),
-#For other financial forms, need to ask how much they pay and how much someone else pays for the expenses. When user is filling out fee waiver only, just need to know what they pay, so keep it simple.
 
 
 
@@ -300,8 +302,14 @@ fields:
   - no label: public_benefits.selected_types
     datatype: checkboxes
     code: |
-      public_benefits.terms_ordered
-
+      benefits_ordered
+---
+objects:
+  # workaround to get omap to be ordered
+  - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
+---
+code: |
+  public_benefits.there_is_another = False
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
@@ -542,14 +550,8 @@ generic object: ALItemizedJob
 question: |
   Extra income or deductions from the ${ x.source } job
 fields:
-  #- Amount: x.to_add[i].value
-  #  datatype: currency
-  #- How often do you get paid this amount?: x.to_add[i].times_per_year
-  #  input type: radio
-  #  code: |
-  #    times_per_year_list
-  #  datatype: integer
-  - Do you have another source of income from this job, like tips, commissions or bonuses?: x.to_add.there_is_another
+
+  - Do you have another source of income from this job, like tips, commissions or bonuses?: x.to_add.there_are_any
     datatype: yesnoradio
   - Do you have anything you should subtract from your pay?: x.to_subtract.there_are_any
     datatype: yesnoradio
@@ -644,7 +646,7 @@ subquestion: |
   
   <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed fee waiver form for Vermont courts -- form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action.
   
-    <i class="fas fa-clock fa-2x"></i>  It may take you between 20 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
+    <i class="fas fa-clock fa-2x"></i>  It may take you between 15 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
 
   <i class="fas fa-circle-info fa-2x"></i> It is free to use this program. This site is not a lawyer.
   
@@ -1142,7 +1144,9 @@ fields:
     datatype: checkboxes
     code: |
       vehicles.terms_ordered
-
+---
+code: |
+  vehicles.there_is_another = False
 ---
 id: info for each vehicle
 question: |
@@ -1407,13 +1411,15 @@ review:
       ###Income
 
       
-  - Edit: public_benefits.revisit
+  - Edit: 
+      - public_benefits.revisit
+          
     button: |
       **Public benefits**
       
-      % for item in public_benefits:
-      * ${ item.display_name }
-      % endfor
+      % if public_benefits.selected_types.any_true():
+      ${ comma_list([public_benefits.terms_ordered[item] for item in public_benefits.selected_types.true_values()]) }
+      % endif
 
       % if not public_benefits.selected_types.any_true():
       - None
@@ -1804,9 +1810,7 @@ attachments:
    
       - "users1_benefits": |
           % if public_benefits.selected_types.any_true():
-          % for item in public_benefits:
-          ${ item.display_name }
-          % endfor
+          ${ comma_list([public_benefits.terms_ordered[item] for item in public_benefits.selected_types.true_values()]) }
           % endif
       - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
 
