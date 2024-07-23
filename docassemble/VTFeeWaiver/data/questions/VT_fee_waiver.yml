@@ -5,7 +5,7 @@
 #Generally I get errors when trying to edit things as a user
 #When you Edit incomes from a job it doesn't let you edit hourly rate right
 
-#Need to get my ordered lists ordered the way I set them
+#Need to get my ordered lists ordered the way I set them -- use Q's workaround
 #Need to get other assets yes/no checkboxes to fill -- use selected items variable
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
 #Work on review screen -- do I have all the items they might edit?
@@ -272,6 +272,12 @@ code: |
   VT_fee_waiver_download
 ---
 
+
+generic object: ALIncomeList
+code: |
+  x.move_checks_to_list(selected_terms=other_income_ordered)
+  x.update_names = True
+
 ---
 variable name: public_benefits.terms_ordered
 data: !!omap
@@ -307,6 +313,7 @@ fields:
 objects:
   # workaround to get omap to be ordered
   - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
+  - other_income_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
@@ -371,7 +378,7 @@ fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
     code: |
-      other_incomes.terms_ordered
+      other_income_ordered
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -387,7 +394,7 @@ fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
     code: |
-      other_incomes.terms_ordered
+      other_income_ordered
     default: other
   - What type of income?: other_incomes[i].source
     show if:
@@ -412,6 +419,8 @@ question: |
 fields:
   - Are you employed?: employed
     datatype: yesnoradio
+---
+#################################JOBS
 ---
 id: employer
 generic object: ALItemizedJob
@@ -610,6 +619,7 @@ edit:
   - source
   - employer.name.first
   - employer.address.city
+  - times_per_year
   - to_add.revisit
   - to_subtract.revisit
 confirm: True
@@ -1450,13 +1460,15 @@ review:
       ${ currency(showifdef("users1_income_self_employment_monthly_amount")) }
       
       
-  - Edit: other_incomes.revisit
+  - Edit: 
+      - other_incomes.revisit
     button: |
       **Other incomes**:
 
-      % for item in other_incomes:
-      * ${ item.display_name }
+      % for income in other_incomes.complete_elements():
+      * ${ income.source }
       % endfor
+
       % if not other_incomes.there_are_any:
       - None
       % endif
@@ -1619,6 +1631,7 @@ columns:
 edit:
   - source
   - value
+
 ---
 
 
