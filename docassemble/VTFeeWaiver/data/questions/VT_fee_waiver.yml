@@ -5,7 +5,7 @@
 #Generally I get errors when trying to edit things as a user
 #When you Edit incomes from a job it doesn't let you edit hourly rate right
 
-#Need to get my ordered lists ordered the way I set them
+#Need to get my ordered lists ordered the way I set them -- use Q's workaround
 #Need to get other assets yes/no checkboxes to fill -- use selected items variable
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
 #Work on review screen -- do I have all the items they might edit?
@@ -272,6 +272,12 @@ code: |
   VT_fee_waiver_download
 ---
 
+
+#generic object: ALIncomeList
+#code: |
+#  x.move_checks_to_list(selected_terms=other_income_ordered)
+#  x.update_names = True
+
 ---
 variable name: public_benefits.terms_ordered
 data: !!omap
@@ -307,6 +313,7 @@ fields:
 objects:
   # workaround to get omap to be ordered
   - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
+  - other_income_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
@@ -371,7 +378,7 @@ fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
     code: |
-      other_incomes.terms_ordered
+      other_income_ordered
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -387,7 +394,7 @@ fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
     code: |
-      other_incomes.terms_ordered
+      other_income_ordered
     default: other
   - What type of income?: other_incomes[i].source
     show if:
@@ -412,6 +419,8 @@ question: |
 fields:
   - Are you employed?: employed
     datatype: yesnoradio
+---
+#################################JOBS
 ---
 id: employer
 generic object: ALItemizedJob
@@ -610,6 +619,7 @@ edit:
   - source
   - employer.name.first
   - employer.address.city
+  - times_per_year
   - to_add.revisit
   - to_subtract.revisit
 confirm: True
@@ -1422,13 +1432,14 @@ review:
       
   - Edit: 
       - public_benefits.revisit
-          
+      - recompute:
+        - public_benefits.gathered   
     button: |
       **Public benefits**
       
-      % if public_benefits.selected_types.any_true():
-      ${ comma_list([public_benefits.terms_ordered[item] for item in public_benefits.selected_types.true_values()]) }
-      % endif
+      % for benefit in public_benefits.complete_elements():
+      * ${ benefit.display_name }
+      % endfor
 
       % if not public_benefits.selected_types.any_true():
       - None
@@ -1450,13 +1461,17 @@ review:
       ${ currency(showifdef("users1_income_self_employment_monthly_amount")) }
       
       
-  - Edit: other_incomes.revisit
+  - Edit: 
+      - other_incomes.revisit
+      - recompute:
+        - other_incomes.gathered
     button: |
       **Other incomes**:
 
-      % for item in other_incomes:
-      * ${ item.display_name }
+      % for income in other_incomes.complete_elements():
+      * ${ income.source }
       % endfor
+
       % if not other_incomes.there_are_any:
       - None
       % endif
@@ -1483,7 +1498,7 @@ review:
       % if not expenses.there_are_any:
       - None
       % endif
-      
+ 
   - note: |
       ###Assets   
       
@@ -1548,6 +1563,20 @@ review:
       ${ signature_date }
 
 ---
+generic object: ALExpenseList
+table: x.table
+rows: x
+columns:
+  - Type: |
+      row_item.display_name
+  - Amount per month: |
+      currency(row_item.total(times_per_year=12))
+edit:
+  - source
+  - value
+  - display_name
+
+---
 continue button field: users.revisit
 question: |
   Edit info about you
@@ -1592,7 +1621,7 @@ table: public_benefits.table
 rows: public_benefits
 columns:
   - Source: |
-      row_item.source if defined("row_item.source") else ""
+      row_item.display_name if defined("row_item.source") else ""
   - Value: |
       currency(row_item.value) if defined("row_item.value") else ""
 edit:
@@ -1619,6 +1648,7 @@ columns:
 edit:
   - source
   - value
+
 ---
 
 
@@ -1818,9 +1848,8 @@ attachments:
           % endif
    
       - "users1_benefits": |
-          % if public_benefits.selected_types.any_true():
-          ${ comma_list([public_benefits.terms_ordered[item] for item in public_benefits.selected_types.true_values()]) }
-          % endif
+          ${ comma_list([ benefit.display_name for benefit in public_benefits.complete_elements() ]) }
+          
       - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
 
       
@@ -1862,7 +1891,7 @@ attachments:
       - "users1_expenses_auto_loan_monthly_amount": ${ currency(expenses.total(source=["auto loan"],times_per_year=12)) }
       - "users1_expenses_property_tax_monthly_amount": ${ currency(expenses.total(source=["property tax"],times_per_year=12)) }
       - "users1_expenses_all_insurance_monthly_amount": ${ currency(expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12)) }
-      - "users1_expenses_other_monthly_amount": ${ currency(expenses.total(source=["other"],times_per_year=12)) }
+      - "users1_expenses_other_monthly_amount": ${ currency(expenses.total(exclude_source=["health insurance", "rent", "food" ],times_per_year=12)) }
       - "users1_expenses_monthly_total": ${ currency(expenses.total(times_per_year=12)) }
       
       - "assets_yes": |
@@ -1929,3 +1958,9 @@ code: |
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Why you cannot afford"
   VT_fee_waiver_attachment.overflow_fields.gathered = True
+---
+id: benefits display name
+generic object: ALIncome
+code: |
+  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
+---
