@@ -1,4 +1,6 @@
-#Need to recompute or something when I edit the objects. The edits don't show up.
+#Use new code tricks to be able to edit everything 
+#Use new code tricks to show display_name
+
 #Cant seem to add a bank_asset in review screen
 #I get error when entering 2 other_assets
 #I get error when editing other_incomes
@@ -132,103 +134,93 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VT_fee_waiver
 code: |
-  nav.set_section('review_VT_fee_waiver')
+  
   # Below sets the user_role by asking a question.
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
-  which_financial_forms
+
   VT_fee_waiver_intro
   set_progress(10)
   important_notes_to_user
   #user_ask_role
-
-  if which_financial_forms == "fee_waiver_form":
-    set_progress(20)
-    nav.set_section('your_income')
-
-    if public_benefits.selected_types.any_true():
-      public_benefits.there_are_any = True
-      public_benefits.gathered
+  
+  set_progress(20)
+  nav.set_section('your_income')
+  if public_benefits.selected_types.any_true():
+    public_benefits.there_are_any = True
+    public_benefits.gathered
       
-      user_qualifies_interstitial
-      #If they get public benefits ask if they work too and gather only employer info      
-      if employed:
-        if jobs.target_number == 1:
-          if not jobs[0].is_self_employed:
-            jobs[0].employer.name.first
-        if jobs.target_number == 2:
-          if not jobs[0].is_self_employed:
-            jobs[0].employer.name.first
-          if not jobs[1].is_self_employed:
-            jobs[1].employer.name.first
-        if jobs.target_number == 3:
-          if not jobs[0].is_self_employed:
-            jobs[0].employer.name.first
-          if not jobs[1].is_self_employed:
-            jobs[1].employer.name.first 
-          if not jobs[2].is_self_employed:
-            jobs[2].employer.name.first    
+    user_qualifies_interstitial
+    #If they get public benefits ask if they work too and gather only employer info      
+    if employed:
+      if jobs.target_number == 1:
+        if not jobs[0].is_self_employed:
+          jobs[0].employer.name.first
+      if jobs.target_number == 2:
+        if not jobs[0].is_self_employed:
+          jobs[0].employer.name.first
+        if not jobs[1].is_self_employed:
+          jobs[1].employer.name.first
+      if jobs.target_number == 3:
+        if not jobs[0].is_self_employed:
+          jobs[0].employer.name.first
+        if not jobs[1].is_self_employed:
+          jobs[1].employer.name.first 
+        if not jobs[2].is_self_employed:
+          jobs[2].employer.name.first    
           
-    else:
-      if employed:
-        jobs.target_number
-        #If they say they are self-employed gather their monthly net income and set 
-        if jobs[0].is_self_employed:
-          users1_income_self_employment_monthly_amount
-        
-        else:
-          jobs.gather()
-          review_jobs
-
-      set_progress(40)
-      if other_incomes.selected_types.any_true():
-        other_incomes.there_are_any = True
-        other_incomes.gathered
+  else:
+    if employed:
+      jobs.target_number
+      #If they say they are self-employed gather their monthly net income and set 
+      if jobs[0].is_self_employed:
+        users1_income_self_employment_monthly_amount
       else:
-        other_incomes.there_are_any = False
-  
-      set_progress(50)
-      nav.set_section('your_expenses')
-      if expenses.selected_types.any_true():
-        expenses.there_are_any = True
-        expenses.gathered
-    
-    
-      set_progress(60)
-      nav.set_section('your_assets')
-  
-      if vehicles.selected_types.any_true():
-        vehicles.there_are_any = True
-        vehicles.gathered
-  
-      if real_estate.selected_types.any_true():
-        real_estate.there_are_any = True
-        real_estate.gathered
-        
-      set_progress(70)
-      if bank_assets.selected_types.any_true():
-        bank_assets.there_are_any = True
-        bank_assets.gathered
-        
-      if other_assets.selected_types.any_true():
-        other_assets.there_are_any = True
-        other_assets.gathered
+        jobs.gather()
+        review_jobs
+    set_progress(40)
+    if other_incomes.selected_types.any_true():
+      other_incomes.there_are_any = True
+      other_incomes.gathered
 
-      nav.set_section('reasons')
-      other_reasons_why_cannot_afford
-      
+    set_progress(50)
+    nav.set_section('your_expenses')
+    if expenses.selected_types.any_true():
+      expenses.there_are_any = True
+      expenses.gathered
+
+    set_progress(60)
+    nav.set_section('your_assets')
+  
+    if vehicles.selected_types.any_true():
+      vehicles.there_are_any = True
+      vehicles.gathered
+  
+    if real_estate.selected_types.any_true():
+      real_estate.there_are_any = True
+      real_estate.gathered
+        
+    set_progress(70)
+    if bank_assets.selected_types.any_true():
+      bank_assets.there_are_any = True
+      bank_assets.gathered
+        
+    if other_assets.selected_types.any_true():
+      other_assets.there_are_any = True
+      other_assets.gathered
+    nav.set_section('reasons')
+    other_reasons_why_cannot_afford
     set_progress(80)
     nav.set_section('about_you')
     users.gather()
-    set_parts(subtitle=str(users))
     users[0].address.address
     users[0].daytime_phone_number
     users[0].email
     household_size
     nav.set_section('case_info')
     case_name
-    trial_court_division
     docket_number
+    trial_court_division
 
     
   set_progress(90)
@@ -311,7 +303,7 @@ fields:
       benefits_ordered
 ---
 objects:
-  # workaround to get omap to be ordered
+  # workaround to get omaps to be ordered
   - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
   - other_income_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
 ---
@@ -673,27 +665,6 @@ fields:
         You cannot continue unless you agree to the terms of use.        
 continue button field: al_intro_screen
 ---
-id: which financial forms
-question: |
-  The financial forms you want
-subquestion: |
-  This interview can lead you through filling out 3 financial forms for family court:
-  
-  * APPLICATION TO WAIVE FILING FEES AND SERVICE COSTS -- commonly called the fee waiver from
-  
-  * FINANCIAL AFFIDAVIT (400-813A) -- commonly called form 813A
-  
-  * FINANCIAL AFFIDAVIT (400-813B) Property and Assets -- commonly called form 813B
-  
-  These forms collect similar information. You have a choice about which ones you can do.
-fields:
-  - "Forms to fill out": which_financial_forms
-    input type: radio
-    choices:
-      - "Fill out only the fee waiver form": fee_waiver_form
-      - "Fill out all three forms": all_financial_forms
-
----
 id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
 question: |
@@ -748,6 +719,9 @@ fields:
 
   - County: trial_court_index
     code: all_courts._load_courts()['address_county'].items()
+    
+  - note: |
+      ${ after_last_question_we_will_generate_your_forms }
 ---
 id: Court case information
 question: |
@@ -1305,8 +1279,7 @@ fields:
     input type: area
     maxlength: 550
     required: False
-  - note: |
-      ${ after_last_question_we_will_generate_your_forms }
+
 ---
 id: User signature
 question: |
