@@ -1432,13 +1432,14 @@ review:
       
   - Edit: 
       - public_benefits.revisit
-          
+      - recompute:
+        - public_benefits.gathered    
     button: |
       **Public benefits**
       
-      % if public_benefits.selected_types.any_true():
-      ${ comma_list([public_benefits.terms_ordered[item] for item in public_benefits.selected_types.true_values()]) }
-      % endif
+      % for benefit in public_benefits.complete_elements():
+      * ${ benefit.source }
+      % endfor
 
       % if not public_benefits.selected_types.any_true():
       - None
@@ -1462,6 +1463,8 @@ review:
       
   - Edit: 
       - other_incomes.revisit
+      - recompute:
+        - other_incomes.gathered
     button: |
       **Other incomes**:
 
@@ -1831,9 +1834,10 @@ attachments:
           % endif
    
       - "users1_benefits": |
-          % if public_benefits.selected_types.any_true():
-          ${ comma_list([public_benefits.terms_ordered[item] for item in public_benefits.selected_types.true_values()]) }
-          % endif
+          % for benefit in public_benefits.complete_elements():
+          ${ comma_list(benefit.source) }
+          % endfor
+          
       - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
 
       
