@@ -1,17 +1,14 @@
-#Use new code tricks to be able to edit everything 
-#Use new code tricks to show display_name
-#Want to add words to column headers on id: edit wages and other incomes from a job
+#Still having trouble seeing 'None" on review screen when nothing was selected
+#When I entered yes for benefits and yes for job, I skipped over collecting the user name and address
+
+#Use new code tricks to show display_name#Want to add words to column headers on id: edit wages and other incomes from a job
 #Dont want this to show up if I'm not collecting this info jobs[0].to_subtract.revisit
 
-#Cant seem to add a bank_asset in review screen
-#I get error when entering 2 other_assets
-
-#Generally I get errors when trying to edit things as a user
-#When you Edit incomes from a job it doesn't let you edit hourly rate right
+#When you Edit incomes from a job it doesn't let you edit hourly rate right -- fixed??
 
 #Need to get other assets yes/no checkboxes to fill -- use selected items variable
+#When I don't enter any income info, the total needs to be zero on PDF
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
-#Work on review screen -- do I have all the items they might edit?
 #Possible to get $0 not to show in some places?
 #To erase dollar sign, add ,symbol="")
 #Will need to create overflows and addendum -- including benefits
@@ -869,6 +866,11 @@ generic object: ALIncome
 code: |
   x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
 ---
+id: bank asset display names
+generic object: ALAsset
+code: |
+  x.display_name = bank_assets.terms_ordered.get(x.source, x.source)
+---
 ###############################EXPENSES#############################
 ---
 id: expenses intro
@@ -1146,7 +1148,7 @@ fields:
   - no label: bank_assets.selected_types
     datatype: checkboxes
     code: |
-      bank_assets.terms_ordered
+      bank_assets_ordered
 ---
 id: info for each asset
 question: |
@@ -1155,7 +1157,7 @@ fields:
   - Source: bank_assets[i].source
     input type: dropdown
     code: |
-      bank_assets.terms_ordered
+      bank_assets_ordered
   - Current value: bank_assets[i].market_value
     datatype: currency
     required: False
@@ -1394,12 +1396,15 @@ review:
       - None
       % endif
 
-  - Edit: bank_assets.revisit
+  - Edit: 
+      - bank_assets.revisit
+      - recompute:
+        - bank_assets.gathered   
     button: |
       **Bank accounts and cash**
       
-      % for item in bank_assets:
-      * ${ item.display_name }
+      % for item in bank_assets.complete_elements():
+      * ${ item.source }
       % endfor
 
       % if not bank_assets.there_are_any:
@@ -1410,7 +1415,7 @@ review:
     button: |
       **Other assets**
 
-      % for item in other_assets:
+      % for item in other_assets.complete_elements():
       * ${ item.description }       
       % endfor
       % if not other_assets.there_are_any:
@@ -1491,7 +1496,7 @@ rows: public_benefits
 columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
-  - Value: |
+  - Amount: |
       currency(row_item.value) if defined("row_item.value") else ""
 edit:
   - source
@@ -1578,7 +1583,7 @@ table: real_estate.table
 rows: real_estate
 columns:
   - Description: |
-      row_item.description if defined("row_item.source") else ""
+      row_item.source if defined("row_item.source") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
@@ -1804,7 +1809,7 @@ attachments:
       - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance) }
       - "users1_assets_real_estate_0_net_value": ${ currency((real_estate[0].market_value) - (real_estate[0].balance)) }
 
-      - "users1_assets_real_estate_1_description": ${ real_estate[1].description }
+      - "users1_assets_real_estate_1_description": ${ real_estate[1].source }
       - "users1_assets_real_estate_1_market_value": ${ currency(real_estate[1].market_value) }
       - "users1_assets_real_estate_1_amount_owed": ${ currency(real_estate[1].balance) }
       - "users1_assets_real_estate_1_net_value": ${ currency((real_estate[1].market_value) - (real_estate[1].balance)) }
