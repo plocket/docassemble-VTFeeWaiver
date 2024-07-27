@@ -1,9 +1,11 @@
 #Use new code tricks to be able to edit everything 
 #Use new code tricks to show display_name
+#Want to add words to column headers on id: edit wages and other incomes from a job
+#Dont want this to show up if I'm not collecting this info jobs[0].to_subtract.revisit
 
 #Cant seem to add a bank_asset in review screen
 #I get error when entering 2 other_assets
-#I get error when editing other_incomes
+
 #Generally I get errors when trying to edit things as a user
 #When you Edit incomes from a job it doesn't let you edit hourly rate right
 
@@ -193,12 +195,14 @@ code: |
 
     set_progress(50)
     nav.set_section('your_expenses')
+    expenses_intro
     if expenses.selected_types.any_true():
       expenses.there_are_any = True
       expenses.gathered
 
     set_progress(60)
     nav.set_section('your_assets')
+    assets_intro
   
     if vehicles.selected_types.any_true():
       vehicles.there_are_any = True
@@ -310,11 +314,6 @@ fields:
     code: |
       benefits_ordered
 ---
-objects:
-  # workaround to get omaps to be ordered
-  - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
-  - other_income_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
----
 id: public benefits info for list
 #generic object: ALIncomeList
 question: |
@@ -384,12 +383,12 @@ id: other income info for list
 #generic object: ALIncomeList
 question: |
   Tell us about your ${ ordinal(i) } income
-#subquestion: |
-  #% if i > 1:
-  #You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
-  #% elif i > 0:
-  #You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
-  #% endif
+subquestion: |
+  % if i > 1:
+  You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  % elif i > 0:
+  You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  % endif
 fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
@@ -555,19 +554,6 @@ fields:
 id: jobs details about tips commissions bonuses
 generic object: ALItemizedJob
 question: |
-  Other incomes
-subquestion: |
-  You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
-fields:
-  - What kind of additional income do you get from this job? (Examples -- Tips, commissions, bonuses): x.to_add.new_item_name
-validation code: |
-  if x.to_add.new_item_name in x.to_add.complete_elements().keys():
-    validation_error(f'You already told us about your <strong>{job_items_names.get(x.to_add.new_item_name, x.to_add.new_item_name) }</strong> that pays { currency( x.to_add[ x.to_add.new_item_name ].value )}. Pick a different name.')
----
----
-id: jobs details about tips commissions bonuses
-generic object: ALItemizedJob
-question: |
   Other incomes from your job as a ${ x.source }
 subquestion: |
   You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
@@ -604,21 +590,6 @@ subquestion: |
   ${ x.to_add.add_action() }
 ---
 generic object: ALItemizedValueDict
-table: x.table
-rows: x
-columns:
-  - Type: |
-      str(row_index).replace("_", " ").lower().capitalize()
-  - Amount: |
-      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
-edit:
-  #- exists
-  - is_part_time
-  - is_hourly
-  - times_per_year
-  - value
----
-generic object: ALItemizedValueDict
 table: x.to_add.table
 rows: x
 columns:
@@ -634,13 +605,20 @@ edit:
   - times_per_year
   - value
 ---
-  
-  
-
-
-
-
-
+generic object: ALItemizedValueDict
+table: x.table
+rows: x
+columns:
+  - Type: |
+      str(row_index).replace("_", " ").lower().capitalize()
+  - Amount: |
+      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
+edit:
+  #- exists
+  - is_part_time
+  - is_hourly
+  - times_per_year
+  - value
 ---
 id: job review
 question: |
@@ -856,20 +834,6 @@ validation code: |
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
-#id: Benefits
-#question: |
-#  Public benefits
-#fields:
-#  - "Does anyone in your household get public benefits like 3SquaresVT, Reach Up, SSI, SSDI or General Assistance?": user_receives_benefits
-#    datatype: yesnoradio
-#  - "Type(s) of benefits / assistance": users1_benefits
-#    show if: user_receives_benefits
-#    maxlength: 34
-#  - "Total amount every month": users1_benefits_monthly_amount
-#    datatype: currency
-#    show if: user_receives_benefits
-#    min: 0
----
 id: user qualifies due to benefits
 continue button field: user_qualifies_interstitial
 question: |
@@ -888,61 +852,21 @@ fields:
   - "Do you get income from working?": employed
     datatype: yesnoradio
 ---
-id: Income
-continue button field: list_other_income
-question: |
-  Types of income
-subquestion: |
-  Select any of these kinds of income you get right now. Then enter the amount of each **per month**. 
-fields:
-  - "Unemployment benefits": user_income_unemployment
-    datatype: yesno    
-  - "Amount": users1_income_unemployment_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_unemployment
-  - "Child support": user_income_child_support
-    datatype: yesno    
-  - "Amount": users1_income_child_support_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_child_support
-  - "Other income": user_income_other
-    datatype: yesno    
-  - "Amount": users1_income_other_monthly_amount
-    datatype: currency
-    min: 0
-    show if: user_income_other
-  - "**I don't have any of these**": user_other_income_none
-    datatype: yesno
 ---
-#mandatory: True
-#code: |
-#  users1_gross_monthly_wages = currency(jobs.total(source=["full time","part time"],times_per_year=12)))
-
----
-id: show income monthly and annual totals
+id: expenses intro
 mandatory: True
-continue button field: user_sees_income_total
+continue button field: expenses_intro
 question: |
-  Total of this income
+  Expenses
 subquestion: |
-
-  You said that your wages each month are:
+  Now we will review your expenses -- the things you pay for.
   
-  % for item in jobs:
-    - ${ item.employer }: ${ currency(item.gross_total(times_per_year=12)) }
-  % endfor
-  
-  And your total other income each month is:
-    ${ currency(users1_other_income_monthly_total) } 
-    
-  Therefore, for the year it is:
-    ${ currency(users1_income_annual_total) }
-
-    
-  If this is not correct, go back and correct things.
-
+  Tap the Next button.
+---   
+objects:
+  # workaround to get omaps to be ordered
+  - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
+  - other_income_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
 ---
 # "!!omap" makes these terms ordered
 # their order here will be their same order when shown to users.
@@ -964,7 +888,6 @@ data: !!omap
   - child support: "Child support payment"
   - other: "Other expenses"
 ---
-
 generic object: ALExpenseList
 #expenses
 id: expenses types
@@ -1035,28 +958,6 @@ fields:
 validation code: |
   x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
 ---
-#generic object: ALExpenseList
-#id: expense information
-#question: |
-#  How much do you spend on your ${ ordinal(i) } household expense?
-#fields: 
-#  - Type of expense: x[i].source
-#    code: |
-#      expenses.terms_ordered
-#  - Other (explain): x[i].source
-#    show if:
-#      variable: x[i].source
-#      is: other
-#  - Amount: x[i].value
-#    datatype: currency
-#  - How often do you pay this amount?: x[i].times_per_year
-#    input type: radio
-#    default: 12
-#    code: |
-#      times_per_year_for_expenses
-#validation code: |
-#  x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
----
 id: expenses review
 question: |
   Review your expenses
@@ -1067,96 +968,19 @@ subquestion: |
   ${ expenses.table }
 
   ${ expenses.add_action() }
-continue button field: review_expenses
-
-  
+continue button field: review_expenses  
 ---
-#How check the box on form if they answer any of the asset questions???
-id: Assets
+id: assets intro
 mandatory: True
-continue button field: assets
+continue button field: assets_intro
 question: |
   Assets
 subquestion: |
-  Now we will review the things that you own — your assets or property.
-  Click the Next button.
+  Now we will review the things that you own — your "assets" or property.
+  
+  Tap the Next button.
 ---    
-################ Gathering vehicle info ################
-#---
-#code: |
-#  vehicles[i].description
-#  vehicles[i].amount_owed
-#  vehicles[i].complete=True
-#---
-####To determine the net value for vehicle###
-#code: |
-#  total = vehicles[i].market_value
-#  total -= vehicles[i].amount_owed
-#  vehicles[i].net_value = total
-#---
-#id: Vehicles
-#question: |
-#  Vehicles
-#fields:
-#  - "Do you have a car, truck or other vehicle?": vehicles.there_are_any
-#    input type: radio
-#    choices:
-#      - Yes: True
-#      - No: False
-#      
-#validation code: |
-#  if not vehicles.there_are_any:
-#    vehicles.target_number = 0
-#---
-#id: How many vehicles
-#question: |
-#  How many vehicles
-#fields:      
-#  - How many cars, trucks or other vehicles do you have?: vehicles.target_number
-#    datatype: integer
-#  - note: |
-#      We will ask for the value of each.
-#    
-#---
-#id: Describe vehicle
-#question: |
-#  Describe the ${ ordinal(i) } vehicle
-#subquestion: |
-#
-#  % if i > 0:
-#  You have told us about these vehicles already:
-#  
-#  % for item in vehicles.complete_elements():
-#  * ${ item.description }
-#  
-#  Now tell us about the next vehicle.
-#  % endfor
-#  % endif
-#fields:     
-#  - Make, model and year of the car / truck / vehicle: vehicles[i].description
-#    maxlength: 76
-#  - What is it's market value? How much would you get if you sold it?: vehicles[i].market_value
-#    maxlength: 76
-#    datatype: currency
-#  - If you have a loan or owe money on the vehicle, how much do you owe? Enter 0 if you own it outright.: vehicles[i].amount_owed
-#    maxlength: 76
-#    datatype: currency
-#---
-#id: Display vehicle net values
-#continue button field: user_sees_vehicle_net_values
-#question: |
-#  Net value of your vehicles
-#subquestion: |
-#  With the numbers you entered, these are the **net** values of your vehicles. The net value is what you get when you subtract the amount you owe from the full market value of your vehicle.
-#  
-#  If any of these are not correct, go back a screen or two and change your numbers.
-#
-#  % for item in vehicles:
-#    **${ item.description }** 
-#    
-#    * Net value = ${ currency(item.net_value) }
-#    
-#  % endfor
+
 
 ################ VEHICLES CARS TRUCKS ################
 ---
@@ -1249,7 +1073,6 @@ data: !!omap
   - stocks: "Stocks"
   - bonds: "Bonds"
   - other: "Other"
----
 ---
 id: other assets
 question: |
@@ -1370,7 +1193,7 @@ fields:
 continue button field: saw_signature_choice    
 ---
 
-
+#####################PREVIEW SCREEN#######################
 ---
 id: preview VT_fee_waiver
 question: |
@@ -1401,13 +1224,15 @@ code: |
   
   
 ---
-#This code is to work around an error that you get when you edit these in review table
+#This code is a workaround for an error that you get when you edit these in review table
 code: |
   public_benefits.there_is_another = False
   other_incomes.there_is_another = False
   expenses.there_is_another = False
   vehicles.there_is_another = False
+  real_estate.there_is_another = False
   bank_assets.there_is_another = False
+  other_assets.there_is_another = False
 
 ---
 id: VT fee waiver review screen
@@ -1501,7 +1326,7 @@ review:
       **Other incomes**:
 
       % for income in other_incomes.complete_elements():
-      * ${ income.source }
+      * ${ income.display_name }
       % endfor
 
       % if not other_incomes.there_are_any:
