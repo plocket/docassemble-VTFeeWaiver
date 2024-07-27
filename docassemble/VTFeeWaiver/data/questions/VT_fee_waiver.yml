@@ -151,6 +151,7 @@ code: |
     public_benefits.gathered
       
     user_qualifies_interstitial
+    
     #If they get public benefits ask if they work too and gather only employer info      
     if employed:
       if jobs.target_number == 1:
@@ -172,6 +173,13 @@ code: |
   else:
     if employed:
       jobs.target_number
+      if jobs.target_number == 1:
+        jobs[0].to_subtract.there_are_any = False
+      if jobs.target_number == 2:
+        jobs[1].to_subtract.there_are_any = False
+      if jobs.target_number == 3:
+        jobs[2].to_subtract.there_are_any = False
+      
       #If they say they are self-employed gather their monthly net income and set 
       if jobs[0].is_self_employed:
         users1_income_self_employment_monthly_amount
@@ -414,75 +422,6 @@ fields:
 ---
 #################################JOBS##############################
 ---
-id: employer
-generic object: ALItemizedJob
-sets:
-  - x.employer.name.first
-question: |
-  Who do you work for as a ${ x.source }?
-fields:
-  - I am self-employed: x.is_self_employed
-    datatype: yesno
-  - Employer's name: x.employer.name.first
-    show if:
-      variable: x.is_self_employed
-      is: False
-  - note: |
-      ---
-
-      Employer's contact information
-    show if:
-      variable: x.is_self_employed
-      is: False
-  - Street address: x.employer.address.address
-    address autocomplete: True
-    required: False
-    show if:
-      variable: x.is_self_employed
-      is: False
-  - Unit: x.employer.address.unit
-    required: False
-    show if:
-      variable: x.is_self_employed
-      is: False
-  - City: x.employer.address.city
-    show if:
-      variable: x.is_self_employed
-      is: False
-  - State: x.employer.address.state
-    show if:
-      variable: x.is_self_employed
-      is: False
-  - Zip or postal code: x.employer.address.zip
-    required: False
-    show if:
-      variable: x.is_self_employed
-      is: False
----
-id: job period
-generic object: ALItemizedJob
-question: |
-  Details about the ${ x.source } job
-fields:
-  - Is this a part time job?: x.is_part_time
-    datatype: yesnoradio
-  - Paid hourly or salary?: x.is_hourly
-    input type: radio
-    choices:
-      - Hourly: True
-      - Salary: False
-  - How often does ${ x.employer} pay?: x.times_per_year
-    input type: radio
-    code: |
-      times_per_year_list
-    datatype: integer
-  - How many hours are worked during that time?: x.hours_per_period
-    datatype: number
-    show if: x.is_hourly
-    validation messages:
-      number: |
-        Enter a number, like 40. If you don't know, enter your best guess.
----
 id: self employed income
 question: |
   What do you make in self-employed income each month?
@@ -502,74 +441,206 @@ fields:
   - Your monthly net income: users1_income_self_employment_monthly_amount
     datatype: currency
 ---
-
-
----
-id: job hourly pay or salary wages
+sets:
+  - x.employer.name.first
+id: employer
 generic object: ALItemizedJob
 question: |
-    Your pay at the ${ x.source } job
+  Tell us who employs you as a ${ x.source }
+fields:
+  - I am self-employed: x.is_self_employed
+    datatype: yesno
+  - Employer's name: x.employer.name.first
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - note: |
+      ---
+
+      Employer's contact information
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - Street address: x.employer.address.address
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - Unit: x.employer.address.unit
+    required: False
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - City: x.employer.address.city
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - State: x.employer.address.state
+    show if:
+      variable: x.is_self_employed
+      is: False
+  - Zip or postal code: x.employer.address.zip
+    show if:
+      variable: x.is_self_employed
+      is: False
+---
+id: itemized job period
+generic object: ALItemizedJob
+question: |
+  What are the hours for the "${ x.source }" job?
+fields:
+  - Is this a part time job: x.is_part_time
+    datatype: yesnoradio
+  - Hourly or salary?: x.is_hourly
+    input type: radio
+    choices:
+      - Hourly: True
+      - Salary: False
+  - How often does ${ x.employer} pay?: x.times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+    datatype: integer
+  - How many hours are worked during that time?: x.hours_per_period
+    datatype: number
+    show if: x.is_hourly
+    validation messages:
+      number: |
+        Enter a number, like 40. If you don't know, enter your best guess.
+
+---
+id: itemized job line items
+generic object: ALItemizedJob
+question: |
+    Enter info from your paystub for your job as a ${ x.source }
 fields:
     - label: |
         % if x.is_hourly:
         What is your hourly pay for this job?
         % else:
-        What is your salary for this job?
+        What do you get for wages during each pay period (x.times_per_year)?
         % endif
       field: x.to_add['full time'].value
       datatype: currency
+      show if:
+        code: x.is_part_time is False
+    - note: |
+        Enter the gross amount, before taxes and other things are taken out.
       show if:
         code: x.is_part_time is False
     - label: |
         % if x.is_hourly:
         What is your hourly pay for this job?
         % else:
-        What is your salary for this job?
+        What do you get for wages during each pay period (x.times_per_year)?
         % endif
       field: x.to_add['part time'].value
       datatype: currency
       show if:
         code: x.is_part_time is True
-    - Do you have another source of income from this job, like tips, commissions or bonuses?: x.to_add.there_are_any
+    - note: |
+        Enter the gross amount, before taxes and other things are taken out.
+      show if:
+        code: x.is_part_time is True
+    #- What is your federal tax amount?: x.to_subtract['federal_taxes'].value
+      #datatype: currency
+      #required: False
+    #- What do you pay for insurance?: x.to_subtract['insurance'].value
+      #datatype: currency
+      #required: False
+    - Does the job have other incomes, like tips, commissions or bonuses?: x.to_add.there_is_another
       datatype: yesnoradio
-
+    #- Does the job have other deductions?: x.to_subtract.there_is_another
+      #datatype: yesnoradio
 ---
-id: job additional income or subtractions from pay like tips
+id: jobs details about tips commissions bonuses
 generic object: ALItemizedJob
 question: |
-  Extra income or deductions from the ${ x.source } job
-fields:
-
-  - Do you have another source of income from this job, like tips, commissions or bonuses?: x.to_add.there_are_any
-    datatype: yesnoradio
-  - Do you have anything you should subtract from your pay?: x.to_subtract.there_are_any
-    datatype: yesnoradio
----
-#variable name: job_items_names
-#data:
-#  full time: Full time wages
-#  part time: Part time wages
-#  tips: Tips
-#  commissions: Commissions
-#  bonuses: Bonuses
-  #federal_taxes: Federal taxes
-  #state_taxes: State taxes
-  #social_security: Social security
-  #medicare: Medicare
----
-id: job additional income details
-generic object: ALItemizedJob
-question: |
-  Other incomes from the ${ x.source } job
+  Other incomes
 subquestion: |
   You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
 fields:
-  - Type of other income: x.to_add.new_item_name
-  - note: |
-      Examples: Tips, commissions or bonuses.
+  - What kind of additional income do you get from this job? (Examples -- Tips, commissions, bonuses): x.to_add.new_item_name
 validation code: |
   if x.to_add.new_item_name in x.to_add.complete_elements().keys():
-    validation_error(f'You already told us about your <strong>{ job_items_names.get(x.to_add.new_item_name, x.to_add.new_item_name) }</strong> that pays { currency( x.to_add[ x.to_add.new_item_name ].value )}. Pick a different name.')
+    validation_error(f'You already told us about your <strong>{job_items_names.get(x.to_add.new_item_name, x.to_add.new_item_name) }</strong> that pays { currency( x.to_add[ x.to_add.new_item_name ].value )}. Pick a different name.')
+---
+---
+id: jobs details about tips commissions bonuses
+generic object: ALItemizedJob
+question: |
+  Other incomes from your job as a ${ x.source }
+subquestion: |
+  You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
+fields:
+  - What kind of additional income do you get from this job? (Examples -- Tips, commissions, bonuses): x.to_add.new_item_name
+validation code: |
+  if x.to_add.new_item_name in x.to_add.complete_elements().keys():
+    validation_error(f'You already told us about your <strong>{job_items_names.get(x.to_add.new_item_name, x.to_add.new_item_name) }</strong> that pays { currency( x.to_add[ x.to_add.new_item_name ].value )}. Pick a different name.')
+
+---
+id: other itemized job income value
+generic object: ALItemizedJob
+question: |
+  How much do you get paid in ${ job_items_names.get(i, i) } in your job as a ${ x.source }?
+fields:
+  - Amount: x.to_add[i].value
+    datatype: currency
+  - How often do you get paid this amount?: x.to_add[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+    datatype: integer
+  - Do you have other additional income from this job? (Examples -- Tips, commissions, bonuses): x.to_add.there_is_another
+    datatype: yesnoradio
+---
+id: edit wages and other incomes from a job
+generic object: ALItemizedJob
+continue button field: x.to_add.revisit
+question: |
+  Edit incomes from ${ x.source }
+subquestion: |
+  ${ x.to_add.table }
+
+  ${ x.to_add.add_action() }
+---
+generic object: ALItemizedValueDict
+table: x.table
+rows: x
+columns:
+  - Type: |
+      str(row_index).replace("_", " ").lower().capitalize()
+  - Amount: |
+      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
+edit:
+  #- exists
+  - is_part_time
+  - is_hourly
+  - times_per_year
+  - value
+---
+generic object: ALItemizedValueDict
+table: x.to_add.table
+rows: x
+columns:
+  - Type: |
+      str(row_index).replace("_", " ").lower().capitalize()
+  - Amount per hour or other time period: |
+      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
+  
+edit:
+  #- exists
+  - is_part_time
+  - is_hourly
+  - times_per_year
+  - value
+---
+  
+  
+
+
+
+
+
 ---
 id: job review
 question: |
@@ -621,7 +692,7 @@ edit:
   - value
 
 
-
+#################################
 ---
 id: basic questions intro screen
 decoration: form-lineal
