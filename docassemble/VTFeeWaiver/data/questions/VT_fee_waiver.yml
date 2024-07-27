@@ -9,7 +9,6 @@
 #Generally I get errors when trying to edit things as a user
 #When you Edit incomes from a job it doesn't let you edit hourly rate right
 
-#Need to get my ordered lists ordered the way I set them -- use Q's workaround
 #Need to get other assets yes/no checkboxes to fill -- use selected items variable
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
 #Work on review screen -- do I have all the items they might edit?
@@ -279,7 +278,7 @@ code: |
 
 #generic object: ALIncomeList
 #code: |
-#  x.move_checks_to_list(selected_terms=other_income_ordered)
+#  x.move_checks_to_list(selected_terms=other_incomes_ordered)
 #  x.update_names = True
 
 ---
@@ -328,7 +327,7 @@ fields:
   - Source of income: public_benefits[i].source
     input type: dropdown
     code: |
-      public_benefits.terms_ordered
+      benefits_ordered
     default: other
   - What type of income?: public_benefits[i].source
     show if:
@@ -377,7 +376,7 @@ fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
     code: |
-      other_income_ordered
+      other_incomes_ordered
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -393,7 +392,7 @@ fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
     code: |
-      other_income_ordered
+      other_incomes_ordered
     default: other
   - What type of income?: other_incomes[i].source
     show if:
@@ -852,6 +851,25 @@ fields:
   - "Do you get income from working?": employed
     datatype: yesnoradio
 ---
+
+---
+objects:
+  # workaround to get omaps lists to be ordered
+  - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
+  - other_incomes_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
+  - expenses_ordered: DAOrderedDict.using(elements=expenses.terms_ordered, auto_gather=False, gathered=True)
+  - vehicles_ordered: DAOrderedDict.using(elements=vehicles.terms_ordered, auto_gather=False, gathered=True)
+  - real_estate_ordered: DAOrderedDict.using(elements=real_estate.terms_ordered, auto_gather=False, gathered=True)
+  - bank_assets_ordered: DAOrderedDict.using(elements=bank_assets.terms_ordered, auto_gather=False, gathered=True)
+  - other_assets_ordered: DAOrderedDict.using(elements=other_assets.terms_ordered, auto_gather=False, gathered=True)
+---
+# workaround to get the display names to show
+id: income display names
+generic object: ALIncome
+code: |
+  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
+---
+###############################EXPENSES#############################
 ---
 id: expenses intro
 mandatory: True
@@ -862,11 +880,6 @@ subquestion: |
   Now we will review your expenses -- the things you pay for.
   
   Tap the Next button.
----   
-objects:
-  # workaround to get omaps to be ordered
-  - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
-  - other_income_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
 ---
 # "!!omap" makes these terms ordered
 # their order here will be their same order when shown to users.
@@ -899,7 +912,7 @@ fields:
   - no label: x.selected_types
     datatype: checkboxes
     code: |
-      expenses.terms_ordered
+      expenses_ordered
   - note: |
       "Other expenses" you might enter: pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
 
@@ -939,7 +952,7 @@ subquestion: |
 fields: 
   - Type of expense: x[i].source
     code: |
-      expenses.terms_ordered
+      expenses_ordered
   - Other (explain): x[i].source
     show if:
       variable: x[i].source
@@ -1007,7 +1020,7 @@ fields:
   - no label: vehicles.selected_types
     datatype: checkboxes
     code: |
-      vehicles.terms_ordered
+      vehicles_ordered
 ---
 id: info for each vehicle
 question: |
@@ -1026,8 +1039,8 @@ fields:
 ---
 variable name: real_estate.terms_ordered
 data: !!omap
-  - primary residence: "Primary residence (home or condo where you live most of the time?)"
-  - mobile home: "Mobile home (where you live full-time or part-time?)"
+  - primary residence: "Primary residence (where you live most of the time)"
+  - mobile home: "Mobile home"
   - second home: "Second home"
   - camp: "Camp"
   - timeshare: "Timeshare"
@@ -1048,7 +1061,7 @@ fields:
   - no label: real_estate.selected_types
     datatype: checkboxes
     code: |
-      real_estate.terms_ordered
+      real_estate_ordered
 ---
 id: info for each real estate
 question: |
@@ -1058,8 +1071,8 @@ fields:
     datatype: currency
   - If you have a mortgage, lien or owe money on the real estate, how much do you owe? Enter 0 if you own it outright.: real_estate[i].balance
     datatype: currency
-  - Short description of real estate. Examples -- house I live in, mobile home I live in, condo I live in, vacation camp, home I rent out, building for my business, land I own: real_estate[i].description
-    maxlength: 76
+  #- Town/city where the real estate is located. Example -- Rutland: real_estate[i].description
+    #maxlength: 76
 
 
 ################ OTHER ASSETS ################
@@ -1085,7 +1098,7 @@ fields:
   - no label: other_assets.selected_types
     datatype: checkboxes
     code: |
-      other_assets.terms_ordered
+      other_assets_ordered
 
 ---
 id: describe other asset
@@ -1298,7 +1311,7 @@ review:
       * ${ benefit.display_name }
       % endfor
 
-      % if not public_benefits.selected_types.any_true():
+      % if not public_benefits.there_are_any:
       - None
       % endif
 
@@ -1357,21 +1370,7 @@ review:
       % endif
  
   - note: |
-      ###Assets   
-      
-  - Edit: bank_assets.revisit
-    button: |
-      **Bank accounts and cash**
-      
-      % for item in bank_assets:
-      * ${ item.display_name }
-      % endfor
-
-      % if not bank_assets.there_are_any:
-      - None
-      % endif      
-      
-      
+      ###Assets      
       
   - Edit: vehicles.revisit
     button: |
@@ -1383,16 +1382,29 @@ review:
       % if not vehicles.there_are_any:
       - None
       % endif
-  - Edit: real_estate.revisit
+  - Edit: 
+      - real_estate.revisit
     button: |
       **Real estate**
 
-      % for item in real_estate:
-      * ${ item.description }       
+      % for item in real_estate.complete_elements():
+      * ${ item.source }       
       % endfor
       % if not real_estate.there_are_any:
       - None
       % endif
+
+  - Edit: bank_assets.revisit
+    button: |
+      **Bank accounts and cash**
+      
+      % for item in bank_assets:
+      * ${ item.display_name }
+      % endfor
+
+      % if not bank_assets.there_are_any:
+      - None
+      % endif   
       
   - Edit: other_assets.revisit
     button: |
@@ -1566,13 +1578,13 @@ table: real_estate.table
 rows: real_estate
 columns:
   - Description: |
-      row_item.description if defined("row_item.description") else ""
+      row_item.description if defined("row_item.source") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
-      currency(row_item.amount_owed) if defined("row_item.amount_owed") else ""
+      currency(row_item.balance) if defined("row_item.balance") else ""
 edit:
-  - description
+  - source
   - market_value
   - balance
   
@@ -1786,7 +1798,8 @@ attachments:
       - "users1_assets_vehicle_3_amount_owed": ${ currency(vehicles[3].balance) }
       - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[0].balance) }
       
-      - "users1_assets_real_estate_0_description": ${ real_estate[0].description }
+      - "users1_assets_real_estate_0_description": |
+          ${ real_estate[0].source }
       - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
       - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance) }
       - "users1_assets_real_estate_0_net_value": ${ currency((real_estate[0].market_value) - (real_estate[0].balance)) }
@@ -1815,9 +1828,3 @@ code: |
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Why you cannot afford"
   VT_fee_waiver_attachment.overflow_fields.gathered = True
----
-id: benefits display name
-generic object: ALIncome
-code: |
-  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
----
