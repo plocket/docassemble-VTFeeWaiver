@@ -1,12 +1,12 @@
 #Still having trouble seeing 'None" on review screen when nothing was selected
-#When I entered yes for benefits and yes for job, I skipped over collecting the user name and address
 
-#Use new code tricks to show display_name#Want to add words to column headers on id: edit wages and other incomes from a job
+
+#Use new code tricks to show display_name
+#Want to add words to column headers on id: edit wages and other incomes from a job
 #Dont want this to show up if I'm not collecting this info jobs[0].to_subtract.revisit
 
 #When you Edit incomes from a job it doesn't let you edit hourly rate right -- fixed??
 
-#Need to get other assets yes/no checkboxes to fill -- use selected items variable
 #When I don't enter any income info, the total needs to be zero on PDF
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
 #Possible to get $0 not to show in some places?
@@ -137,22 +137,22 @@ code: |
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
 
-  VT_fee_waiver_intro
-  set_progress(10)
-  important_notes_to_user
-  #user_ask_role
-  
-  set_progress(10)
-  nav.set_section('about_you')
-  users.gather()
-  users[0].address.address
-  users[0].daytime_phone_number
-  users[0].email
-  household_size
-  
-  nav.set_section('case_info')
-  case_name
-  docket_number
+  #VT_fee_waiver_intro
+  #set_progress(10)
+  #important_notes_to_user
+  ##user_ask_role
+  #
+  #set_progress(10)
+  #nav.set_section('about_you')
+  #users.gather()
+  #users[0].address.address
+  #users[0].daytime_phone_number
+  #users[0].email
+  #household_size
+  #
+  #nav.set_section('case_info')
+  #case_name
+  #docket_number
   trial_court_division
   
   nav.set_section('your_income')
@@ -920,9 +920,9 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      "Other expenses" you might enter: pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
+      **"Other expenses" you might enter:** pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
 
-      "Other insurance" you might enter: dental, vision, home, rental, business, life insurance and more.
+      **"Other insurance" you might enter:** dental, vision, home, rental, business, life insurance and more.
 ---
 generic object: ALExpenseList
 need:
@@ -976,18 +976,6 @@ fields:
       "Other insurance" you might enter: dental, vision, home, rental, business, life insurance and more.
 validation code: |
   x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
----
-id: expenses review
-question: |
-  Review your expenses
-subquestion: |
-  Here is what you've told us about your monthly expenses. You can add more or continue
-  to the next question.
-
-  ${ expenses.table }
-
-  ${ expenses.add_action() }
-continue button field: review_expenses  
 ---
 id: assets intro
 mandatory: True
@@ -1253,7 +1241,9 @@ code: |
   real_estate.there_is_another = False
   bank_assets.there_is_another = False
   other_assets.there_is_another = False
+---
 
+#####################REVIEW SCREEN#######################
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
@@ -1325,10 +1315,15 @@ review:
   - Edit: jobs.revisit
     button: |
       **Jobs**
+
+      % if not employed:
+      - None
+      % endif
       
       % for item in jobs:
       * ${ item.source } / ${ item.employer.name }
       % endfor
+      
 
   - Edit: users1_income_self_employment_monthly_amount 
     button: |
@@ -1369,12 +1364,14 @@ review:
     button: |
       **Expenses**:
 
+      % if not expenses.selected_types.any_true():
+      - None
+      % endif
+      
       % for item in expenses:
       * ${ item.display_name }
       % endfor
-      % if not expenses.there_are_any:
-      - None
-      % endif
+
  
   - note: |
       ###Assets      
@@ -1386,7 +1383,7 @@ review:
       % for item in vehicles:
       * ${ item.make } ${ item.model } ${ item.year }          
       % endfor
-      % if not vehicles.there_are_any:
+      % if not vehicles.selected_types.any_true():
       - None
       % endif
   - Edit: 
@@ -1529,8 +1526,25 @@ edit:
   - value
 
 ---
+continue button field: expenses.revisit
+question: |
+  Edit expenses
+subquestion: |
+  ${ expenses.table }
 
-
+  ${ expenses.add_action() }
+---
+table: expenses.table
+rows: expenses
+columns:
+  - Type: |
+      row_item.display_name
+  - Amount per month: |
+      currency(row_item.total(times_per_year=12))
+edit:
+  - source
+  - value
+  - display_name
 ---
 continue button field: bank_assets.revisit
 question: |
