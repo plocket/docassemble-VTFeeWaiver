@@ -112,12 +112,12 @@ code: |
 ---
 sections:
   - intro: Is this interview right for you
+  - about_you: You and your household
+  - case_info: Court case info
   - your_income: Your income
   - your_expenses: Your expenses
   - your_assets: Your property and assets
   - reasons: Other info
-  - about_you: You and your household
-  - case_info: Court case info
   - review_VT_fee_waiver: Review your answers
   - sign: Sign your document
   - get_docs: Download your document
@@ -142,14 +142,25 @@ code: |
   important_notes_to_user
   #user_ask_role
   
-  set_progress(20)
+  set_progress(10)
+  nav.set_section('about_you')
+  users.gather()
+  users[0].address.address
+  users[0].daytime_phone_number
+  users[0].email
+  household_size
+  
+  nav.set_section('case_info')
+  case_name
+  docket_number
+  trial_court_division
+  
   nav.set_section('your_income')
   if public_benefits.selected_types.any_true():
     public_benefits.there_are_any = True
     public_benefits.gathered
-      
     user_qualifies_interstitial
-    
+
     #If they get public benefits ask if they work too and gather only employer info      
     if employed:
       if jobs.target_number == 1:
@@ -185,6 +196,7 @@ code: |
         jobs.gather()
         review_jobs
     set_progress(40)
+    
     if other_incomes.selected_types.any_true():
       other_incomes.there_are_any = True
       other_incomes.gathered
@@ -216,20 +228,10 @@ code: |
     if other_assets.selected_types.any_true():
       other_assets.there_are_any = True
       other_assets.gathered
+      
     nav.set_section('reasons')
     other_reasons_why_cannot_afford
     set_progress(80)
-    nav.set_section('about_you')
-    users.gather()
-    users[0].address.address
-    users[0].daytime_phone_number
-    users[0].email
-    household_size
-    nav.set_section('case_info')
-    case_name
-    docket_number
-    trial_court_division
-
     
   set_progress(90)
   interview_order_VT_fee_waiver = True
