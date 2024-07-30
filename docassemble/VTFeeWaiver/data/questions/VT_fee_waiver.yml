@@ -864,16 +864,21 @@ objects:
   - bank_assets_ordered: DAOrderedDict.using(elements=bank_assets.terms_ordered, auto_gather=False, gathered=True)
   - other_assets_ordered: DAOrderedDict.using(elements=other_assets.terms_ordered, auto_gather=False, gathered=True)
 ---
-# workaround to get the display names to show
+# workaround to get the display names to show and to be able to add a benefit in review screen
 id: income display names
 generic object: ALIncome
 code: |
   x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
 ---
-id: bank asset display names
-generic object: ALAsset
+id: real estate display names
+#generic object: ALAsset
 code: |
-  x.display_name = bank_assets.terms_ordered.get(x.source, x.source)
+  real_estate.display_name = real_estate.terms_ordered.get(x.source, x.source)
+---
+id: bank assets display names
+#generic object: ALAsset
+code: |
+  bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
 ---
 ###############################EXPENSES#############################
 ---
@@ -893,12 +898,12 @@ variable name: expenses.terms_ordered
 data: !!omap
   - rent: "Rent"
   - mortgage: "Mortgage"
-  - food: "Food"
   - electric: "Electric"
   - phone: "Phone"
   - fuel: "Fuel (heat and/or gas)"
-  - clothing: "Clothing and shoes"
   - property tax: "Property taxes"
+  - food: "Food"
+  - clothing: "Clothing and shoes"
   - medical: "Medical costs"
   - health insurance: "Health insurance"
   - auto loan: "Auto loan payment"
@@ -1388,11 +1393,13 @@ review:
       % endif
   - Edit: 
       - real_estate.revisit
+      - recompute:
+        - real_estate.gathered
     button: |
       **Real estate**
 
       % for item in real_estate.complete_elements():
-      * ${ item.source }       
+      * ${ item.display_name }       
       % endfor
       % if not real_estate.there_are_any:
       - None
@@ -1406,7 +1413,7 @@ review:
       **Bank accounts and cash**
       
       % for item in bank_assets.complete_elements():
-      * ${ item.source }
+      * ${ item.display_name }
       % endfor
 
       % if not bank_assets.there_are_any:
@@ -1602,7 +1609,7 @@ table: real_estate.table
 rows: real_estate
 columns:
   - Description: |
-      row_item.source if defined("row_item.source") else ""
+      row_item.display_name if defined("row_item.display_name") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
@@ -1784,7 +1791,7 @@ attachments:
       - "users1_expenses_auto_loan_monthly_amount": ${ currency(expenses.total(source=["auto loan"],times_per_year=12)) }
       - "users1_expenses_property_tax_monthly_amount": ${ currency(expenses.total(source=["property tax"],times_per_year=12)) }
       - "users1_expenses_all_insurance_monthly_amount": ${ currency(expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12)) }
-      - "users1_expenses_other_monthly_amount": ${ currency(expenses.total(exclude_source=["health insurance", "rent", "food" ],times_per_year=12)) }
+      - "users1_expenses_other_monthly_amount": ${ currency(expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12)) }
       - "users1_expenses_monthly_total": ${ currency(expenses.total(times_per_year=12)) }
       
       - "assets_yes": |
@@ -1829,12 +1836,12 @@ attachments:
       - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[0].balance) }
       
       - "users1_assets_real_estate_0_description": |
-          ${ real_estate[0].source }
+          ${ real_estate[0].display_name }
       - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
       - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance) }
       - "users1_assets_real_estate_0_net_value": ${ currency((real_estate[0].market_value) - (real_estate[0].balance)) }
 
-      - "users1_assets_real_estate_1_description": ${ real_estate[1].source }
+      - "users1_assets_real_estate_1_description": ${ real_estate[1].display_name }
       - "users1_assets_real_estate_1_market_value": ${ currency(real_estate[1].market_value) }
       - "users1_assets_real_estate_1_amount_owed": ${ currency(real_estate[1].balance) }
       - "users1_assets_real_estate_1_net_value": ${ currency((real_estate[1].market_value) - (real_estate[1].balance)) }
