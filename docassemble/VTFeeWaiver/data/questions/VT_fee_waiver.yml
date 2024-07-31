@@ -1,11 +1,12 @@
 #Still having trouble seeing 'None" on review screen when nothing was selected
-
+#Having trouble adding "other" items when running through interviews. Wants to ask me about other incomes from the ALToolbox code!
+#Cannot add two "other" items -- not asked
 
 #Use new code tricks to show display_name
-#Want to add words to column headers on id: edit wages and other incomes from a job
+#Want to add words to column headers on id: edit wages and other incomes from a job -- "per hour" for hourly rates and "per x" for tips, bonuses, etc
 #Dont want this to show up if I'm not collecting this info jobs[0].to_subtract.revisit
 
-#When you Edit incomes from a job it doesn't let you edit hourly rate right -- fixed??
+#Still working on wording of id: other itemized job income value so I can edit hourly rate, bonus, tip, etc with the right wording
 
 #When I don't enter any income info, the total needs to be zero on PDF
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
@@ -280,6 +281,9 @@ code: |
 #  x.move_checks_to_list(selected_terms=other_incomes_ordered)
 #  x.update_names = True
 
+
+---
+#################################PUBLIC BENEFITS##############################
 ---
 variable name: public_benefits.terms_ordered
 data: !!omap
@@ -345,23 +349,25 @@ variable name: other_incomes.terms_ordered
 data: !!omap
   - unemployment income: "Unemployment benefits"
   - child support income: "Child support"
-  - rental income: "Rental income"
-  - annuities income: "Annuities"
-  - retirement income: "Retirement/pension"
-  - workers comp income: "Workers comp or disability insurance"
-  - social security income: "Social Security benefits"
-  - veterans income: "Veterans benefits"
-  - interest income: "Interest or dividend income"
-  - gifts income: "Gifts or prize money (including lottery)"   
-  - alimony from OP income: "Spousal maintenance (from other party in this court action)"
-  - alimony from other income: "Spousal maintenance (from someone else)"  
-  - other: "Other (for example, capital gains on stocks)"
+  - other: "Other"
 ---
 variable name: help_text
 data: !!omap
   - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
   - default: " "
-
+---
+id: user qualifies due to benefits
+continue button field: user_qualifies_interstitial
+question: |
+  You should qualify
+subquestion: |
+  If you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
+  
+  We can skip some of the questions in the form. 
+  
+  Click Next to answer a few more questions.
+---
+#################################OTHER INCOMES##############################
 ---
 id: are there other incomes
 #other_incomes
@@ -376,6 +382,8 @@ fields:
     datatype: checkboxes
     code: |
       other_incomes_ordered
+  - note: |
+      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, alimony / spousal maintenance, retirement income and annuities.
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -408,16 +416,17 @@ fields:
     show if:
       variable: other_incomes[i].source
       is: unemployment_income
+  - note: |
+      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, alimony / spousal maintenance, retirement income and annuities.
 
----
-id: are you employed
-question: |
-  Are you employed?
-fields:
-  - Are you employed?: employed
-    datatype: yesnoradio
----
 #################################JOBS##############################
+---
+id: work
+question: |
+  Work
+fields:
+  - "Do you get income from working?": employed
+    datatype: yesnoradio
 ---
 id: self employed income
 question: |
@@ -483,11 +492,11 @@ fields:
 id: itemized job period
 generic object: ALItemizedJob
 question: |
-  What are the hours for the "${ x.source }" job?
+  Details about the "${ x.source }" job
 fields:
   - Is this a part time job: x.is_part_time
     datatype: yesnoradio
-  - Hourly or salary?: x.is_hourly
+  - Paid hourly or salary?: x.is_hourly
     input type: radio
     choices:
       - Hourly: True
@@ -565,17 +574,33 @@ validation code: |
 id: other itemized job income value
 generic object: ALItemizedJob
 question: |
-  How much do you get paid in ${ job_items_names.get(i, i) } in your job as a ${ x.source }?
+  Edit your ${ job_items_names.get(i, i) } in your job as a ${ x.source }
 fields:
   - Amount: x.to_add[i].value
     datatype: currency
+    hide if:
+      code: x.is_hourly is True
+  - Your hourly pay rate: x.to_add[i].value
+    datatype: currency
+    show if:
+      code: x.is_hourly is True
+        
   - How often do you get paid this amount?: x.to_add[i].times_per_year
     input type: radio
     code: |
       times_per_year_list
     datatype: integer
-  - Do you have other additional income from this job? (Examples -- Tips, commissions, bonuses): x.to_add.there_is_another
-    datatype: yesnoradio
+    hide if:
+      code: x.is_hourly is True
+  - How often do you get paid by ${ x.employer}?: x.to_add[i].times_per_year
+    input type: radio
+    code: |
+      times_per_year_list
+    datatype: integer
+    show if:
+      code: x.is_hourly is True
+  #- Do you have other additional income from this job? (Examples -- Tips, commissions, bonuses): x.to_add.there_is_another
+    #datatype: yesnoradio
 ---
 id: edit wages and other incomes from a job
 generic object: ALItemizedJob
@@ -631,7 +656,6 @@ subquestion: |
   ${ jobs.add_action() }
 field: review_jobs
 ---
-
 table: jobs.table
 rows: jobs
 columns:
@@ -667,8 +691,8 @@ edit:
   - times_per_year
   - value
 
-
-#################################
+---
+###############################INTRO SCREENS###############################
 ---
 id: basic questions intro screen
 decoration: form-lineal
@@ -737,6 +761,8 @@ subquestion: |
     Let's get started. Tap the Next button.
 continue button field: important_notes_to_user
 ---
+###############################ABOUT COURT CASE###############################
+---
 id: choose a court
 question: |
   What court is your case in?
@@ -768,6 +794,8 @@ fields:
     maxlength: 80
   - note: |
       If you are starting a case, type in your name (the plaintiff's name) "vs." the other party (the defendant's name).
+---
+###############################USERS INFO###############################
 ---
 id: Gather users street address
 sets:
@@ -833,26 +861,8 @@ validation code: |
       (not showifdef('users[0].email')) and \
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
----
-id: user qualifies due to benefits
-continue button field: user_qualifies_interstitial
-question: |
-  You should qualify
-subquestion: |
-  If you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
-  
-  We can skip some of the questions in the form. 
-  
-  Click Next to answer a few more questions.
----
-id: Work
-question: |
-  Work
-fields:
-  - "Do you get income from working?": employed
-    datatype: yesnoradio
----
 
+###############################WORKAROUNDS###############################
 ---
 objects:
   # workaround to get omaps lists to be ordered
@@ -865,7 +875,7 @@ objects:
   - other_assets_ordered: DAOrderedDict.using(elements=other_assets.terms_ordered, auto_gather=False, gathered=True)
 ---
 # workaround to get the display names to show and to be able to add a benefit in review screen
-id: income display names
+id: public benefits display names
 generic object: ALIncome
 code: |
   x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
@@ -874,6 +884,11 @@ id: real estate display names
 #generic object: ALAsset
 code: |
   real_estate.display_name = real_estate.terms_ordered.get(x.source, x.source)
+---
+id: other asset display names
+#generic object: ALAsset
+code: |
+  other_asset.display_name = other_asset.terms_ordered.get(x.source, x.source)
 ---
 id: bank assets display names
 #generic object: ALAsset
@@ -1081,6 +1096,7 @@ fields:
 variable name: other_assets.terms_ordered
 data: !!omap
   - tools: "Tools"
+  - equipment: "Equipment"
   - electronics: "Electronics"
   - stocks: "Stocks"
   - bonds: "Bonds"
@@ -1088,10 +1104,8 @@ data: !!omap
 ---
 id: other assets
 question: |
-  Other assets that you have not entered already
-subquestion: |  
-  Other assets may be things like tools, equipment, electronics, computers, stocks, bonds, etc.)? — what about retirement account?
-  
+  Other large assets that you have not entered already
+subquestion: |   
   Check any that apply to you.
 fields:
   - no label: other_assets.selected_types
@@ -1131,8 +1145,8 @@ fields:
 ---
 variable name: bank_assets.terms_ordered
 data: !!omap
-  - checking account: "Checking account"
-  - savings account: "Savings account"
+  - checking account: "Checking accounts"
+  - savings account: "Savings accounts"
   - cash on hand: "Cash on hand"
 ---
 id: are there bank assets
@@ -1159,9 +1173,7 @@ fields:
     datatype: currency
     required: False
 ---
-
-
-
+#############################OTHER REASONS#############################
 ---
 id: more information
 question: |
@@ -1175,6 +1187,8 @@ fields:
     required: False
   - note: |
       ${ after_last_question_we_will_generate_your_forms }
+---
+#############################SIGNATURE#############################
 ---
 id: User signature
 question: |
@@ -1236,6 +1250,8 @@ code: |
   
   
   
+
+#####################REVIEW SCREEN#######################
 ---
 #This code is a workaround for an error that you get when you edit these in review table
 code: |
@@ -1246,9 +1262,6 @@ code: |
   real_estate.there_is_another = False
   bank_assets.there_is_another = False
   other_assets.there_is_another = False
----
-
-#####################REVIEW SCREEN#######################
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
@@ -1643,7 +1656,8 @@ edit:
   - market_value
   - balance
 
-
+---
+#####################DOWNLOAD SCREEN#####################
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
@@ -1668,6 +1682,8 @@ subquestion: |
   ${ collapse_template(log_out_when_done) }
 
 progress: 100
+---
+#####################ATTACHMENTS#####################
 ---
 objects:
   - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Instructions", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
@@ -1861,7 +1877,10 @@ attachments:
       - "users1_signature": ${ users[0].signature_if_final(i) }
       
 ---
+#####################OVERFLOW#####################
+---
 code: |
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Why you cannot afford"
   VT_fee_waiver_attachment.overflow_fields.gathered = True
+---
