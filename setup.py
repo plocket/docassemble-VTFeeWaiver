@@ -54,7 +54,7 @@ setup(name='docassemble.VTFeeWaiver',
       url='https://VTLawHelp.org/VTCourtForms',
       packages=find_packages(),
       namespace_packages=['docassemble'],
-      install_requires=['docassemble.ALToolbox>=0.10.1', 'docassemble.AssemblyLine>=2.28.1', 'docassemble.GithubFeedbackForm>=0.4.0', 'docassemble.VTFeedback', 'docassemble.VTSharedYMLFile'],
+      install_requires=['docassemble.ALToolbox>=0.11.0', 'docassemble.AssemblyLine>=3.0.1', 'docassemble.GithubFeedbackForm>=0.4.0', 'docassemble.VTFeedback', 'docassemble.VTSharedYMLFile'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/VTFeeWaiver/', package='docassemble.VTFeeWaiver'),
      )

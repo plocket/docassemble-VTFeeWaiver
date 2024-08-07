@@ -1,3 +1,5 @@
+#Working on overflows and addendum -- it's asking for users role and then defendant name and then spitting out a document with automated headings instead of my own
+
 #Still having trouble seeing 'None" on review screen when nothing was selected
 #Having trouble adding "other" items when running through interviews. Wants to ask me about other incomes from the ALToolbox code!
 #Cannot add two "other" items -- not asked
@@ -12,7 +14,6 @@
 #Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
 #Possible to get $0 not to show in some places?
 #To erase dollar sign, add ,symbol="")
-#Will need to create overflows and addendum -- including benefits
 #Add to snapshot "has_assets": showifdef("....."),
 
 
@@ -1877,10 +1878,22 @@ attachments:
       - "users1_signature": ${ users[0].signature_if_final(i) }
       
 ---
-#####################OVERFLOW#####################
+#####################OVERFLOW + ADDENDUM#####################
+---
+attachment:
+  variable name: VT_fee_waiver.addendum
+  docx template file: VT_fee_waiver_addendum.docx
 ---
 code: |
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Additional public benefits received"
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].overflow_trigger = 1
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].headers = [
+    {'display_name': "Benefit"},
+    {'value': "Amount"},
+    {'times_per_year': "Times per year"}
+  ]  
+  
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
-  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Why you cannot afford"
+  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
   VT_fee_waiver_attachment.overflow_fields.gathered = True
 ---
