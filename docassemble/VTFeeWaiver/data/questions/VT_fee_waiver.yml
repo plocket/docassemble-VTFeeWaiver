@@ -26,14 +26,14 @@ include:
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - public_benefits: ALIncomeList
+  - public_benefits: ALIncomeList.using(complete_attribute='value')
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
-  - other_incomes: ALIncomeList
-  - expenses: ALExpenseList
-  - bank_assets: ALAssetList
-  - vehicles: ALVehicleList
-  - real_estate: ALAssetList
-  - other_assets: ALAssetList
+  - other_incomes: ALIncomeList.using(complete_attribute='value')
+  - expenses: ALExpenseList.using(complete_attribute='value')
+  - bank_assets: ALAssetList.using(complete_attribute='value')
+  - vehicles: ALVehicleList.using(complete_attribute='value')
+  - real_estate: ALAssetList.using(complete_attribute='value')
+  - other_assets: ALAssetList.using(complete_attribute='value')
 ---
 generic object: ALIncomeList
 code: |
@@ -157,12 +157,9 @@ code: |
   trial_court_division
   
   nav.set_section('your_income')
-  if public_benefits.selected_types.any_true():
-    public_benefits.there_are_any = True
-    public_benefits.gathered
-    user_qualifies_interstitial
-
-    #If they get public benefits ask if they work too and gather only employer info      
+  public_benefits.gather()
+  if public_benefits.there_are_any:
+    user_qualifies_interstitial   
     if employed:
       if jobs.target_number == 1:
         if not jobs[0].is_self_employed:
@@ -178,8 +175,7 @@ code: |
         if not jobs[1].is_self_employed:
           jobs[1].employer.name.first 
         if not jobs[2].is_self_employed:
-          jobs[2].employer.name.first    
-          
+          jobs[2].employer.name.first       
   else:
     if employed:
       jobs.target_number
@@ -198,37 +194,25 @@ code: |
         review_jobs
     set_progress(40)
     
-    if other_incomes.selected_types.any_true():
-      other_incomes.there_are_any = True
-      other_incomes.gathered
+    other_incomes.gather()
 
     set_progress(50)
     nav.set_section('your_expenses')
     expenses_intro
-    if expenses.selected_types.any_true():
-      expenses.there_are_any = True
-      expenses.gathered
+    expenses.gather()
 
     set_progress(60)
     nav.set_section('your_assets')
     assets_intro
   
-    if vehicles.selected_types.any_true():
-      vehicles.there_are_any = True
-      vehicles.gathered
+    vehicles.gather()
   
-    if real_estate.selected_types.any_true():
-      real_estate.there_are_any = True
-      real_estate.gathered
+    real_estate.gather()
         
     set_progress(70)
-    if bank_assets.selected_types.any_true():
-      bank_assets.there_are_any = True
-      bank_assets.gathered
+    bank_assets.gather()
         
-    if other_assets.selected_types.any_true():
-      other_assets.there_are_any = True
-      other_assets.gathered
+    other_assets.gather()
       
     nav.set_section('reasons')
     other_reasons_why_cannot_afford
@@ -315,6 +299,15 @@ fields:
     datatype: checkboxes
     code: |
       benefits_ordered
+---
+generic object: ALIncomeList
+code: |
+  if x.selected_types.any_true():
+    x.move_checks_to_list(selected_terms=x.terms_ordered)
+    x.there_are_any = True
+    x.there_is_another = False
+  else:
+    x.there_are_any = False
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
@@ -1401,7 +1394,7 @@ review:
       % for item in vehicles:
       * ${ item.make } ${ item.model } ${ item.year }          
       % endfor
-      % if not vehicles.selected_types.any_true():
+      % if not vehicles.there_are_any:
       - None
       % endif
   - Edit: 
