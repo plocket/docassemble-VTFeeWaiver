@@ -1,4 +1,4 @@
-#Working on overflows and addendum -- it's asking for users role and then defendant name and then spitting out a document with automated headings instead of my own
+#Working on overflows and addendum for jobs
 
 #Still having trouble seeing 'None" on review screen when nothing was selected
 #Having trouble adding "other" items when running through interviews. Wants to ask me about other incomes from the ALToolbox code!
@@ -1136,8 +1136,6 @@ fields:
   - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
     maxlength: 76
     datatype: currency
-  - If you owe money on this asset, how much do you owe? Enter 0 if you own it outright.: other_assets[i].balance
-    datatype: currency
   - note: |
       Other assets may be things like tools, equipment, electronics, computers, stocks, bonds, etc.
 ---
@@ -1693,22 +1691,40 @@ attachment:
   docx template file: VT_fee_waiver_addendum.docx
 ---
 code: |
-  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Additional public benefits received"
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Other public benefits that are part of the reported monthly amount"
   VT_fee_waiver_attachment.overflow_fields["public_benefits"].overflow_trigger = 1
   VT_fee_waiver_attachment.overflow_fields["public_benefits"].headers = [
     {'display_name': "Benefit"},
-    {'value': "Amount"},
-    {'times_per_year': "Times per year"}
   ]  
 
+  VT_fee_waiver_attachment.overflow_fields["jobs"].label = "Additional jobs"
+  VT_fee_waiver_attachment.overflow_fields["jobs"].overflow_trigger = 2
+  
   VT_fee_waiver_attachment.overflow_fields["vehicles"].label = "Additional vehicles"
   VT_fee_waiver_attachment.overflow_fields["vehicles"].overflow_trigger = 4
+  VT_fee_waiver_attachment.overflow_fields["vehicles"].headers = [
+    {'make': "Make"},
+    {'model': "Model"},
+    {'year': "Year"},
+    {'market_value': "Fair market value"},
+    {'balance': "Amount owed"},
+  ]  
   
   VT_fee_waiver_attachment.overflow_fields["real_estate"].label = "Additional real estate"
   VT_fee_waiver_attachment.overflow_fields["real_estate"].overflow_trigger = 2
+  VT_fee_waiver_attachment.overflow_fields["real_estate"].headers = [
+    {'display_name': "Description"},
+    {'market_value': "Fair market value"},
+    {'balance': "Amount owed"},
+  ]  
 
   VT_fee_waiver_attachment.overflow_fields["other_assets"].label = "Additional assets"
   VT_fee_waiver_attachment.overflow_fields["other_assets"].overflow_trigger = 2
+  
+  VT_fee_waiver_attachment.overflow_fields["other_assets"].headers = [
+    {'display_name': "Description"},
+    {'market_value': "Fair market value"},
+  ]  
   
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 570
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
