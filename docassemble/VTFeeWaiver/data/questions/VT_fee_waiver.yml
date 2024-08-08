@@ -1041,6 +1041,8 @@ fields:
 id: info for each vehicle
 question: |
   About your ${ vehicles[i].source }
+subquestion: |
+  Make your best guess when answering these questions.
 fields:
   - What make / manufacturer? (Examples - Honda or Ford): vehicles[i].make
   - What model? (Examples - Civic or F-150): vehicles[i].model
@@ -1082,6 +1084,8 @@ fields:
 id: info for each real estate
 question: |
   About your ${ real_estate[i].source }
+subquestion: |
+  Make your best guess for the market value.
 fields:
   - What is its market value? How much would you get if you sold it?: real_estate[i].market_value
     datatype: currency
@@ -1130,6 +1134,8 @@ subquestion: |
   Now tell us about the next asset.
   % endfor
   % endif
+
+  Make your best guess for the market value.
 fields:     
   - What is the asset?: other_assets[i].description
     maxlength: 40
