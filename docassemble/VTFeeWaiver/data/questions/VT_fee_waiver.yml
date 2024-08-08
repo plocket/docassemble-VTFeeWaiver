@@ -434,11 +434,11 @@ question: |
   What do you make in self-employed income each month?
 subquestion: |
   
-  To figure your monthly net income:
+  Most people report their net income from self-employment. To figure your monthly net income:
   
   - Look at your gross income over the last 12 months of self-employment. 
-  - Subtract your business expenses. 
-  - Then divide by 12. 
+  - Subtract your business expenses over that time.
+  - Then divide by 12.
   
   Or you can:
   
@@ -703,7 +703,7 @@ subquestion: |
 
   <p>${ intro_vtcourtforms_3_steps }</p>
   
-  <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed fee waiver form for Vermont courts -- form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action.
+  <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed Application to Waive Filing Fees and Service Costs for Vermont courts -- form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action.
   
     <i class="fas fa-clock fa-2x"></i>  It may take you between 10 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
 
@@ -731,23 +731,26 @@ question: |
   Do you need the fee waiver form?
 subquestion: |
 
-  Before you begin, check to be sure you actually need to pay a court filing fee. When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee. If you are submitting an Answer to a court action, you usually don't have a court filing fee. Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  Before you begin, check to be sure you actually need to pay a court filing fee.
   
-  **What you will need**
+  * When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee.
+  * If you are submitting an Answer to a court action, you usually don't have a court filing fee.
+  * Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  
+  **What you will need to complete this form**
   
   For this guided interview, you will need to know:
   
   * the name and address of any employer you might have
-  * any public benefits that you get, and
-  * information about the court case for which you want a fee waiver (You can find this information on other court papers you have about this case. If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
+  * any public benefits that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.), and
+  * information about the court case for which you want a fee waiver. (You can find this information on other court papers you have about this case. If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
   
-  If you get public benefits, that's all you need. If you don't get public benefits, you will also need to know:
+  If you get public benefits, that's all you need. **If you don't get public benefits**, you will also need to know:
   
+  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your Schedule C on hand or have your income and business expenses from the last 12 months.
+  * your expenses (like rent, utilities, insurance payments, childcare, etc.) -- looking back over the last 12 months
   * the amount of money you have in the bank and on hand
-  * your income in the past month
-  * your income over the past 12 months
-  * your monthly expenses
-  * the value of your vehicles / cars, real estate / home, and any other major things you own, and
+  * the value of your vehicle/car, real estate/home, and any other major things you might own, and
   * if filling out form on behalf of a minor or incompetent adult, you need that person’s information.
 
 ---
@@ -941,7 +944,7 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      **"Other expenses" you might enter:** pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
+      **"Other expenses" you might enter:** childcare, pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, business, life insurance and more.
 ---
@@ -992,9 +995,9 @@ fields:
     code: |
       times_per_year_for_expenses
   - note: |
-      "Other expenses" you might enter: pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
+      **"Other expenses" you might enter:** childcare, pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
 
-      "Other insurance" you might enter: dental, vision, home, rental, business, life insurance and more.
+      **"Other insurance" you might enter:** dental, vision, home, rental, business, life insurance and more.
 validation code: |
   x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
 ---
@@ -1138,7 +1141,7 @@ fields:
   - If you owe money on this asset, how much do you owe? Enter 0 if you own it outright.: other_assets[i].balance
     datatype: currency
   - note: |
-      Other assets may be things like tools, equipment, electronics, computers, stocks, bonds, etc.)? — what about retirement account?
+      Other assets may be things like tools, equipment, electronics, computers, stocks, bonds, etc.
 ---
 
 
@@ -1687,8 +1690,8 @@ progress: 100
 #####################ATTACHMENTS#####################
 ---
 objects:
-  - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Instructions", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - VT_fee_waiver_attachment: ALDocument.using(title="Fee waiver form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Next Steps document", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_attachment: ALDocument.using(title="Vermont fee waiver form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[VT_fee_waiver_post_interview_instructions,VT_fee_waiver_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
