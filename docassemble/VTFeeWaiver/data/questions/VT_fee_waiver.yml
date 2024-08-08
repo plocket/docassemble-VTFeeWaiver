@@ -1689,7 +1689,7 @@ progress: 100
 #####################OVERFLOW + ADDENDUM#####################
 ---
 attachment:
-  variable name: VT_fee_waiver.addendum
+  variable name: VT_fee_waiver_attachment.addendum
   docx template file: VT_fee_waiver_addendum.docx
 ---
 code: |
@@ -1726,7 +1726,7 @@ attachments:
     docx template file: VT_fee_waiver_next_steps.docx
     fields:
         - "address_county": ${ trial_court.address.county }
-        - "division": ${ trial_court.division }
+        - "division": ${ trial_court.division.upper() }
         - "name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
         - "address_unit": ${ trial_court.address.unit }
@@ -1802,10 +1802,10 @@ attachments:
           % endif
    
       - "users1_benefits": |
-          % if public_benefits.target_number == 1:
-          ${ public_benefits[0].display_name }
-          % elif public_benefits.target_number > 1:
+          % if defined("public_benefits[1]"):
           ${ public_benefits[0].display_name } ...
+          % else:
+          ${ public_benefits[0].display_name }
           % endif
           
       - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
