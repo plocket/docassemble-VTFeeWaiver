@@ -1346,16 +1346,7 @@ review:
       
       % for item in jobs:
       * ${ item.source } / ${ item.employer.name }
-      % endfor
-      
-
-  - Edit: users1_income_self_employment_monthly_amount 
-    button: |
-      **Self employment:**
-
-      Monthly income from self-employment: 
-      ${ currency(showifdef("users1_income_self_employment_monthly_amount")) }
-      
+      % endfor     
       
   - Edit: 
       - other_incomes.revisit
@@ -1375,8 +1366,8 @@ review:
   - Edit: users1_income_self_employment_monthly_amount
     button: |
       **Self employment**:
-      % if defined("users1_income_self_employment_monthly_amount)"):
-        ${ currency(users1_income_self_employment_monthly_amount) }      
+      % if defined("users1_income_self_employment_monthly_amount"):
+        Yes     
       % else:
         No
       % endif     
@@ -1846,23 +1837,33 @@ attachments:
       - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
 
       
-      - "users1_income_employment_monthly_amount": ${ currency(jobs.total(source=["full time","part time"],times_per_year=12)) }
+      - "users1_income_employment_monthly_amount": |
+          % if not employed:
+            0.00
+          % else:
+          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
+          % endif
       
-      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment_income"],times_per_year=12)) }
+      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment_income"],times_per_year=12),symbol="") }
       
-      - "users1_income_child_support_monthly_amount": ${ currency(other_incomes.total(source=["child_support"],times_per_year=12)) }
+      - "users1_income_child_support_monthly_amount": ${ currency(other_incomes.total(source=["child_support"],times_per_year=12),symbol="") }
       
-      - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12)) }
+      - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12),symbol="") }
       
-      - "users1_income_self_employment_monthly_amount": ${ currency(users1_income_self_employment_monthly_amount) }
-
-
+      - "users1_income_self_employment_monthly_amount": |
+          % if defined("users1_income_self_employment_monthly_amount"):
+            ${ currency(users1_income_self_employment_monthly_amount) }
+          % else:
+            0.00
+          % endif
 
       - "users1_income_monthly_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
           ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount) }
+          % elif employed:
+          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
           % else:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }      
+            0.00      
           % endif
       - "users1_income_annual_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
@@ -1926,7 +1927,7 @@ attachments:
            ${ vehicles[3].make } ${ vehicles[3].model } ${ vehicles[3].year } 
       - "users1_assets_vehicle_3_market_value": ${ currency(vehicles[3].market_value) }
       - "users1_assets_vehicle_3_amount_owed": ${ currency(vehicles[3].balance) }
-      - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[0].balance) }
+      - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[3].balance) }
       
       - "users1_assets_real_estate_0_description": |
           ${ real_estate[0].display_name }
