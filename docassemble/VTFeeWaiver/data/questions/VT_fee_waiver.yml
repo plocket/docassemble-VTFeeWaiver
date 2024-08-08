@@ -298,11 +298,6 @@ data: !!omap
   - housing assistance: "Housing Assistance"   
   - other benefit: "Other"
 ---
-#variable name: help_text
-#data: !!omap
-  #- unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
-  #- default: " "
----
 id: are there public benefits
 #public_benefits
 question: |
@@ -352,7 +347,7 @@ data: !!omap
 ---
 variable name: help_text
 data: !!omap
-  - unemployment_income: "Enter gross amount of unemployment income -- before taxes were taken out."
+  - unemployment income help: "Enter gross amount of unemployment income -- before taxes were taken out."
   - default: " "
 ---
 id: user qualifies due to benefits
@@ -411,10 +406,10 @@ fields:
   - Amount of income: other_incomes[i].value
     datatype: currency
   - note: |
-      ${ help_text['unemployment_income'] }
+      ${ help_text['unemployment income help'] }
     show if:
       variable: other_incomes[i].source
-      is: unemployment_income
+      is: unemployment income
   - note: |
       **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, alimony / spousal maintenance, retirement income and annuities.
 
@@ -491,7 +486,7 @@ fields:
 id: itemized job period
 generic object: ALItemizedJob
 question: |
-  Details about the "${ x.source }" job
+  Details about the ${ x.source } job
 fields:
   - Is this a part time job: x.is_part_time
     datatype: yesnoradio
@@ -1844,32 +1839,32 @@ attachments:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
           % endif
       
-      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment_income"],times_per_year=12),symbol="") }
+      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="") }
       
-      - "users1_income_child_support_monthly_amount": ${ currency(other_incomes.total(source=["child_support"],times_per_year=12),symbol="") }
+      - "users1_income_child_support_monthly_amount": ${ currency(other_incomes.total(source=["child support income"],times_per_year=12),symbol="") }
       
-      - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment_income"],times_per_year=12),symbol="") }
+      - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment income","child support income"],times_per_year=12),symbol="") }
       
       - "users1_income_self_employment_monthly_amount": |
           % if defined("users1_income_self_employment_monthly_amount"):
-            ${ currency(users1_income_self_employment_monthly_amount) }
+            ${ users1_income_self_employment_monthly_amount }
           % else:
             0.00
           % endif
 
       - "users1_income_monthly_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
-          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount) }
+          ${ float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount }
           % elif employed:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) }
+          ${ jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12) }
           % else:
             0.00      
           % endif
       - "users1_income_annual_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
-          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12)) }
+          ${ float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12) }
           % else:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) }      
+          ${ jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1) }      
           % endif
  
   
