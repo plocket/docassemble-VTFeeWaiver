@@ -4,7 +4,6 @@
 #Having trouble adding "other" items when running through interviews. Wants to ask me about other incomes from the ALToolbox code!
 #Cannot add two "other" items -- not asked
 
-#Use new code tricks to show display_name
 #Want to add words to column headers on id: edit wages and other incomes from a job -- "per hour" for hourly rates and "per x" for tips, bonuses, etc
 #Dont want this to show up if I'm not collecting this info jobs[0].to_subtract.revisit
 
@@ -142,7 +141,7 @@ code: |
   #VT_fee_waiver_intro
   #set_progress(10)
   #important_notes_to_user
-  ##user_ask_role
+  #user_ask_role
   #
   #set_progress(10)
   #nav.set_section('about_you')
@@ -153,7 +152,7 @@ code: |
   #household_size
   #
   #nav.set_section('case_info')
-  #case_name
+  case_name
   #docket_number
   trial_court_division
   
@@ -296,7 +295,6 @@ data: !!omap
   - medicare: "Medicare"
   - 3squaresvt: "3SquaresVT"
   - ssi: "Supplemental Security Income (SSI)"
-  - vhap: "VHAP"
   - housing assistance: "Housing Assistance"   
   - other benefit: "Other"
 ---
@@ -442,7 +440,7 @@ subquestion: |
   
   Or you can:
   
-  - Look at your most recent Schedule C form from your federal taxes.
+  - Look at your most recent IRS Schedule C form from your federal taxes.
   - Divide the net income by 12.
 fields:
   - Your monthly net income: users1_income_self_employment_monthly_amount
@@ -747,8 +745,8 @@ subquestion: |
   
   If you get public benefits, that's all you need. **If you don't get public benefits**, you will also need to know:
   
-  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your Schedule C on hand or have your income and business expenses from the last 12 months.
-  * your expenses (like rent, utilities, insurance payments, childcare, etc.) -- looking back over the last 12 months
+  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or have your income and business expenses from the last 12 months.
+  * your expenses (like rent, utilities, insurance payments, child care, etc.) -- looking back over the last 12 months
   * the amount of money you have in the bank and on hand
   * the value of your vehicle/car, real estate/home, and any other major things you might own, and
   * if filling out form on behalf of a minor or incompetent adult, you need that person’s information.
@@ -944,9 +942,9 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      **"Other expenses" you might enter:** childcare, pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, property taxes, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
-      **"Other insurance" you might enter:** dental, vision, home, rental, business, life insurance and more.
+      **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
 generic object: ALExpenseList
 need:
@@ -995,9 +993,9 @@ fields:
     code: |
       times_per_year_for_expenses
   - note: |
-      **"Other expenses" you might enter:** childcare, pet costs, kids activities, family activities, private school tuition, school supplies, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, laundry, car maintenance, gasoline and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, property taxes, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
-      **"Other insurance" you might enter:** dental, vision, home, rental, business, life insurance and more.
+      **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 validation code: |
   x[i].display_name = expenses.terms_ordered.get(x[i].source, x[i].source)
 ---
@@ -1187,7 +1185,7 @@ subquestion: |
 fields:
   - "Reason(s)": other_reasons_why_cannot_afford
     input type: area
-    maxlength: 550
+    maxlength: 1000
     required: False
   - note: |
       ${ after_last_question_we_will_generate_your_forms }
@@ -1687,6 +1685,29 @@ subquestion: |
 
 progress: 100
 ---
+---
+#####################OVERFLOW + ADDENDUM#####################
+---
+attachment:
+  variable name: VT_fee_waiver.addendum
+  docx template file: VT_fee_waiver_addendum.docx
+---
+code: |
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Additional public benefits received"
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].overflow_trigger = 1
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].headers = [
+    {'display_name': "Benefit"},
+    {'value': "Amount"},
+    {'times_per_year': "Times per year"}
+  ]  
+
+  VT_fee_waiver_attachment.overflow_fields["other_assets"].label = "Additional assets"
+  VT_fee_waiver_attachment.overflow_fields["other_assets"].overflow_trigger = 2
+  
+  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 530
+  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
+  VT_fee_waiver_attachment.overflow_fields.gathered = True
+---
 #####################ATTACHMENTS#####################
 ---
 objects:
@@ -1699,10 +1720,23 @@ objects:
 ---
 attachments:
   - name: VT fee waiver post interview instructions
-    filename: Post-interview-instructions     
+    filename: VT_fee_waiver_next_steps
     variable name: VT_fee_waiver_post_interview_instructions[i]        
     skip undefined: True
     docx template file: VT_fee_waiver_next_steps.docx
+    fields:
+        - "address_county": ${ trial_court.address.county }
+        - "division": ${ trial_court.division }
+        - "name": ${ trial_court }
+        - "address_address": ${ trial_court.address.address }
+        - "address_unit": ${ trial_court.address.unit }
+        - "address_city": ${ trial_court.address.city }
+        - "address_state": ${ trial_court.address.state }
+        - "address_zip": ${ trial_court.address.zip }
+        - "arbitrary_attribute": ${ trial_court.arbitrary_attribute }
+        - "phone": ${ trial_court.phone }
+        - "email": ${ trial_court.email }
+  
   - name: VT fee waiver attachment
     filename: VT_fee_waiver.pdf     
     variable name: VT_fee_waiver_attachment[i]        
@@ -1768,7 +1802,11 @@ attachments:
           % endif
    
       - "users1_benefits": |
-          ${ comma_list([ benefit.display_name for benefit in public_benefits.complete_elements() ]) }
+          % if public_benefits.target_number == 1:
+          ${ public_benefits[0].display_name }
+          % elif public_benefits.target_number > 1:
+          ${ public_benefits[0].display_name } ...
+          % endif
           
       - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
 
@@ -1879,24 +1917,3 @@ attachments:
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
-      
----
-#####################OVERFLOW + ADDENDUM#####################
----
-attachment:
-  variable name: VT_fee_waiver.addendum
-  docx template file: VT_fee_waiver_addendum.docx
----
-code: |
-  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Additional public benefits received"
-  VT_fee_waiver_attachment.overflow_fields["public_benefits"].overflow_trigger = 1
-  VT_fee_waiver_attachment.overflow_fields["public_benefits"].headers = [
-    {'display_name': "Benefit"},
-    {'value': "Amount"},
-    {'times_per_year': "Times per year"}
-  ]  
-  
-  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 534
-  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
-  VT_fee_waiver_attachment.overflow_fields.gathered = True
----
