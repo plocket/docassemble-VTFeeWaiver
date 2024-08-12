@@ -1,4 +1,4 @@
-#Working on overflows and addendum for jobs
+#For jobs addendum, need to get employer address to show
 
 #Still having trouble seeing 'None" on review screen when nothing was selected
 #Having trouble adding "other" items when running through interviews. Wants to ask me about other incomes from the ALToolbox code!
@@ -183,13 +183,16 @@ code: |
   else:
     if employed:
       jobs.target_number
+      
       if jobs.target_number == 1:
         jobs[0].to_subtract.there_are_any = False
       if jobs.target_number == 2:
+        jobs[0].to_subtract.there_are_any = False
         jobs[1].to_subtract.there_are_any = False
       if jobs.target_number == 3:
+        jobs[0].to_subtract.there_are_any = False
+        jobs[1].to_subtract.there_are_any = False
         jobs[2].to_subtract.there_are_any = False
-      
       #If they say they are self-employed gather their monthly net income and set 
       if jobs[0].is_self_employed:
         users1_income_self_employment_monthly_amount
@@ -482,6 +485,10 @@ fields:
     show if:
       variable: x.is_self_employed
       is: False
+---
+#generic object: ALItemizedJob
+#code: |
+#  jobs[x]to_subtract.there_are_any = False
 ---
 id: itemized job period
 generic object: ALItemizedJob
@@ -1691,6 +1698,10 @@ code: |
 
   VT_fee_waiver_attachment.overflow_fields["jobs"].label = "Additional jobs"
   VT_fee_waiver_attachment.overflow_fields["jobs"].overflow_trigger = 2
+  VT_fee_waiver_attachment.overflow_fields["jobs"].headers = [
+    {'employer': "Employer"},    
+    {'employer_name_address_phone()': "Employer address"},
+  ]  
   
   VT_fee_waiver_attachment.overflow_fields["vehicles"].label = "Additional vehicles"
   VT_fee_waiver_attachment.overflow_fields["vehicles"].overflow_trigger = 4
