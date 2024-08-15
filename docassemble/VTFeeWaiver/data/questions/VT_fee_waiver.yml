@@ -31,7 +31,7 @@ objects:
   - other_incomes: ALIncomeList.using(complete_attribute='value')
   - expenses: ALExpenseList.using(complete_attribute='value')
   - bank_assets: ALAssetList.using(complete_attribute='value')
-  - vehicles: ALVehicleList.using(complete_attribute='value')
+  - vehicles: ALVehicleList.using(complete_attribute='make')
   - real_estate: ALAssetList.using(complete_attribute='value')
   - other_assets: ALAssetList.using(complete_attribute='value')
 ---
@@ -305,7 +305,8 @@ code: |
   if x.selected_types.any_true():
     x.move_checks_to_list(selected_terms=x.terms_ordered)
     x.there_are_any = True
-    x.there_is_another = False
+    if not x.selected_types["other"]:
+      x.there_is_another = False
   else:
     x.there_are_any = False
 ---
@@ -324,7 +325,6 @@ fields:
     input type: dropdown
     code: |
       benefits_ordered
-    default: other
   - What type of income?: public_benefits[i].source
     show if:
       variable: public_benefits[i].source
@@ -867,27 +867,6 @@ objects:
   - bank_assets_ordered: DAOrderedDict.using(elements=bank_assets.terms_ordered, auto_gather=False, gathered=True)
   - other_assets_ordered: DAOrderedDict.using(elements=other_assets.terms_ordered, auto_gather=False, gathered=True)
 ---
-# workaround to get the display names to show and to be able to add a benefit in review screen
-id: public benefits display names
-generic object: ALIncome
-code: |
-  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
----
-id: real estate display names
-#generic object: ALAsset
-code: |
-  real_estate.display_name = real_estate.terms_ordered.get(x.source, x.source)
----
-id: other asset display names
-#generic object: ALAsset
-code: |
-  other_asset.display_name = other_asset.terms_ordered.get(x.source, x.source)
----
-id: bank assets display names
-#generic object: ALAsset
-code: |
-  bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
----
 ###############################EXPENSES#############################
 ---
 id: expenses intro
@@ -1069,6 +1048,15 @@ fields:
     datatype: checkboxes
     code: |
       real_estate_ordered
+  - Description of other real estate: real_estate_other
+    show if:
+      variable: real_estate.selected_types['other']
+      is: True
+---
+code: |
+  real_estate[i].source = real_estate_other
+  real_estate[i].display_name = real_estate_other
+  undefine('real_estate_other')
 ---
 id: info for each real estate
 question: |
@@ -1105,7 +1093,30 @@ fields:
     datatype: checkboxes
     code: |
       other_assets_ordered
-
+---
+# workaround to get the display names to show and to be able to add a benefit in review screen
+id: public benefits display names
+generic object: ALIncome
+code: |
+  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
+---
+id: real estate display names
+#generic object: ALAsset
+code: |
+  real_estate.display_name = real_estate.terms_ordered.get(x.source, x.source)
+---
+id: other asset display names
+#generic object: ALAsset
+code: |
+  other_asset.display_name = other_asset.terms_ordered.get(x.source, x.source)
+---
+id: bank assets display names
+#generic object: ALAsset
+code: |
+  bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
+---
+###############################EXPENSES#############################
+---
 ---
 id: describe other asset
 question: |
@@ -1250,11 +1261,13 @@ code: |
 code: |
   public_benefits.there_is_another = False
   other_incomes.there_is_another = False
-  expenses.there_is_another = False
   vehicles.there_is_another = False
   real_estate.there_is_another = False
   bank_assets.there_is_another = False
   other_assets.there_is_another = False
+---
+question: Do you want to add any more expenses?
+yesno: expenses.there_is_another
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
