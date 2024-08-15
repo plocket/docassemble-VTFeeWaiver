@@ -142,8 +142,9 @@ code: |
   #case_name
   #docket_number
   
-  #trial_court_division
-  trial_court.address.county
+  trial_court_division
+  user_selected_county
+  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
   show_selected_court
   
   nav.set_section('your_income')
@@ -769,14 +770,16 @@ fields:
       #- Civil court: civil
       #- Probate court: probate
 
-  - Division: trial_court_index
-    code: all_courts._load_courts()['division_abbr'].items()
+  - Division: trial_court_division
+    code: sorted(all_courts.unique_column_values('division_abbr'))
     
-  - County: trial_court_index
-    code: all_courts._load_courts()['branch'].items()
 
-  #- County2: trial_court_index
-    #code: all_courts._filter_courts()['division_abbr'].items()
+    
+  - County: user_selected_county
+    code: sorted(all_courts.unique_column_values('branch'))
+
+    
+
 ---
 continue button field: show_selected_court
 question: |
@@ -790,8 +793,7 @@ subquestion: |
   ${ trial_court.division }
   
   ${ trial_court.address.address }
-  
-  ${ trial_court.address.unit }
+
   
   ${ trial_court.address.city }
   
