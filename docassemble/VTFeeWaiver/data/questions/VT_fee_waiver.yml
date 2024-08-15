@@ -11,6 +11,9 @@ include:
 objects:
   - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
 ---
+code: |
+  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
+---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
   - public_benefits: ALIncomeList.using(complete_attribute='value')
@@ -138,14 +141,15 @@ code: |
   #users[0].email
   #household_size
   #
-  #nav.set_section('case_info')
-  #case_name
-  #docket_number
+  nav.set_section('case_info')
+  case_name
+  docket_number
   
+  #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
   trial_court_division
   user_selected_county
-  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
-  show_selected_court
+  #trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
+  trial_court.address.county
   
   nav.set_section('your_income')
   public_benefits.gather()
@@ -242,7 +246,7 @@ code: |
       data={
           "zip": showifdef("users[0].address.zip"),
           "county_where_filing": showifdef("trial_court.address.county"),
-          "court_division_where_filing": showifdef("trial_court_division"),
+          "court_division_where_filing": showifdef("trial_court.division_abbr"),
           "gets_public_benefits": showifdef("public_benefits.sources"),
           "employed": showifdef("employed"),
           "reached_interview_end": True,
@@ -763,52 +767,11 @@ fields:
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
-  #- "Division": trial_court_division
-    #input type: radio
-    #choices:
-      #- Family court: family
-      #- Civil court: civil
-      #- Probate court: probate
-
   - Division: trial_court_division
     code: sorted(all_courts.unique_column_values('division_abbr'))
     
-
-    
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
-
-    
-
----
-continue button field: show_selected_court
-question: |
-  The selected court is
-subquestion: |  
-
-  ${ trial_court.division_abbr }
-  
-  ${ trial_court.branch }
-  
-  ${ trial_court.division }
-  
-  ${ trial_court.address.address }
-
-  
-  ${ trial_court.address.city }
-  
-  ${ trial_court.address.state }
-  
-  ${ trial_court.address.zip }
-  
-  ${ trial_court.phone }
-  
-  ${ trial_court.email }
-  
-
-  
-
-
 ---
 id: Court case information
 question: |
@@ -1299,24 +1262,21 @@ question: |
   Review your answers
 subquestion: |  
   ${ review_screen_instructions }
+
+  ###Your court case
+  
 review:
   - Edit: 
     - trial_court_division
     - recompute:
+      - trial_court_index
       - trial_court
     button: |
-      Your court case is in: **${( trial_court.address.county )} County**
       
-      In this court division:
-      % if defined("trial_court.division_abbr"):
-      **${ trial_court.division_abbr }**
-      % elif trial_court_division == "family":
-      **Family**
-      % elif trial_court_division == "probate":
-      **Probate**
-      % elif trial_court_division == "civil":
-      **Civil**
-      % endif
+      **Is in this court division**: ${ trial_court.division_abbr }
+      
+      **Is in this county**: ${( trial_court.address.county )} County
+
   - Edit: docket_number
     button: |
       **Docket number**:
@@ -1773,14 +1733,7 @@ attachments:
     docx template file: VT_fee_waiver_next_steps.docx
     fields:
         - "address_county": ${ trial_court.address.county }
-        - "court_division": |
-            % if trial_court_division == "family":
-            Family          
-            % elif trial_court_division == "probate":
-            Probate         
-            % elif trial_court_division == "civil":
-            Civil       
-            % endif
+        - "court_division": ${ trial_court.division_abbr }
         - "name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
         - "address_unit": ${ trial_court.address.unit }
@@ -1800,12 +1753,6 @@ attachments:
       - "court_division": |
           % if defined("trial_court.division_abbr"):
             ${ trial_court.division_abbr.upper()  }
-          % elif trial_court_division == "family":
-          FAMILY          
-          % elif trial_court_division == "probate":
-          PROBATE         
-          % elif trial_court_division == "civil":
-          CIVIL       
           % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${ trial_court.address.county }
