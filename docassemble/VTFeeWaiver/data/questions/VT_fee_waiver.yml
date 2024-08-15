@@ -1,20 +1,4 @@
-#For jobs addendum, need to get employer address to show
-
-#Still having trouble seeing 'None" on review screen when nothing was selected
-#Having trouble adding "other" items when running through interviews. Wants to ask me about other incomes from the ALToolbox code!
-#Cannot add two "other" items -- not asked
-
-#Want to add words to column headers on id: edit wages and other incomes from a job -- "per hour" for hourly rates and "per x" for tips, bonuses, etc
-#Dont want this to show up if I'm not collecting this info jobs[0].to_subtract.revisit
-
-#Still working on wording of id: other itemized job income value so I can edit hourly rate, bonus, tip, etc with the right wording
-
-#When I don't enter any income info, the total needs to be zero on PDF
-#Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
-#Possible to get $0 not to show in some places?
-#To erase dollar sign, add ,symbol="")
-#Add to snapshot "has_assets": showifdef("....."),
-
+#This is working on letting user choose the court division and court county from my courts_list_full file, which is only in this package and not in VTSharedYMLFile
 
 
 ---
@@ -23,6 +7,9 @@ include:
   - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.ALToolbox:al_income.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
+---
+objects:
+  - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
@@ -152,9 +139,12 @@ code: |
   #household_size
   #
   #nav.set_section('case_info')
-  case_name
+  #case_name
   #docket_number
-  trial_court_division
+  
+  #trial_court_division
+  trial_court.address.county
+  show_selected_court
   
   nav.set_section('your_income')
   public_benefits.gather()
@@ -251,6 +241,7 @@ code: |
       data={
           "zip": showifdef("users[0].address.zip"),
           "county_where_filing": showifdef("trial_court.address.county"),
+          "court_division_where_filing": showifdef("trial_court_division"),
           "gets_public_benefits": showifdef("public_benefits.sources"),
           "employed": showifdef("employed"),
           "reached_interview_end": True,
@@ -771,15 +762,51 @@ fields:
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
-  - "Division": trial_court_division
-    input type: radio
-    choices:
-      - Family court: family
-      - Civil court: civil
-      - Probate court: probate
+  #- "Division": trial_court_division
+    #input type: radio
+    #choices:
+      #- Family court: family
+      #- Civil court: civil
+      #- Probate court: probate
 
+  - Division: trial_court_index
+    code: all_courts._load_courts()['division_abbr'].items()
+    
   - County: trial_court_index
-    code: all_courts._load_courts()['address_county'].items()
+    code: all_courts._load_courts()['branch'].items()
+
+  #- County2: trial_court_index
+    #code: all_courts._filter_courts()['division_abbr'].items()
+---
+continue button field: show_selected_court
+question: |
+  The selected court is
+subquestion: |  
+
+  ${ trial_court.division_abbr }
+  
+  ${ trial_court.branch }
+  
+  ${ trial_court.division }
+  
+  ${ trial_court.address.address }
+  
+  ${ trial_court.address.unit }
+  
+  ${ trial_court.address.city }
+  
+  ${ trial_court.address.state }
+  
+  ${ trial_court.address.zip }
+  
+  ${ trial_court.phone }
+  
+  ${ trial_court.email }
+  
+
+  
+
+
 ---
 id: Court case information
 question: |
