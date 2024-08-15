@@ -1,5 +1,3 @@
-#This is working on letting user choose the court division and court county from my courts_list_full file, which is only in this package and not in VTSharedYMLFile
-
 
 ---
 include:
