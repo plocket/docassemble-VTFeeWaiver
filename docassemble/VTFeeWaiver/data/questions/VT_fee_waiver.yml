@@ -302,8 +302,6 @@ code: |
   if x.selected_types.any_true():
     x.move_checks_to_list(selected_terms=x.terms_ordered)
     x.there_are_any = True
-    if not x.selected_types["other"]:
-      x.there_is_another = False
   else:
     x.there_are_any = False
 ---
@@ -955,6 +953,7 @@ fields:
   - Type of expense: x[i].source
     code: |
       expenses_ordered
+    default: other
   - Other (explain): x[i].source
     show if:
       variable: x[i].source
@@ -1014,10 +1013,22 @@ fields:
 ---
 id: info for each vehicle
 question: |
-  About your ${ vehicles[i].source }
+  About your 
+  % if hasattr(vehicles[i],'source'):
+  ${ vehicles[i].source }
+  % else:
+  vehicle
+  % endif
 subquestion: |
   Make your best guess when answering these questions.
 fields:
+  - Type of vehicle: vehicles[i].source
+    code: |
+      vehicles_ordered
+  - Other (explain): vehicles[i].source
+    show if:
+      variable: vehicles[i].source
+      is: vehicle
   - What make / manufacturer? (Examples - Honda or Ford): vehicles[i].make
   - What model? (Examples - Civic or F-150): vehicles[i].model
     maxlength: 20
