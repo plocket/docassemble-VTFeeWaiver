@@ -1,28 +1,15 @@
-#For jobs addendum, need to get employer address to show
-
-#Still having trouble seeing 'None" on review screen when nothing was selected
-#Having trouble adding "other" items when running through interviews. Wants to ask me about other incomes from the ALToolbox code!
-#Cannot add two "other" items -- not asked
-
-#Want to add words to column headers on id: edit wages and other incomes from a job -- "per hour" for hourly rates and "per x" for tips, bonuses, etc
-#Dont want this to show up if I'm not collecting this info jobs[0].to_subtract.revisit
-
-#Still working on wording of id: other itemized job income value so I can edit hourly rate, bonus, tip, etc with the right wording
-
-#When I don't enter any income info, the total needs to be zero on PDF
-#Need to allow for more than 2 jobs and to allow someone to add a self-employed job, too
-#Possible to get $0 not to show in some places?
-#To erase dollar sign, add ,symbol="")
-#Add to snapshot "has_assets": showifdef("....."),
-
-
-
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.ALToolbox:al_income.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
+---
+objects:
+  - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
+---
+code: |
+  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
@@ -151,10 +138,15 @@ code: |
   #users[0].email
   #household_size
   #
-  #nav.set_section('case_info')
+  nav.set_section('case_info')
   case_name
-  #docket_number
+  docket_number
+  
+  #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
   trial_court_division
+  user_selected_county
+  #trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
+  trial_court.address.county
   
   nav.set_section('your_income')
   public_benefits.gather()
@@ -251,6 +243,7 @@ code: |
       data={
           "zip": showifdef("users[0].address.zip"),
           "county_where_filing": showifdef("trial_court.address.county"),
+          "court_division_where_filing": showifdef("trial_court.division_abbr"),
           "gets_public_benefits": showifdef("public_benefits.sources"),
           "employed": showifdef("employed"),
           "reached_interview_end": True,
@@ -769,15 +762,11 @@ fields:
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
-  - "Division": trial_court_division
-    input type: radio
-    choices:
-      - Family court: family
-      - Civil court: civil
-      - Probate court: probate
-
-  - County: trial_court_index
-    code: all_courts._load_courts()['address_county'].items()
+  - Division: trial_court_division
+    code: sorted(all_courts.unique_column_values('division_abbr'))
+    
+  - County: user_selected_county
+    code: sorted(all_courts.unique_column_values('branch'))
 ---
 id: Court case information
 question: |
@@ -1294,24 +1283,21 @@ question: |
   Review your answers
 subquestion: |  
   ${ review_screen_instructions }
+
+  ###Your court case
+  
 review:
   - Edit: 
     - trial_court_division
     - recompute:
+      - trial_court_index
       - trial_court
     button: |
-      Your court case is in: **${( trial_court.address.county )} County**
       
-      In this court division:
-      % if defined("trial_court.division_abbr"):
-      **${ trial_court.division_abbr }**
-      % elif trial_court_division == "family":
-      **Family**
-      % elif trial_court_division == "probate":
-      **Probate**
-      % elif trial_court_division == "civil":
-      **Civil**
-      % endif
+      **Is in this court division**: ${ trial_court.division_abbr }
+      
+      **Is in this county**: ${( trial_court.address.county )} County
+
   - Edit: docket_number
     button: |
       **Docket number**:
@@ -1768,14 +1754,7 @@ attachments:
     docx template file: VT_fee_waiver_next_steps.docx
     fields:
         - "address_county": ${ trial_court.address.county }
-        - "court_division": |
-            % if trial_court_division == "family":
-            Family          
-            % elif trial_court_division == "probate":
-            Probate         
-            % elif trial_court_division == "civil":
-            Civil       
-            % endif
+        - "court_division": ${ trial_court.division_abbr }
         - "name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
         - "address_unit": ${ trial_court.address.unit }
@@ -1795,12 +1774,6 @@ attachments:
       - "court_division": |
           % if defined("trial_court.division_abbr"):
             ${ trial_court.division_abbr.upper()  }
-          % elif trial_court_division == "family":
-          FAMILY          
-          % elif trial_court_division == "probate":
-          PROBATE         
-          % elif trial_court_division == "civil":
-          CIVIL       
           % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${ trial_court.address.county }
