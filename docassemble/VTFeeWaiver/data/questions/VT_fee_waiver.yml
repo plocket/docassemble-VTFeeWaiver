@@ -268,14 +268,14 @@ code: |
 variable name: public_benefits.terms_ordered
 data: !!omap
   - reach up: "Reach Up"
-  - dr dynasaur: "Dr. Dynasaur / Blue First"
+  - 3squaresvt: "3SquaresVT (food)"
+  - housing assistance: "Housing subsidy/voucher/Section 8"   
   - fuel assistance: "Fuel Assistance"
   - general assistance: "General Assistance (GA)"
+  - ssi: "Supplemental Security Income (SSI)"
+  - dr dynasaur: "Dr. Dynasaur"
   - medicaid: "Medicaid"
   - medicare: "Medicare"
-  - 3squaresvt: "3SquaresVT"
-  - ssi: "Supplemental Security Income (SSI)"
-  - housing assistance: "Housing Assistance"   
   - other benefit: "Other"
 ---
 id: are there public benefits
@@ -364,7 +364,7 @@ fields:
     code: |
       other_incomes_ordered
   - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, alimony / spousal maintenance, retirement income and annuities.
+      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 ---
 id: other income info for list
 #generic object: ALIncomeList
@@ -398,7 +398,7 @@ fields:
       variable: other_incomes[i].source
       is: unemployment income
   - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, alimony / spousal maintenance, retirement income and annuities.
+      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 
 #################################JOBS##############################
 ---
@@ -1069,7 +1069,7 @@ fields:
 ---
 variable name: real_estate.terms_ordered
 data: !!omap
-  - primary residence: "Primary residence (where you live most of the time)"
+  - primary residence: "Primary residence (where you live)"
   - mobile home: "Mobile home"
   - second home: "Second home"
   - camp: "Camp"
@@ -1919,12 +1919,16 @@ attachments:
           ${ public_benefits[0].display_name }
           % endif
           
-      - "users1_benefits_monthly_amount": ${ currency(public_benefits.total(times_per_year=12),symbol="") }
-
+      - "users1_benefits_monthly_amount": |
+          % if not public_benefits.selected_types.any_true():
+           
+          % else:
+          ${ currency(public_benefits.total(times_per_year=12),symbol="") }
+          % endif
       
       - "users1_income_employment_monthly_amount": |
           % if not employed:
-            0.00
+          0.00
           % else:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
           % endif
@@ -1937,31 +1941,31 @@ attachments:
       
       - "users1_income_self_employment_monthly_amount": |
           % if defined("users1_income_self_employment_monthly_amount"):
-            ${ users1_income_self_employment_monthly_amount }
+          ${ currency(users1_income_self_employment_monthly_amount,symbol="") }
           % else:
-            0.00
+          0.00
           % endif
 
       - "users1_income_monthly_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
-          ${ float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount }
+          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount,symbol="") }
           % elif employed:
-          ${ jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12) }
+          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
           % else:
-            0.00      
+          0.00      
           % endif
       - "users1_income_annual_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
-          ${ float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12) }
+          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12),symbol="") }
           % else:
-          ${ jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1) }      
+          ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }      
           % endif
  
   
       
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12),symbol="") }   
-      - "users1_expenses_electric_monthly_amount": ${ currency(expenses.total(source=["electric"],times_per_year=12)) }    
-      - "users1_expenses_phone_monthly_amount": ${ currency(expenses.total(source=["phone"],times_per_year=12)) }
+      - "users1_expenses_electric_monthly_amount": ${ currency(expenses.total(source=["electric"],times_per_year=12),symbol="") }    
+      - "users1_expenses_phone_monthly_amount": ${ currency(expenses.total(source=["phone"],times_per_year=12),symbol="") }
       - "users1_expenses_fuel_monthly_amount": ${ currency(expenses.total(source=["fuel"],times_per_year=12)) }
       - "users1_expenses_food_monthly_amount": ${ currency(expenses.total(source=["food"],times_per_year=12)) }
       - "users1_expenses_clothes_monthly_amount": ${ currency(expenses.total(source=["clothing"],times_per_year=12)) }
