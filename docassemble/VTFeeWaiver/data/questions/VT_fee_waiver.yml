@@ -511,7 +511,7 @@ fields:
         % if x.is_hourly:
         What is your hourly pay for this job?
         % else:
-        What do you get for wages during each pay period (x.times_per_year)?
+        What do you get for wages during each pay period (${ x.times_per_year} times per year)?
         % endif
       field: x.to_add['full time'].value
       datatype: currency
@@ -650,17 +650,15 @@ columns:
   - Job title: |
       row_item.source
   - Employer: |
-      row_item.employer.name if hasattr(row_item.employer.name, "first") else ""
-  - Monthly Gross Income: |
+      row_item.employer.name.first if defined("row_item.employer.name.first") else ""
+  - Monthly gross income: |
       currency(row_item.gross_total(times_per_year=12))
 
 edit:
   - source
   - employer.name.first
-  - employer.address.city
   - times_per_year
   - to_add.revisit
-  - to_subtract.revisit
 confirm: True
 ---
 generic object: ALItemizedValueDict
@@ -1430,15 +1428,23 @@ review:
       % endif
       
       % for item in jobs:
-      * ${ item.source } / ${ item.employer.name }
+      - ${ item.source } / ${ item.employer.name }
       % endfor     
+  - Edit: users1_income_self_employment_monthly_amount
+    button: |
+      **Self employed income**
       
+      % if defined("users1_income_self_employment_monthly_amount"):
+        - Yes     
+      % else:
+        - No
+      % endif         
   - Edit: 
       - other_incomes.revisit
       - recompute:
         - other_incomes.gathered
     button: |
-      **Other incomes**:
+      **Other incomes**
 
       % for income in other_incomes.complete_elements():
       * ${ income.display_name.lower() }
@@ -1447,17 +1453,7 @@ review:
       % if not other_incomes.there_are_any:
       - None
       % endif
-         
-  - Edit: users1_income_self_employment_monthly_amount
-    button: |
-      **Self employed**:
-      
-      % if defined("users1_income_self_employment_monthly_amount"):
-        - Yes     
-      % else:
-        - No
-      % endif     
-      
+          
       
   - note: |
       ###Expenses 
@@ -1953,16 +1949,22 @@ attachments:
           ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount,symbol="") }
           % elif employed:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
+          % elif other_incomes.selected_types.any_true():
+          ${ currency(other_incomes.total(times_per_year=12),symbol="") }
           % else:
           0.00      
           % endif
       - "users1_income_annual_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
           ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12),symbol="") }
+          % elif employed:
+          ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
+          % elif other_incomes.selected_types.any_true():
+          ${ currency(other_incomes.total(times_per_year=1),symbol="") }
           % else:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }      
+          0.00      
           % endif
- 
+
   
       
       - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12),symbol="") }   
