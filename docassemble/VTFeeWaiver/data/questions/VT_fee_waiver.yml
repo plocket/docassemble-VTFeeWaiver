@@ -1284,7 +1284,9 @@ fields:
     maxlength: 1000
     required: False
   - note: |
-      ${ after_last_question_we_will_generate_your_forms }
+      **We’re ready to generate your draft form so you can review it!** It will take a moment after you tap the Next button.
+
+#${ after_last_question_we_will_generate_your_forms }
 ---
 #############################SIGNATURE#############################
 ---
@@ -1547,10 +1549,12 @@ review:
   - Edit: other_reasons_why_cannot_afford
     button: |
       **Other reason(s) you cannot afford the fees (optional question)**:
+      
       % if defined("other_reasons_why_cannot_afford"):
-      ${ single_paragraph(other_reasons_why_cannot_afford) }
-      % else:
-      None
+      ${ other_reasons_why_cannot_afford }
+      % endif
+      % if not defined("other_reasons_why_cannot_afford"):
+      - None
       % endif
   - Edit: signature_date
     button: |
@@ -1829,7 +1833,7 @@ code: |
     {'market_value': "Fair market value"},
   ]  
   
-  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 570
+  VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 620
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
   VT_fee_waiver_attachment.overflow_fields.gathered = True
 ---
