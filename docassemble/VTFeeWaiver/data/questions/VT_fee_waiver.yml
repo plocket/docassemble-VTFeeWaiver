@@ -275,15 +275,18 @@ data: !!omap
   - ssi: "Supplemental Security Income (SSI)"
   - dr dynasaur: "Dr. Dynasaur"
   - medicaid: "Medicaid"
-  - medicare: "Medicare"
   - other benefit: "Other"
 ---
 id: are there public benefits
 #public_benefits
 question: |
-  Do you get public benefits?
+  Do you get public assistance?
 subquestion: |
-   Check any that apply to you.
+  Do you get any kind of government benefit that is based on need, disability, dependent children, or another reason based on your income?
+  
+  We've included a few examples below. You can also check "other."
+  
+  Check any that apply to you.
 fields:
   - no label: public_benefits.selected_types
     datatype: checkboxes
@@ -342,7 +345,7 @@ continue button field: user_qualifies_interstitial
 question: |
   You should qualify
 subquestion: |
-  If you get public benefits at this time, you should qualify for a 100% waiver of fees for your case.
+  If you get public assistance at this time, you should qualify for a 100% waiver of fees for your case.
   
   We can skip some of the questions in the form. 
   
@@ -818,7 +821,7 @@ id: About you
 question: |
   About you and your household
 subquestion: |
-  How many people live in your household? Include yourself, any spouse, partner, children and dependants.
+  How many people live in your household? Include yourself, any spouse, partner, and dependants such as children.
 fields:
   - "Household size": household_size
     datatype: integer
@@ -1420,7 +1423,7 @@ review:
       - recompute:
         - public_benefits.gathered   
     button: |
-      **Public benefits**
+      **Public assistance**
       
       % for benefit in public_benefits.complete_elements():
       * ${ benefit.display_name }
@@ -1450,7 +1453,7 @@ review:
       **Other incomes**:
 
       % for income in other_incomes.complete_elements():
-      * ${ income.display_name }
+      * ${ income.display_name.lower() }
       % endfor
 
       % if not other_incomes.there_are_any:
@@ -1522,7 +1525,7 @@ review:
       **Bank accounts and cash**
       
       % for item in bank_assets.complete_elements():
-      * ${ item.display_name }
+      * ${ item.display_name.lower() }
       % endfor
 
       % if not bank_assets.there_are_any:
@@ -1603,7 +1606,7 @@ confirm: True
 ---
 continue button field: public_benefits.revisit
 question: |
-  Edit public benefits
+  Edit public assistance
 subquestion: |
   ${ public_benefits.table }
 
