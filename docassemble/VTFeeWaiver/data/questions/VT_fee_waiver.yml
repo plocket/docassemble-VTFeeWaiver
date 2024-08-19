@@ -16,11 +16,11 @@ objects:
   - public_benefits: ALIncomeList.using(complete_attribute='value')
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
   - other_incomes: ALIncomeList.using(complete_attribute='value')
-  - expenses: ALExpenseList.using(complete_attribute='value')
+  - expenses: ALExpenseList.using(complete_attribute='complete')
   - bank_assets: ALAssetList.using(complete_attribute='value')
-  - vehicles: ALVehicleList.using(complete_attribute='value')
-  - real_estate: ALAssetList.using(complete_attribute='value')
-  - other_assets: ALAssetList.using(complete_attribute='value')
+  - vehicles: ALVehicleList.using(complete_attribute='complete')
+  - real_estate: ALAssetList.using(complete_attribute='complete')
+  - other_assets: ALAssetList.using(complete_attribute='complete')
 ---
 generic object: ALIncomeList
 code: |
@@ -295,7 +295,6 @@ code: |
   if x.selected_types.any_true():
     x.move_checks_to_list(selected_terms=x.terms_ordered)
     x.there_are_any = True
-    x.there_is_another = False
   else:
     x.there_are_any = False
 ---
@@ -314,7 +313,6 @@ fields:
     input type: dropdown
     code: |
       benefits_ordered
-    default: other
   - What type of income?: public_benefits[i].source
     show if:
       variable: public_benefits[i].source
@@ -860,27 +858,6 @@ objects:
   - bank_assets_ordered: DAOrderedDict.using(elements=bank_assets.terms_ordered, auto_gather=False, gathered=True)
   - other_assets_ordered: DAOrderedDict.using(elements=other_assets.terms_ordered, auto_gather=False, gathered=True)
 ---
-# workaround to get the display names to show and to be able to add a benefit in review screen
-id: public benefits display names
-generic object: ALIncome
-code: |
-  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
----
-id: real estate display names
-#generic object: ALAsset
-code: |
-  real_estate.display_name = real_estate.terms_ordered.get(x.source, x.source)
----
-id: other asset display names
-#generic object: ALAsset
-code: |
-  other_asset.display_name = other_asset.terms_ordered.get(x.source, x.source)
----
-id: bank assets display names
-#generic object: ALAsset
-code: |
-  bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
----
 ###############################EXPENSES#############################
 ---
 id: expenses intro
@@ -930,6 +907,25 @@ fields:
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
+generic object: ALExpense
+code: |
+  x.check_for_other
+  x.value
+  x.set_source_other
+  x.complete = True
+---
+generic object: ALExpense
+code: |
+  if not hasattr(expenses[i],'source') and i < len(expenses.selected_types.true_values()):
+    expenses[i].source = 'other'
+  expenses[i].check_for_other = True
+---
+generic object: ALExpense
+code: |
+  if hasattr(x,'source_other'):
+    x.source = x.source_other
+  x.set_source_other = True
+---
 generic object: ALExpenseList
 need:
   - x[i].source
@@ -965,7 +961,7 @@ fields:
   - Type of expense: x[i].source
     code: |
       expenses_ordered
-  - Other (explain): x[i].source
+  - Other (explain): x[i].source_other
     show if:
       variable: x[i].source
       is: other
@@ -1022,12 +1018,44 @@ fields:
     code: |
       vehicles_ordered
 ---
+generic object: ALVehicleList
+code: |
+  x[i].check_for_other
+  x[i].market_value
+  x[i].set_source_other
+  x[i].complete = True
+---
+generic object: ALVehicle
+code: |
+  if x.source == 'vehicle' and i < len(vehicles.selected_types.true_values()):
+    x.source = 'other'
+  x.check_for_other = True
+---
+generic object: ALVehicle
+code: |
+  if hasattr(x,'source_other'):
+    x.source = x.source_other
+  x.set_source_other = True
+---
+---
 id: info for each vehicle
 question: |
-  About your ${ vehicles[i].source }
+  About your 
+  % if hasattr(vehicles[i],'source'):
+  ${ vehicles[i].source }
+  % else:
+  vehicle
+  % endif
 subquestion: |
   Make your best guess when answering these questions.
 fields:
+  - Type of vehicle: vehicles[i].source
+    code: |
+      vehicles_ordered
+  - Other (explain): vehicles[i].source_other
+    show if:
+      variable: vehicles[i].source
+      is: other
   - What make / manufacturer? (Examples - Honda or Ford): vehicles[i].make
   - What model? (Examples - Civic or F-150): vehicles[i].model
     maxlength: 20
@@ -1065,12 +1093,41 @@ fields:
     code: |
       real_estate_ordered
 ---
+code: |
+  real_estate[i].check_for_other
+  real_estate[i].market_value
+  real_estate[i].set_source_other
+  real_estate[i].complete = True
+---
+code: |
+  if not hasattr(real_estate[i],'source') and i < len(real_estate.selected_types.true_values()):
+    real_estate[i].source = 'other'
+  real_estate[i].check_for_other = True
+---
+code: |
+  if hasattr(real_estate[i],'source_other'):
+    real_estate[i].source = real_estate[i].source_other
+  real_estate[i].set_source_other = True
+---
 id: info for each real estate
 question: |
+  % if hasattr(real_estate[i],'source') and real_estate[i].source == "other":
+  About your other real estate
+  % elif hasattr(real_estate[i],'source'):
   About your ${ real_estate[i].source }
+  % else:
+  About your real estate
+  % endif
 subquestion: |
   Make your best guess for the market value.
 fields:
+  - Type of real estate: real_estate[i].source
+    code: |
+      real_estate_ordered
+  - Other (explain): real_estate[i].source_other
+    show if:
+      variable: real_estate[i].source
+      is: other
   - What is its market value? How much would you get if you sold it?: real_estate[i].market_value
     datatype: currency
   - If you have a mortgage, lien or owe money on the real estate, how much do you owe? Enter 0 if you own it outright.: real_estate[i].balance
@@ -1102,7 +1159,46 @@ fields:
     datatype: checkboxes
     code: |
       other_assets_ordered
-
+---
+code: |
+  other_assets[i].check_for_other
+  other_assets[i].market_value
+  other_assets[i].set_source_other
+  other_assets[i].complete = True
+---
+code: |
+  if not hasattr(other_assets[i],'source') and i < len(other_assets.selected_types.true_values()):
+    other_assets[i].source = 'other'
+  other_assets[i].check_for_other = True
+---
+code: |
+  if hasattr(other_assets[i],'source_other'):
+    other_assets[i].source = other_assets[i].source_other
+  other_assets[i].set_source_other = True
+---
+# workaround to get the display names to show and to be able to add a benefit in review screen
+id: public benefits display names
+generic object: ALIncome
+code: |
+  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
+---
+id: real estate display names
+#generic object: ALAsset
+code: |
+  real_estate.display_name = real_estate.terms_ordered.get(x.source, x.source)
+---
+id: other asset display names
+#generic object: ALAsset
+code: |
+  other_asset.display_name = other_asset.terms_ordered.get(x.source, x.source)
+---
+id: bank assets display names
+#generic object: ALAsset
+code: |
+  bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
+---
+###############################EXPENSES#############################
+---
 ---
 id: describe other asset
 question: |
@@ -1115,12 +1211,21 @@ subquestion: |
   % for item in other_assets.complete_elements():
   * ${ item.description }
   
-  Now tell us about the next asset.
+
   % endfor
+  
+    Now tell us about the next asset.
   % endif
 
   Make your best guess for the market value.
-fields:     
+fields:
+  - Type of asset: other_assets[i].source
+    code: |
+      other_assets_ordered
+  - Other (explain): other_assets[i].source_other
+    show if:
+      variable: other_assets[i].source
+      is: other
   - What is the asset?: other_assets[i].description
     maxlength: 40
   - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
@@ -1247,11 +1352,19 @@ code: |
 code: |
   public_benefits.there_is_another = False
   other_incomes.there_is_another = False
-  expenses.there_is_another = False
-  vehicles.there_is_another = False
-  real_estate.there_is_another = False
   bank_assets.there_is_another = False
-  other_assets.there_is_another = False
+---
+question: Do you want to add any more expenses?
+yesno: expenses.there_is_another
+---
+question: Do you want to add any more vehicles?
+yesno: vehicles.there_is_another
+---
+question: Do you want to add any more real estate?
+yesno: real_estate.there_is_another
+---
+question: Do you want to add any more other assets?
+yesno: other_assets.there_is_another
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
