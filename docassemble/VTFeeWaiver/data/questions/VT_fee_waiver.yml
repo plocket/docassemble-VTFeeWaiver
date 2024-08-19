@@ -1200,25 +1200,13 @@ id: bank assets display names
 code: |
   bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
 ---
-###############################EXPENSES#############################
+###############################OTHER ASSETS#############################
 ---
 ---
 id: describe other asset
 question: |
   Describe the ${ ordinal(i) } other asset
 subquestion: |
-
-  % if i > 0:
-  You have told us about these other assets already:
-  
-  % for item in other_assets.complete_elements():
-  * ${ item.description }
-  
-
-  % endfor
-  
-    Now tell us about the next asset.
-  % endif
 
   Make your best guess for the market value.
 fields:
@@ -1229,8 +1217,6 @@ fields:
     show if:
       variable: other_assets[i].source
       is: other
-  - What is the asset?: other_assets[i].description
-    maxlength: 40
   - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
     maxlength: 76
     datatype: currency
@@ -1539,12 +1525,16 @@ review:
       **Other assets**
 
       % for item in other_assets.complete_elements():
-      * ${ item.description }       
+      % if item.source == "other":
+        - ${ item.source_other }
+      % else:
+        - ${ item.source }
+      % endif
       % endfor
+
       % if not other_assets.there_are_any:
       - None
       % endif      
-     
       
   - Edit: other_reasons_why_cannot_afford
     button: |
@@ -1749,13 +1739,13 @@ table: other_assets.table
 rows: other_assets
 columns:
   - Description: |
-      row_item.description if defined("row_item.description") else ""
+      row_item.source if defined("row_item.source") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
       currency(row_item.balance) if defined("row_item.balance") else ""
 edit:
-  - description
+  - source
   - market_value
   - balance
 
@@ -1820,7 +1810,7 @@ code: |
   VT_fee_waiver_attachment.overflow_fields["real_estate"].label = "Additional real estate"
   VT_fee_waiver_attachment.overflow_fields["real_estate"].overflow_trigger = 2
   VT_fee_waiver_attachment.overflow_fields["real_estate"].headers = [
-    {'display_name': "Description"},
+    {'source': "Description"},
     {'market_value': "Fair market value"},
     {'balance': "Amount owed"},
   ]  
@@ -1829,7 +1819,7 @@ code: |
   VT_fee_waiver_attachment.overflow_fields["other_assets"].overflow_trigger = 2
   
   VT_fee_waiver_attachment.overflow_fields["other_assets"].headers = [
-    {'display_name': "Description"},
+    {'source': "Description"},
     {'market_value': "Fair market value"},
   ]  
   
@@ -2047,9 +2037,19 @@ attachments:
       - "users1_assets_cash_total": ${ currency(bank_assets.market_value()) }
       
       - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value) }
-      - "users1_assets_other_0_description": ${ other_assets[0].description }
+      - "users1_assets_other_0_description": |
+          % if other_assets[0].source == "other":
+          ${ other_assets[0].source_other }
+          % else:
+          ${ other_assets[0].source }
+          % endif
       - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value) }
-      - "users1_assets_other_1_description": ${ other_assets[1].description }
+      - "users1_assets_other_1_description": |
+          % if other_assets[1].source == "other":
+          ${ other_assets[1].source_other }
+          % else:
+          ${ other_assets[1].source }
+          % endif
       
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
