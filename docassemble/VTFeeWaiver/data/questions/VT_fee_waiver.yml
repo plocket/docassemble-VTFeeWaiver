@@ -22,31 +22,6 @@ objects:
   - real_estate: ALAssetList.using(complete_attribute='complete')
   - other_assets: ALAssetList.using(complete_attribute='complete')
 ---
-generic object: ALIncomeList
-code: |
-  x.selected_types
-  x.move_checks_to_list(selected_terms=x.terms_ordered)
-  x.moved = True
----
-generic object: ALExpenseList
-code: |
-  x.selected_types
-  x.move_checks_to_list(selected_terms=x.terms_ordered)
-  x.moved = True
----
-generic object: ALAssetList
-code: |
-  x.selected_types
-  x.move_checks_to_list(selected_terms=x.terms_ordered)
-  x.moved = True
----
-generic object: ALVehicleList
-code: |
-  x.selected_types
-  x.move_checks_to_list(selected_terms=x.terms_ordered)
-  x.moved = True
----
----
 comment: |
   Global interview metadata
 metadata:
@@ -264,6 +239,33 @@ code: |
 
 ---
 #################################PUBLIC BENEFITS##############################
+comment: |
+  Notes on how a list is gathered
+  
+  Interview calls public_benefits.gather
+
+  Gather looks for .there_are_any
+
+  there_any_any asks for x.selected_types
+
+  if any selected types,
+   move_check_to_lists
+     This creates a number of elements in the list, and deletes 'source' if other, (which may set 'source' to the default, like 'vehicle')
+     also sets .moved for the list
+     
+  there_are_any is set to true
+
+  will then look for complete
+
+  check_for_others will set source
+
+  complete calls for attribute (value for public_benefits) for information question
+  
+  information question calls display name (with reconsider to keep it fresh)
+  
+  answering the question sets display_name fresh with new source_other with validation code
+
+  complete sets display  
 ---
 variable name: public_benefits.terms_ordered
 data: !!omap
@@ -276,6 +278,14 @@ data: !!omap
   - dr dynasaur: "Dr. Dynasaur"
   - medicaid: "Medicaid"
   - other: "Other"
+---
+generic object: ALIncomeList
+code: |
+  if x.selected_types.any_true():
+    x.move_checks_to_list(selected_terms=x.terms_ordered)
+    x.there_are_any = True
+  else:
+    x.there_are_any = False
 ---
 id: are there public benefits
 #public_benefits
@@ -293,24 +303,28 @@ fields:
     code: |
       benefits_ordered
 ---
-generic object: ALIncomeList
+generic object: ALIncome
 code: |
-  if x.selected_types.any_true():
-    x.move_checks_to_list(selected_terms=x.terms_ordered)
-    x.there_are_any = True
-  else:
-    x.there_are_any = False
+  x.check_for_other
+  x.value
+  x.complete = True
+---
+code: |
+  if not hasattr(public_benefits[i],'source') and i < len(public_benefits.selected_types.true_values()):
+    public_benefits[i].source = 'other'
+  public_benefits[i].check_for_other = True
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
+reconsider: public_benefits[i].display_name
 question: |
-  Tell us about your ${ ordinal(i) } benefits
-#subquestion: |
-  #% if i > 1:
-  #You have already told us about your benefits from ${ comma_and_list([income.source_display for public_benefits in x.complete_elements()]) }.
-  #% elif i > 0:
-  #You have already told us about your benefits from ${ comma_and_list([income.source_display for public_benefits in x.complete_elements()]) }.
-  #% endif
+  Tell us about ${ public_benefits[i].display_name }.
+subquestion: |
+  % if i > 1:
+  You have already told us about your benefits from ${ comma_and_list(public_benefit.display_name for public_benefit in public_benefits.complete_elements()) }.
+  % elif i > 0:
+  You have already told us about your benefits from ${ comma_and_list(public_benefit.display_name for public_benefit in public_benefits.complete_elements()) }.
+  % endif
 fields:
   - Source of income: public_benefits[i].source
     input type: dropdown
@@ -327,22 +341,43 @@ fields:
       times_per_year_list
   - Amount of income: public_benefits[i].value
     datatype: currency
-
+validation code: |
+  if public_benefits[i].source != "other":
+    public_benefits[i].display_name = public_benefits.terms_ordered.get(public_benefits[i].source, public_benefits[i].source)
+  else:
+    public_benefits[i].display_name = public_benefits[i].source_other
 ---
-variable name: other_incomes.terms_ordered
-data: !!omap
-  - unemployment income: "Unemployment benefits"
-  - child support income: "Child support"
-  - other: "Other"
----
-generic object: ALIncomeList
 code: |
-  x[i].display_name = x.terms_ordered.get(x[i].source, x[i].source)
+  if defined('public_benefits[i].source') and public_benefits[i].source != "other":
+    public_benefits[i].display_name = public_benefits.terms_ordered.get(public_benefits[i].source, public_benefits[i].source)
+  elif defined('public_benefits[i].source') and public_benefits[i].source == "other" and defined('public_benefits[i].source_other'):
+    public_benefits[i].display_name = public_benefits[i].source_other
+  else:
+    public_benefits[i].display_name = "another benefit that provides you income"
 ---
-variable name: help_text
-data: !!omap
-  - unemployment income help: "Enter gross amount of unemployment income -- before taxes were taken out."
-  - default: " "
+question: Do you want to add any more public benefits?
+subquestion: |
+  ${ public_benefits_table }
+yesno: public_benefits.there_is_another
+---
+continue button field: public_benefits.revisit
+question: |
+  Edit public assistance
+subquestion: |
+  ${ public_benefits_table }
+
+  ${ public_benefits.add_action() }
+---
+table: public_benefits_table
+rows: public_benefits.complete_elements()
+columns:
+  - Source: |
+      row_item.display_name if defined("row_item.source") else ""
+  - Amount: |
+      currency(row_item.value) if defined("row_item.value") else ""
+edit:
+  - source
+  - value
 ---
 id: user qualifies due to benefits
 continue button field: user_qualifies_interstitial
@@ -356,6 +391,17 @@ subquestion: |
   Click Next to answer a few more questions.
 ---
 #################################OTHER INCOMES##############################
+---
+variable name: other_incomes.terms_ordered
+data: !!omap
+  - unemployment income: "Unemployment benefits"
+  - child support income: "Child support"
+  - other: "Other"
+---
+variable name: help_text
+data: !!omap
+  - unemployment income help: "Enter gross amount of unemployment income -- before taxes were taken out."
+  - default: " "
 ---
 id: are there other incomes
 #other_incomes
@@ -373,29 +419,15 @@ fields:
   - note: |
       **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 ---
-generic object: ALIncome
-code: |
-  if x.source == "other":
-    x.source_display = x.source_other
-  else:
-    x.source_display = x.display_name
----
-generic object: ALExpense
-code: |
-  if x.source == "other":
-    x.source_display = x.source_other
-  else:
-    x.source_display = x.display_name
----
 id: other income info for list
 #generic object: ALIncomeList
 question: |
   Tell us about your ${ ordinal(i) } income
 subquestion: |
   % if i > 1:
-  You have already told us about your incomes from ${ comma_and_list([income.source_display for income in other_incomes.complete_elements()]) }.
+  You have already told us about your incomes from ${ comma_and_list([income.display_name for income in other_incomes.complete_elements()]) }.
   % elif i > 0:
-  You have already told us about your income from ${ comma_and_list([income.source_display for income in other_incomes.complete_elements()]) }.
+  You have already told us about your income from ${ comma_and_list([income.display_name for income in other_incomes.complete_elements()]) }.
   % endif
 fields:
   - Source of income: other_incomes[i].source
@@ -665,7 +697,7 @@ table: jobs.table
 rows: jobs
 columns:
   - Job title: |
-      row_item.source_display
+      row_item.display_name
   - Employer: |
       row_item.employer.name if hasattr(row_item.employer.name, "first") else ""
   - Monthly Gross Income: |
@@ -927,18 +959,6 @@ fields:
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
-generic object: ALIncome
-code: |
-  x.check_for_other
-  x.value
-  x.source_display
-  x.complete = True
----
-code: |
-  if not hasattr(public_benefits[i],'source') and i < len(public_benefits.selected_types.true_values()):
-    public_benefits[i].source = 'other'
-  public_benefits[i].check_for_other = True
----
 code: |
   if not hasattr(other_incomes[i],'source') and i < len(other_incomes.selected_types.true_values()):
     other_incomes[i].source = 'other'
@@ -1190,26 +1210,6 @@ code: |
     other_assets[i].source = 'other'
   other_assets[i].check_for_other = True
 ---
-# workaround to get the display names to show and to be able to add a benefit in review screen
-id: public benefits display names
-code: |
-  public_benefits.display_name = public_benefits.terms_ordered.get(x.source, x.source)
----
-id: real estate display names
-#generic object: ALAsset
-code: |
-  real_estate.display_name = real_estate.terms_ordered.get(x.source, x.source)
----
-id: other asset display names
-#generic object: ALAsset
-code: |
-  other_asset.display_name = other_asset.terms_ordered.get(x.source, x.source)
----
-id: bank assets display names
-#generic object: ALAsset
-code: |
-  bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
----
 ###############################OTHER ASSETS#############################
 ---
 ---
@@ -1266,6 +1266,11 @@ fields:
   - Current value: bank_assets[i].market_value
     datatype: currency
     required: False
+---
+id: bank assets display names
+#generic object: ALAsset
+code: |
+  bank_assets.display_name = bank_assets.terms_ordered.get(x.source, x.source)
 ---
 #############################OTHER REASONS#############################
 ---
@@ -1348,15 +1353,6 @@ code: |
   
 
 #####################REVIEW SCREEN#######################
----
-#This code is a workaround for an error that you get when you edit these in review table
-code: |
-  public_benefits.there_is_another = False
-  other_incomes.there_is_another = False
-  bank_assets.there_is_another = False
----
-question: Do you want to add any more public benefits?
-yesno: public_benefits.there_is_another
 ---
 question: Do you want to add any more incomes?
 yesno: other_incomes.there_is_another
@@ -1612,26 +1608,6 @@ edit:
   - daytime_phone_number
   - signature
 confirm: True
----
-continue button field: public_benefits.revisit
-question: |
-  Edit public assistance
-subquestion: |
-  ${ public_benefits.table }
-
-  ${ public_benefits.add_action() }
----
-table: public_benefits.table
-rows: public_benefits
-columns:
-  - Source: |
-      row_item.source_display if defined("row_item.source") else ""
-  - Amount: |
-      currency(row_item.value) if defined("row_item.value") else ""
-edit:
-  - source
-  - value
----
 
 ---
 continue button field: other_incomes.revisit
