@@ -13,9 +13,9 @@ code: |
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - public_benefits: ALIncomeList.using(complete_attribute='value')
+  - public_benefits: ALIncomeList.using(complete_attribute='complete')
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
-  - other_incomes: ALIncomeList.using(complete_attribute='value')
+  - other_incomes: ALIncomeList.using(complete_attribute='complete')
   - expenses: ALExpenseList.using(complete_attribute='complete')
   - bank_assets: ALAssetList.using(complete_attribute='value')
   - vehicles: ALVehicleList.using(complete_attribute='complete')
@@ -275,7 +275,7 @@ data: !!omap
   - ssi: "Supplemental Security Income (SSI)"
   - dr dynasaur: "Dr. Dynasaur"
   - medicaid: "Medicaid"
-  - other benefit: "Other"
+  - other: "Other"
 ---
 id: are there public benefits
 #public_benefits
@@ -307,16 +307,16 @@ question: |
   Tell us about your ${ ordinal(i) } benefits
 #subquestion: |
   #% if i > 1:
-  #You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
+  #You have already told us about your benefits from ${ comma_and_list([income.source_display for public_benefits in x.complete_elements()]) }.
   #% elif i > 0:
-  #You have already told us about your benefits from ${ comma_and_list([income.source for public_benefits in x.complete_elements()]) }.
+  #You have already told us about your benefits from ${ comma_and_list([income.source_display for public_benefits in x.complete_elements()]) }.
   #% endif
 fields:
   - Source of income: public_benefits[i].source
     input type: dropdown
     code: |
       benefits_ordered
-  - What type of income?: public_benefits[i].source
+  - What type of income?: public_benefits[i].source_other
     show if:
       variable: public_benefits[i].source
       is: other
@@ -334,6 +334,10 @@ data: !!omap
   - unemployment income: "Unemployment benefits"
   - child support income: "Child support"
   - other: "Other"
+---
+generic object: ALIncomeList
+code: |
+  x[i].display_name = x.terms_ordered.get(x[i].source, x[i].source)
 ---
 variable name: help_text
 data: !!omap
@@ -369,23 +373,36 @@ fields:
   - note: |
       **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 ---
+generic object: ALIncome
+code: |
+  if x.source == "other":
+    x.source_display = x.source_other
+  else:
+    x.source_display = x.display_name
+---
+generic object: ALExpense
+code: |
+  if x.source == "other":
+    x.source_display = x.source_other
+  else:
+    x.source_display = x.display_name
+---
 id: other income info for list
 #generic object: ALIncomeList
 question: |
   Tell us about your ${ ordinal(i) } income
 subquestion: |
   % if i > 1:
-  You have already told us about your incomes from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  You have already told us about your incomes from ${ comma_and_list([income.source_display for income in other_incomes.complete_elements()]) }.
   % elif i > 0:
-  You have already told us about your income from ${ comma_and_list([income.source for income in x.complete_elements()]) }.
+  You have already told us about your income from ${ comma_and_list([income.source_display for income in other_incomes.complete_elements()]) }.
   % endif
 fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
     code: |
       other_incomes_ordered
-    default: other
-  - What type of income?: other_incomes[i].source
+  - What type of income?: other_incomes[i].source_other
     show if:
       variable: other_incomes[i].source
       is: other
@@ -648,7 +665,7 @@ table: jobs.table
 rows: jobs
 columns:
   - Job title: |
-      row_item.source
+      row_item.source_display
   - Employer: |
       row_item.employer.name if hasattr(row_item.employer.name, "first") else ""
   - Monthly Gross Income: |
@@ -910,11 +927,28 @@ fields:
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
+generic object: ALIncome
+code: |
+  x.check_for_other
+  x.value
+  x.source_display
+  x.complete = True
+---
+code: |
+  if not hasattr(public_benefits[i],'source') and i < len(public_benefits.selected_types.true_values()):
+    public_benefits[i].source = 'other'
+  public_benefits[i].check_for_other = True
+---
+code: |
+  if not hasattr(other_incomes[i],'source') and i < len(other_incomes.selected_types.true_values()):
+    other_incomes[i].source = 'other'
+  other_incomes[i].check_for_other = True
+---
 generic object: ALExpense
 code: |
   x.check_for_other
   x.value
-  x.set_source_other
+  x.source_display
   x.complete = True
 ---
 generic object: ALExpense
@@ -922,12 +956,6 @@ code: |
   if not hasattr(expenses[i],'source') and i < len(expenses.selected_types.true_values()):
     expenses[i].source = 'other'
   expenses[i].check_for_other = True
----
-generic object: ALExpense
-code: |
-  if hasattr(x,'source_other'):
-    x.source = x.source_other
-  x.set_source_other = True
 ---
 generic object: ALExpenseList
 need:
@@ -944,7 +972,7 @@ subquestion: |
 fields:
   - Amount: x[i].value
     datatype: currency
-#  - Other (explain): x[i].source
+#  - Other (explain): x[i].source_other
 #    show if:
 #      variable: x[i].source
 #      is: other
@@ -1025,7 +1053,7 @@ generic object: ALVehicleList
 code: |
   x[i].check_for_other
   x[i].market_value
-  x[i].set_source_other
+  x[i].source_display
   x[i].complete = True
 ---
 generic object: ALVehicle
@@ -1033,13 +1061,6 @@ code: |
   if x.source == 'vehicle' and i < len(vehicles.selected_types.true_values()):
     x.source = 'other'
   x.check_for_other = True
----
-generic object: ALVehicle
-code: |
-  if hasattr(x,'source_other'):
-    x.source = x.source_other
-  x.set_source_other = True
----
 ---
 id: info for each vehicle
 question: |
@@ -1099,18 +1120,13 @@ fields:
 code: |
   real_estate[i].check_for_other
   real_estate[i].market_value
-  real_estate[i].set_source_other
+  real_estate[i].source_display
   real_estate[i].complete = True
 ---
 code: |
   if not hasattr(real_estate[i],'source') and i < len(real_estate.selected_types.true_values()):
     real_estate[i].source = 'other'
   real_estate[i].check_for_other = True
----
-code: |
-  if hasattr(real_estate[i],'source_other'):
-    real_estate[i].source = real_estate[i].source_other
-  real_estate[i].set_source_other = True
 ---
 id: info for each real estate
 question: |
@@ -1166,7 +1182,7 @@ fields:
 code: |
   other_assets[i].check_for_other
   other_assets[i].market_value
-  other_assets[i].set_source_other
+  other_assets[i].source_display
   other_assets[i].complete = True
 ---
 code: |
@@ -1174,16 +1190,10 @@ code: |
     other_assets[i].source = 'other'
   other_assets[i].check_for_other = True
 ---
-code: |
-  if hasattr(other_assets[i],'source_other'):
-    other_assets[i].source = other_assets[i].source_other
-  other_assets[i].set_source_other = True
----
 # workaround to get the display names to show and to be able to add a benefit in review screen
 id: public benefits display names
-generic object: ALIncome
 code: |
-  x.display_name = public_benefits.terms_ordered.get(x.source, x.source)
+  public_benefits.display_name = public_benefits.terms_ordered.get(x.source, x.source)
 ---
 id: real estate display names
 #generic object: ALAsset
@@ -1345,6 +1355,15 @@ code: |
   other_incomes.there_is_another = False
   bank_assets.there_is_another = False
 ---
+question: Do you want to add any more public benefits?
+yesno: public_benefits.there_is_another
+---
+question: Do you want to add any more incomes?
+yesno: other_incomes.there_is_another
+---
+question: Do you want to add any more bank assets?
+yesno: bank_assets.there_is_another
+---
 question: Do you want to add any more expenses?
 yesno: expenses.there_is_another
 ---
@@ -1471,7 +1490,7 @@ review:
       
       % for item in expenses:
       % if item.display_name == "Other expenses":
-      - ${ item.source.lower() }
+      - ${ item.source_display.lower() }
       % else:
       - ${ item.display_name.lower() }
       % endif
@@ -1499,7 +1518,7 @@ review:
       **Real estate**
 
       % for item in real_estate.complete_elements():
-      * ${ item.display_name }       
+      * ${ item.source_display }       
       % endfor
       % if not real_estate.there_are_any:
       - None
@@ -1525,11 +1544,7 @@ review:
       **Other assets**
 
       % for item in other_assets.complete_elements():
-      % if item.source == "other":
-        - ${ item.source_other }
-      % else:
-        - ${ item.source }
-      % endif
+        - ${ item.source_display }
       % endfor
 
       % if not other_assets.there_are_any:
@@ -1610,7 +1625,7 @@ table: public_benefits.table
 rows: public_benefits
 columns:
   - Source: |
-      row_item.display_name if defined("row_item.source") else ""
+      row_item.source_display if defined("row_item.source") else ""
   - Amount: |
       currency(row_item.value) if defined("row_item.value") else ""
 edit:
@@ -1631,7 +1646,7 @@ table: other_incomes.table
 rows: other_incomes
 columns:
   - Source: |
-      row_item.source if defined("row_item.source") else ""
+      row_item.source_display if defined("row_item.source") else ""
   - Value: |
       currency(row_item.value) if defined("row_item.value") else ""
 edit:
@@ -1651,7 +1666,7 @@ table: expenses.table
 rows: expenses
 columns:
   - Type: |
-      row_item.source.lower()
+      row_item.source_display.lower()
   - Amount per month: |
       currency(row_item.total(times_per_year=12))
 edit:
@@ -1671,7 +1686,7 @@ table: bank_assets.table
 rows: bank_assets
 columns:
   - Source: |
-      row_item.source if defined("row_item.source") else ""
+      row_item.source_display if defined("row_item.source") else ""
   - Value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
 edit:
@@ -1715,7 +1730,7 @@ table: real_estate.table
 rows: real_estate
 columns:
   - Description: |
-      row_item.display_name if defined("row_item.display_name") else ""
+      row_item.source_display if defined("row_item.source") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
   - Amount owed: |
