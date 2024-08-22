@@ -13,7 +13,6 @@ code: |
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - public_benefits: ALIncomeList.using(complete_attribute='complete')
   - jobs: ALItemizedJobList.using(complete_attribute="complete", ask_number=True)
   - other_incomes: ALIncomeList.using(complete_attribute='complete')
   - expenses: ALExpenseList.using(complete_attribute='complete')
@@ -279,6 +278,17 @@ data: !!omap
   - medicaid: "Medicaid"
   - other: "Other"
 ---
+comment: |
+  This keeps the text that may be changed near the top of the public benefits section.
+code: |
+  public_benefits_other_display = "another benefit that provides you income"
+---
+objects:
+  - public_benefits: ALIncomeList.using(complete_attribute='complete')
+---
+objects:
+  - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
+---
 generic object: ALIncomeList
 code: |
   if x.selected_types.any_true():
@@ -353,7 +363,7 @@ code: |
   elif defined('public_benefits[i].source') and public_benefits[i].source == "other" and defined('public_benefits[i].source_other'):
     public_benefits[i].display_name = public_benefits[i].source_other
   else:
-    public_benefits[i].display_name = "another benefit that provides you income"
+    public_benefits[i].display_name = public_benefits_other_display
 ---
 question: Do you want to add any more public benefits?
 subquestion: |
@@ -902,7 +912,6 @@ validation code: |
 ---
 objects:
   # workaround to get omaps lists to be ordered
-  - benefits_ordered: DAOrderedDict.using(elements=public_benefits.terms_ordered, auto_gather=False, gathered=True)
   - other_incomes_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
   - expenses_ordered: DAOrderedDict.using(elements=expenses.terms_ordered, auto_gather=False, gathered=True)
   - vehicles_ordered: DAOrderedDict.using(elements=vehicles.terms_ordered, auto_gather=False, gathered=True)
