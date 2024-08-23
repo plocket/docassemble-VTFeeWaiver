@@ -8,6 +8,9 @@ include:
 objects:
   - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
 ---
+modules:
+  - .al_income_move
+---
 code: |
   trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
 ---
@@ -308,15 +311,8 @@ fields:
 id: ALIncome complete
 generic object: ALIncome
 code: |
-  x.check_for_other
   x.value
   x.complete = True
----
-id: public_benefits check for other
-code: |
-  if not hasattr(public_benefits[i],'source') and i < len(public_benefits.selected_types.true_values()):
-    public_benefits[i].source = 'other'
-  public_benefits[i].check_for_other = True
 ---
 id: public benefits info for list
 #generic object: ALIncomeList
@@ -443,12 +439,6 @@ fields:
 comment: |
   will use id: ALIncome complete to set other_incomes[i].complete
 ---
-id: other_incomes check for other
-code: |
-  if not hasattr(other_incomes[i],'source') and i < len(other_incomes.selected_types.true_values()):
-    other_incomes[i].source = 'other'
-  other_incomes[i].check_for_other = True
----
 id: other income info for list
 #generic object: ALIncomeList
 reconsider: other_incomes[i].display_name
@@ -495,11 +485,6 @@ code: |
     other_incomes[i].display_name = other_incomes[i].source_other
   else:
     other_incomes[i].display_name = other_incomes_other_display
----
-code: |
-  if not hasattr(other_incomes[i],'source') and i < len(other_incomes.selected_types.true_values()):
-    other_incomes[i].source = 'other'
-  other_incomes[i].check_for_other = True
 ---
 question: Do you want to add any more incomes?
 yesno: other_incomes.there_is_another
@@ -1063,14 +1048,8 @@ fields:
 ---
 generic object: ALExpense
 code: |
-  x.check_for_other
   x.value
   x.complete = True
----
-code: |
-  if not hasattr(expenses[i],'source') and i < len(expenses.selected_types.true_values()):
-    expenses[i].source = 'other'
-  expenses[i].check_for_other = True
 ---
 generic object: ALExpenseList
 need:
@@ -1239,16 +1218,8 @@ fields:
 id: vehicles complete
 generic object: ALVehicleList
 code: |
-  x[i].check_for_other
   x[i].market_value
   x[i].complete = True
----
-id: vehicles check for other
-generic object: ALVehicle
-code: |
-  if x.source == 'vehicle' and i < len(vehicles.selected_types.true_values()):
-    x.source = 'other'
-  x.check_for_other = True
 ---
 id: info for each vehicle
 reconsider: vehicles[i].display_name
@@ -1364,15 +1335,8 @@ fields:
       real_estate_ordered
 ---
 code: |
-  real_estate[i].check_for_other
   real_estate[i].market_value
   real_estate[i].complete = True
----
-id: real_estate check for other
-code: |
-  if not hasattr(real_estate[i],'source') and i < len(real_estate.selected_types.true_values()):
-    real_estate[i].source = 'other'
-  real_estate[i].check_for_other = True
 ---
 id: info for each real estate
 reconsider: real_estate[i].display_name
@@ -1491,15 +1455,8 @@ fields:
 ---
 id: other_assets complete
 code: |
-  other_assets[i].check_for_other
   other_assets[i].market_value
   other_assets[i].complete = True
----
-id: other_assets check for other
-code: |
-  if not hasattr(other_assets[i],'source') and i < len(other_assets.selected_types.true_values()):
-    other_assets[i].source = 'other'
-  other_assets[i].check_for_other = True
 ---
 id: describe other asset
 reconsider: other_assets[i].display_name
