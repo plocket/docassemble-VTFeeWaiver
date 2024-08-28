@@ -727,7 +727,7 @@ columns:
   - Type: |
       str(row_index).replace("_", " ").lower().capitalize()
   - Amount per hour or other time period: |
-      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
+      currency(row_item.value)
   
 edit:
   #- exists
@@ -743,7 +743,7 @@ columns:
   - Type: |
       str(row_index).replace("_", " ").lower().capitalize()
   - Amount: |
-      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
+      currency(row_item.value)
 edit:
   #- exists
   - is_part_time
@@ -830,7 +830,10 @@ columns:
   - Type: |
       str(row_index).replace("_", " ").lower().capitalize()
   - Amount: |
-      '$0' if hasattr(row_item, 'exists') and not row_item.exists else currency(row_item.value)
+      currency(row_item.value)
+  - Period: |
+      times_per_year(times_per_year_list, row_item.times_per_year)
+      
   
 edit:
   #- exists
@@ -1569,11 +1572,9 @@ table: other_assets_table
 rows: other_assets.complete_elements()
 columns:
   - Description: |
-      row_item.source if defined("row_item.source") else ""
+      row_item.display_name if defined("row_item.source") else ""
   - Market value: |
       currency(row_item.market_value) if defined("row_item.market_value") else ""
-  - Amount owed: |
-      currency(row_item.balance) if defined("row_item.balance") else ""
 edit:
   - source
   - market_value
@@ -1609,7 +1610,7 @@ fields:
     code: |
       bank_assets_ordered
 ---
-id: info for each asset
+id: info for each bank asset
 question: |
   About your cash and bank assets
 fields:
@@ -1807,7 +1808,7 @@ review:
       % endif
       
       % for item in jobs:
-      - ${ item.source } / ${ item.employer.name }
+      - ${ item.source } / ${ item.employer.name.first if not item.is_self_employed else "Self-employed"}
       % endfor     
   - Edit: users1_income_self_employment_monthly_amount
     button: |
