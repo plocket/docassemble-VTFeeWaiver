@@ -163,7 +163,7 @@ code: |
 
 
 ---
-###################### Main order ######################
+###################### MAIN INTERVIEW ORDER ######################
 comment: |
   This block includes the logic for standalone interviews.
   Delete mandatory: True to include in another interview
@@ -199,7 +199,7 @@ code: |
   set_progress(100)
   VT_fee_waiver_download
 ---
-#################################PUBLIC BENEFITS##############################
+################################# PUBLIC BENEFITS ##############################
 comment: |
   --Notes on how a list is gathered, using public_benefits as an example--
   
@@ -368,7 +368,7 @@ subquestion: |
   
   Click Next to answer a few more questions.
 ---
-#################################OTHER INCOMES##############################
+################################# OTHER INCOMES ##############################
 ---
 variable name: other_incomes.terms_ordered
 data: !!omap
@@ -484,7 +484,7 @@ edit:
   - source
   - value
 ---
-#################################JOBS##############################
+################################# JOBS ##############################
 ---
 id: work
 question: |
@@ -842,7 +842,7 @@ edit:
   - value
 
 ---
-###############################INTRO SCREENS###############################
+############################### INTRO SCREENS ###############################
 ---
 id: basic questions intro screen
 decoration: form-lineal
@@ -915,7 +915,7 @@ subquestion: |
     Let's get started. Tap the Next button.
 continue button field: important_notes_to_user
 ---
-###############################ABOUT COURT CASE###############################
+############################### ABOUT COURT CASE ###############################
 ---
 id: choose a court
 question: |
@@ -945,7 +945,7 @@ fields:
   - note: |
       If you are starting a case, type in your name (the plaintiff's name) "vs." the other party (the defendant's name).
 ---
-###############################USERS INFO###############################
+############################### USERS INFO ###############################
 ---
 id: Gather users street address
 sets:
@@ -1044,7 +1044,7 @@ edit:
   - signature
 confirm: True
 ---
-###############################EXPENSES#############################
+############################# EXPENSES #############################
 ---
 id: expenses intro
 mandatory: True
@@ -1647,13 +1647,13 @@ edit:
   - balance
 
 ---
-#############################OTHER REASONS#############################
+############################# OTHER REASONS #############################
 ---
 id: more information
 question: |
   More information
 subquestion: |
-  Tell us about other reasons why you cannot afford the court fees (optional question)
+  Tell us about other reasons why you cannot afford the court fees (optional question).
 fields:
   - "Reason(s)": other_reasons_why_cannot_afford
     input type: area
@@ -1664,7 +1664,7 @@ fields:
 
 #${ after_last_question_we_will_generate_your_forms }
 ---
-#############################SIGNATURE#############################
+############################# SIGNATURE #############################
 ---
 id: User signature
 question: |
@@ -1696,7 +1696,7 @@ fields:
 continue button field: saw_signature_choice    
 ---
 
-#####################PREVIEW SCREEN#######################
+##################### PREVIEW SCREEN #######################
 ---
 id: preview VT_fee_waiver
 question: |
@@ -1727,7 +1727,7 @@ code: |
   
   
 
-#####################REVIEW SCREEN#######################
+##################### REVIEW SCREEN #######################
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
@@ -1929,7 +1929,7 @@ review:
       ${ signature_date }
 
 ---
-#####################DOWNLOAD SCREEN#####################
+##################### DOWNLOAD SCREEN #####################
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
@@ -1955,7 +1955,7 @@ subquestion: |
 
 progress: 100
 ---
-#####################OVERFLOW + ADDENDUM#####################
+##################### OVERFLOW + ADDENDUM #####################
 ---
 attachment:
   variable name: VT_fee_waiver_attachment.addendum
@@ -2005,7 +2005,7 @@ code: |
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
   VT_fee_waiver_attachment.overflow_fields.gathered = True
 ---
-#####################ATTACHMENTS#####################
+##################### ATTACHMENTS #####################
 ---
 objects:
   - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Next Steps document", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
@@ -2108,7 +2108,7 @@ attachments:
       
       - "users1_income_employment_monthly_amount": |
           % if not employed:
-          0.00
+          
           % else:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
           % endif
@@ -2123,7 +2123,7 @@ attachments:
           % if defined("users1_income_self_employment_monthly_amount"):
           ${ currency(users1_income_self_employment_monthly_amount,symbol="") }
           % else:
-          0.00
+          
           % endif
 
       - "users1_income_monthly_total": |
@@ -2175,14 +2175,14 @@ attachments:
           % endif
       - "assets_no": |
           % if not vehicles.selected_types.any_true():
-          ${ "True" }
-          % elif not real_estate.selected_types.any_true():
-          ${ "True" }
-          % elif not bank_assets.selected_types.any_true():
-          ${ "True" }
-          % elif not other_assets.selected_types.any_true():
-          ${ "True" }
-          % endif
+            % if not real_estate.selected_types.any_true():
+              % if not bank_assets.selected_types.any_true():
+                % if not other_assets.selected_types.any_true():
+                  ${ "True" }
+                % endif
+                % endif
+                % endif
+                % endif
       - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].balance) }
       - "users1_assets_vehicle_0_description": |
            ${ vehicles[0].make } ${ vehicles[0].model } ${ vehicles[0].year } 
