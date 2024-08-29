@@ -336,9 +336,11 @@ code: |
   else:
     public_benefits[i].display_name = public_benefits_other_display
 ---
-id: public_benefits there is another
-question: Do you want to add any more public assistance?
+id: want to add more public benefits
+question: Do you want to list any more public assistance?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ public_benefits_table }
   
   ${ public_benefits.add_action() }
@@ -468,8 +470,11 @@ code: |
   else:
     other_incomes[i].display_name = other_incomes_other_display
 ---
+id: want to add more other incomes
 question: Do you want to add any more incomes?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ other_incomes_table }
   
   ${ other_incomes.add_action() }
@@ -667,7 +672,7 @@ if: j not in ["full time","part time"]
 id: itemized job period non-pt-or-ft wages
 generic object: ALItemizedJob
 question: |
-  Details about ${ j } compensation for your ${ jobs[i].source } job
+  Details about ${ j.lower() } compensation for your ${ jobs[i].source } job
 fields:
   - label: |
       Amount
@@ -902,10 +907,10 @@ subquestion: |
   For this guided interview, you will need to know:
   
   * the name and address of any employer you might have
-  * any public benefits that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.), and
+  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.), and
   * information about the court case for which you want a fee waiver. (You can find this information on other court papers you have about this case. If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
   
-  If you get public benefits, that's all you need. **If you don't get public benefits**, you will also need to know:
+  If you get public assistance, that's all you need. **If you don't get public assistance**, you will also need to know:
   
   * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or have your income and business expenses from the last 12 months.
   * your expenses (like rent, utilities, insurance payments, child care, etc.) -- looking back over the last 12 months
@@ -1179,8 +1184,11 @@ code: |
   else:
     expenses[i].display_name = expenses_other_display
 ---
-question: Do you want to add any more expenses?
+id: want to add more expenses
+question: Do you want to list any more expenses?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ expenses_table }
   
   ${ expenses.add_action() }
@@ -1321,8 +1329,11 @@ code: |
   else:
     vehicles[i].display_name = vehicles_other_display
 ---
-question: Do you want to add any more vehicles?
+id: want to add more vehicles
+question: Do you want to list any more vehicles?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ vehicles_table }
   
   ${ vehicles.add_action() }
@@ -1443,9 +1454,11 @@ code: |
   else:
     real_estate[i].display_name = real_estate_other_display
 ---
-id: real_estate there is another
-question: Do you want to add any more real estate?
+id: want to add more real estate
+question: Do you want to list any more real estate?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ real_estate_table }
   
   ${ real_estate.add_action() }
@@ -1519,12 +1532,6 @@ fields:
 id: bank assets display names
 code: |
   bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
----
-id: bank_assets there is another
-question: Do you want to add any more cash or bank assets?
-yesno: bank_assets.there_is_another
-subquestion: |
-  ${ bank_assets_table }
 ---
 id: bank_assets revisit
 continue button field: bank_assets.revisit
@@ -1637,8 +1644,11 @@ code: |
   else:
     other_assets[i].display_name = other_assets_other_display
 ---
-question: Do you want to add any more other assets?
+id: want to add more other assets
+question: Do you want to list any more other assets?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ other_assets_table }
   
   ${ other_assets.add_action() }
@@ -1710,9 +1720,11 @@ id: bank assets display names
 code: |
   bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
 ---
-id: bank_assets there is another
-question: Do you want to add any more bank assets?
+id: want to add more bank assets
+question: Do you want to list any more cash or bank assets?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ bank_assets_table }
   
   ${ bank_assets.add_action() }
@@ -1804,7 +1816,7 @@ subquestion: |
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
-  Remember to come back to this window to continue and sign your form.
+  **Remember to come back to this window to continue and sign your form.**
 continue button field: VT_fee_waiver_preview_question    
 ---
 code: |
@@ -2020,16 +2032,18 @@ review:
       **Date of signature for these forms**:
       ${ signature_date }
 
+  - note: |
+      **Select Resume, below, when you are done. It will take a moment to generate your form again.**
 ---
 ##################### DOWNLOAD SCREEN #####################
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
 question: |
-  Review your forms and download and/or print them
+  ${ download_screen_instructions_headline_one_form }
 subquestion: |
   
-  ${ download_screen_instructions }
+  ${ download_screen_instructions_one_form }
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
@@ -2100,7 +2114,7 @@ code: |
 ##################### ATTACHMENTS #####################
 ---
 objects:
-  - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Next Steps document", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
   - VT_fee_waiver_attachment: ALDocument.using(title="Vermont fee waiver form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 objects:
