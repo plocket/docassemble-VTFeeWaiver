@@ -123,8 +123,8 @@ code: |
   trial_court.address.county
   
   nav.set_section('your_income')
-  public_benefits.gather()
-  if public_benefits.there_are_any:
+  if len(public_benefits) > 0:
+    public_benefits.review_items
     user_qualifies_interstitial   
     if employed:
       jobs.gather()
@@ -252,7 +252,7 @@ code: |
 ---
 id: public_benefits object
 objects:
-  - public_benefits: ALIncomeList.using(complete_attribute='complete')
+  - public_benefits: ALIncomeList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: public_benefits ordered object for checkboxes
 objects:
@@ -335,7 +335,9 @@ id: public_benefits there is another
 question: Do you want to add any more public benefits?
 subquestion: |
   ${ public_benefits_table }
-yesno: public_benefits.there_is_another
+  
+  ${ public_benefits.add_action() }
+continue button field: public_benefits.review_items
 ---
 id: public_benefits revisit
 continue button field: public_benefits.revisit
@@ -348,7 +350,7 @@ subquestion: |
 ---
 id: public_benefits table
 table: public_benefits_table
-rows: public_benefits.complete_elements()
+rows: public_benefits
 columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
