@@ -102,7 +102,7 @@ code: |
   VT_fee_waiver_intro
   set_progress(10)
   important_notes_to_user
-  user_ask_role
+  #user_ask_role
   
   set_progress(10)
   nav.set_section('about_you')
@@ -1414,8 +1414,6 @@ fields:
     datatype: currency
   - If you have a mortgage, lien or owe money on the real estate, how much do you owe? Enter 0 if you own it outright.: real_estate[i].balance
     datatype: currency
-  #- Town/city where the real estate is located. Example -- Rutland: real_estate[i].description
-    #maxlength: 76
 validation code: |
   if real_estate[i].source != "other":
     real_estate[i].display_name = real_estate.terms_ordered.get(real_estate[i].source, real_estate[i].source)
@@ -1461,123 +1459,7 @@ edit:
   - market_value
   - balance
 ---
-################ OTHER ASSETS ################
----
-id: other_assets terms_ordered
-# "!!omap" makes these terms ordered
-# their order here will be their same order when shown to users.
-variable name: other_assets.terms_ordered
-data: !!omap
-  - tools: "Tools"
-  - equipment: "Equipment"
-  - electronics: "Electronics"
-  - stocks: "Stocks"
-  - bonds: "Bonds"
-  - other: "Other"
----
-id: other_assets other display
-comment: |
-  This keeps the text that may be changed near the top of the public benefits section.
-  Used in:
-  Tell us about your ______
-code: |
-  other_assets_other_display = "other asset"
----
-id: other_assets object
-objects:
-  - other_assets: ALAssetList.using(complete_attribute='complete')
----
-id: other_assets ordered object for checkboxes
-objects:
-  - other_assets_ordered: DAOrderedDict.using(elements=other_assets.terms_ordered, auto_gather=False, gathered=True)
----
-comment: |
-  will use id: ALIncomeList there are any
----
-id: other assets
-question: |
-  Other large assets that you have not entered already
-subquestion: |   
-  Check any that apply to you.
-fields:
-  - no label: other_assets.selected_types
-    datatype: checkboxes
-    code: |
-      other_assets_ordered
----
-id: other_assets complete
-code: |
-  other_assets[i].market_value
-  other_assets[i].complete = True
----
-id: describe other asset
-reconsider: other_assets[i].display_name
-question: |
-  Tell us about your ${ other_assets[i].display_name }
-subquestion: |
-
-  Make your best guess for the market value.
-  
-  % if i > 1:
-  You have already told us about your ${ comma_and_list(other_asset.display_name for other_asset in other_assets.complete_elements()) }.
-  % elif i > 0:
-  You have already told us about your ${ comma_and_list(other_asset.display_name for other_asset in other_assets.complete_elements()) }.
-  % endif
-fields:
-  - Type of asset: other_assets[i].source
-    code: |
-      other_assets_ordered
-  - Other (explain): other_assets[i].source_other
-    show if:
-      variable: other_assets[i].source
-      is: other
-  - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
-    maxlength: 76
-    datatype: currency
-  - note: |
-      Other assets may be things like tools, equipment, electronics, computers, stocks, bonds, etc.
-validation code: |
-  if other_assets[i].source != "other":
-    other_assets[i].display_name = other_assets.terms_ordered.get(other_assets[i].source, other_assets[i].source)
-  else:
-    other_assets[i].display_name = other_assets[i].source_other
----
-id: other_assets set display name
-code: |
-  if defined('other_assets[i].source') and other_assets[i].source != "other":
-    other_assets[i].display_name = other_assets.terms_ordered.get(other_assets[i].source, other_assets[i].source)
-  elif defined('other_assets[i].source') and other_assets[i].source == "other" and defined('other_assets[i].source_other'):
-    other_assets[i].display_name = other_assets[i].source_other
-  else:
-    other_assets[i].display_name = other_assets_other_display
----
-question: Do you want to add any more other assets?
-yesno: other_assets.there_is_another
-subquestion: |
-  ${ other_assets_table }
----
-continue button field: other_assets.revisit
-question: |
-  Edit other assets
-subquestion: |
-  ${ other_assets_table }
-
-  ${ other_assets.add_action() }
----
-table: other_assets_table
-rows: other_assets.complete_elements()
-columns:
-  - Description: |
-      row_item.display_name if defined("row_item.source") else ""
-  - Market value: |
-      currency(row_item.market_value) if defined("row_item.market_value") else ""
-edit:
-  - source
-  - market_value
-  - balance
-
----
-###############BANK ASSETS####################
+############### BANK ASSETS ####################
 ---
 id: bank_assets terms_ordered
 variable name: bank_assets.terms_ordered
@@ -1623,7 +1505,7 @@ code: |
   bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
 ---
 id: bank_assets there is another
-question: Do you want to add any more bank assets?
+question: Do you want to add any more cash or bank assets?
 yesno: bank_assets.there_is_another
 subquestion: |
   ${ bank_assets_table }
@@ -1648,6 +1530,122 @@ columns:
 edit:
   - source
   - market_value
+---
+################ OTHER ASSETS ################
+---
+id: other_assets terms_ordered
+# "!!omap" makes these terms ordered
+# their order here will be their same order when shown to users.
+variable name: other_assets.terms_ordered
+data: !!omap
+  - tools: "Tools"
+  - equipment: "Equipment"
+  - electronics: "Electronics"
+  - stocks: "Stocks"
+  - bonds: "Bonds"
+  - other: "Other"
+---
+id: other_assets other display
+comment: |
+  This keeps the text that may be changed near the top of the section.
+  Used in:
+  Tell us about your ______
+code: |
+  other_assets_other_display = "other asset"
+---
+id: other_assets object
+objects:
+  - other_assets: ALAssetList.using(complete_attribute='complete')
+---
+id: other_assets ordered object for checkboxes
+objects:
+  - other_assets_ordered: DAOrderedDict.using(elements=other_assets.terms_ordered, auto_gather=False, gathered=True)
+---
+comment: |
+  will use id: ALIncomeList there are any
+---
+id: other assets
+question: |
+  Other large assets that you have not entered already
+subquestion: |   
+  Check any that apply to you.
+  
+  Do not include retirement accounts???
+fields:
+  - no label: other_assets.selected_types
+    datatype: checkboxes
+    code: |
+      other_assets_ordered
+---
+id: other_assets complete
+code: |
+  other_assets[i].market_value
+  other_assets[i].complete = True
+---
+id: describe other asset
+reconsider: other_assets[i].display_name
+question: |
+  Tell us about your ${ other_assets[i].display_name }
+subquestion: |
+
+  Make your best guess for the market value.
+  
+  % if i > 1:
+  You have already told us about your ${ comma_and_list(other_asset.display_name for other_asset in other_assets.complete_elements()) }.
+  % elif i > 0:
+  You have already told us about your ${ comma_and_list(other_asset.display_name for other_asset in other_assets.complete_elements()) }.
+  % endif
+fields:
+  - Type of asset: other_assets[i].source
+    code: |
+      other_assets_ordered
+  - Other (explain): other_assets[i].source_other
+    show if:
+      variable: other_assets[i].source
+      is: other
+  - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
+    maxlength: 76
+    datatype: currency
+validation code: |
+  if other_assets[i].source != "other":
+    other_assets[i].display_name = other_assets.terms_ordered.get(other_assets[i].source, other_assets[i].source)
+  else:
+    other_assets[i].display_name = other_assets[i].source_other
+---
+id: other_assets set display name
+code: |
+  if defined('other_assets[i].source') and other_assets[i].source != "other":
+    other_assets[i].display_name = other_assets.terms_ordered.get(other_assets[i].source, other_assets[i].source)
+  elif defined('other_assets[i].source') and other_assets[i].source == "other" and defined('other_assets[i].source_other'):
+    other_assets[i].display_name = other_assets[i].source_other
+  else:
+    other_assets[i].display_name = other_assets_other_display
+---
+question: Do you want to add any more other assets?
+yesno: other_assets.there_is_another
+subquestion: |
+  ${ other_assets_table }
+---
+continue button field: other_assets.revisit
+question: |
+  Edit other assets
+subquestion: |
+  ${ other_assets_table }
+
+  ${ other_assets.add_action() }
+---
+table: other_assets_table
+rows: other_assets.complete_elements()
+columns:
+  - Description: |
+      row_item.display_name if defined("row_item.source") else ""
+  - Market value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+edit:
+  - source
+  - market_value
+  - balance
+
 ---
 #############################OTHER REASONS#############################
 ---
@@ -1754,7 +1752,7 @@ review:
 
   - Edit: docket_number
     button: |
-      **Docket number**:
+      **Case number**:
       ${ docket_number }      
   - Edit: case_name
     button: |
@@ -1765,10 +1763,24 @@ review:
       ###About you
   - Edit: users.revisit
     button: |
-      **Your name and contact information**
+      **Your name, contact information and signature**
 
       % for item in users:
-        * ${ item }
+      * ${ item }
+      
+      ${ item.address.on_one_line() }
+      
+      % if defined("item.mailing_address"):
+      ${ item.mailing_address.on_one_line() }
+      % endif
+      
+      % if defined("item.email"):
+      ${ item.email }
+      % endif
+      
+      % if defined("item.daytime_phone_number"):
+      ${ item.daytime_phone_number }
+      % endif
       % endfor
   - Edit: household_size
     button: |
@@ -1840,10 +1852,8 @@ review:
       % if not expenses.selected_types.any_true():
       - None
       % endif
-      
       % for item in expenses:
       - ${ item.display_name.lower() }
-      
       % endfor
 
  
@@ -1868,7 +1878,7 @@ review:
       **Real estate**
 
       % for item in real_estate.complete_elements():
-      * ${ item.display_name }       
+      * ${ item.display_name.lower() }       
       % endfor
       % if not real_estate.there_are_any:
       - None
@@ -1894,7 +1904,7 @@ review:
       **Other assets**
 
       % for item in other_assets.complete_elements():
-        - ${ item.display_name }
+        - ${ item.display_name.lower() }
       % endfor
 
       % if not other_assets.there_are_any:
@@ -1906,11 +1916,13 @@ review:
       **Other reason(s) you cannot afford the fees (optional question)**:
       
       % if defined("other_reasons_why_cannot_afford"):
+      % if other_reasons_why_cannot_afford == "":
+      - None
+      % else:
       ${ other_reasons_why_cannot_afford }
       % endif
-      % if not defined("other_reasons_why_cannot_afford"):
-      - None
       % endif
+
   - Edit: signature_date
     button: |
       **Date of signature for these forms**:
@@ -2193,12 +2205,21 @@ attachments:
       - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[3].balance) }
       
       - "users1_assets_real_estate_0_description": |
+          % if real_estate[0].source == "primary residence":
+          Primary residence
+          % else:
           ${ real_estate[0].display_name }
+          % endif
       - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
       - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance) }
       - "users1_assets_real_estate_0_net_value": ${ currency((real_estate[0].market_value) - (real_estate[0].balance)) }
 
-      - "users1_assets_real_estate_1_description": ${ real_estate[1].display_name }
+      - "users1_assets_real_estate_1_description": |
+          % if real_estate[1].source == "primary residence":
+          Primary residence
+          % else:
+          ${ real_estate[1].display_name }
+          % endif
       - "users1_assets_real_estate_1_market_value": ${ currency(real_estate[1].market_value) }
       - "users1_assets_real_estate_1_amount_owed": ${ currency(real_estate[1].balance) }
       - "users1_assets_real_estate_1_net_value": ${ currency((real_estate[1].market_value) - (real_estate[1].balance)) }
@@ -2209,19 +2230,9 @@ attachments:
       - "users1_assets_cash_total": ${ currency(bank_assets.market_value()) }
       
       - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value) }
-      - "users1_assets_other_0_description": |
-          % if other_assets[0].source == "other":
-          ${ other_assets[0].source_other }
-          % else:
-          ${ other_assets[0].source }
-          % endif
+      - "users1_assets_other_0_description": ${ other_assets[0].display_name }
       - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value) }
-      - "users1_assets_other_1_description": |
-          % if other_assets[1].source == "other":
-          ${ other_assets[1].source_other }
-          % else:
-          ${ other_assets[1].source }
-          % endif
+      - "users1_assets_other_1_description": ${ other_assets[1].display_name }
       
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
