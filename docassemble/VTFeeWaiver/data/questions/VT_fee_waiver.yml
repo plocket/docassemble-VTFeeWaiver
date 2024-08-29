@@ -99,19 +99,19 @@ code: |
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
 
-  #VT_fee_waiver_intro
-  #set_progress(10)
-  #important_notes_to_user
+  VT_fee_waiver_intro
+  set_progress(10)
+  important_notes_to_user
   #user_ask_role
-  #
-  #set_progress(10)
-  #nav.set_section('about_you')
-  #users.gather()
-  #users[0].address.address
-  #users[0].daytime_phone_number
-  #users[0].email
-  #household_size
-  #
+  
+  set_progress(10)
+  nav.set_section('about_you')
+  users.gather()
+  users[0].address.address
+  users[0].daytime_phone_number
+  users[0].email
+  household_size
+  
   nav.set_section('case_info')
   case_name
   docket_number
@@ -119,7 +119,6 @@ code: |
   #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
   trial_court_division
   user_selected_county
-  #trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
   trial_court.address.county
   
   nav.set_section('your_income')
@@ -170,7 +169,7 @@ code: |
 
 
 ---
-###################### Main order ######################
+###################### MAIN INTERVIEW ORDER ######################
 comment: |
   This block includes the logic for standalone interviews.
   Delete mandatory: True to include in another interview
@@ -206,9 +205,9 @@ code: |
   set_progress(100)
   VT_fee_waiver_download
 ---
-#################################PUBLIC BENEFITS##############################
+################################# PUBLIC BENEFITS ##############################
 comment: |
-  Notes on how a list is gathered
+  --Notes on how a list is gathered, using public_benefits as an example--
   
   Interview calls public_benefits.gather
 
@@ -252,7 +251,7 @@ id: public_benefits other display
 comment: |
   This keeps the text that may be changed near the top of the public benefits section.
   Used in:
-  Tell us about ______.
+  Tell us about ______
 code: |
   public_benefits_other_display = "another benefit that provides you income"
 ---
@@ -299,7 +298,7 @@ id: public benefits info for list
 #generic object: ALIncomeList
 reconsider: public_benefits[i].display_name
 question: |
-  Tell us about ${ public_benefits[i].display_name }.
+  Tell us about ${ public_benefits[i].display_name }
 subquestion: |
   % if i > 1:
   You have already told us about your benefits from ${ comma_and_list(public_benefit.display_name for public_benefit in public_benefits.complete_elements()) }.
@@ -338,7 +337,7 @@ code: |
     public_benefits[i].display_name = public_benefits_other_display
 ---
 id: public_benefits there is another
-question: Do you want to add any more public benefits?
+question: Do you want to add any more public assistance?
 subquestion: |
   ${ public_benefits_table }
   
@@ -360,7 +359,7 @@ rows: public_benefits
 columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
-  - Public benefits per month: |
+  - Public assistance per month: |
       currency(row_item.total(times_per_year=12))
 edit:
   - source
@@ -377,7 +376,7 @@ subquestion: |
   
   Click Next to answer a few more questions.
 ---
-#################################OTHER INCOMES##############################
+################################# OTHER INCOMES ##############################
 ---
 variable name: other_incomes.terms_ordered
 data: !!omap
@@ -426,7 +425,7 @@ id: other income info for list
 #generic object: ALIncomeList
 reconsider: other_incomes[i].display_name
 question: |
-  Tell us about your ${ other_incomes[i].display_name }.
+  Tell us about your ${ other_incomes[i].display_name }
 subquestion: |
   % if i > 1:
   You have already told us about your incomes from ${ comma_and_list(public_benefit.display_name for public_benefit in other_incomes.complete_elements()) }.
@@ -495,7 +494,7 @@ edit:
   - source
   - value
 ---
-#################################JOBS##############################
+################################# JOBS ##############################
 ---
 id: work
 question: |
@@ -530,6 +529,7 @@ code: |
     x.employer.name.first
   x.wages_added
   x.to_add.gather()
+  # for fee waiver form we are not collecting items to subtract from wages
   # x.to_subtract.gather()
   x.complete = True
 ---
@@ -591,10 +591,6 @@ code: |
     x.to_add.new_item_name = "full time"
   x.wages_added = True
 ---
-#generic object: ALItemizedJob
-#code: |
-#  jobs[x]to_subtract.there_are_any = False
----
 id: other itemized job income value
 generic object: ALItemizedJob
 question: |
@@ -627,7 +623,7 @@ fields:
     #datatype: yesnoradio
 ---
 if: j in ["full time","part time"]
-id: itemized job period
+id: itemized job period pt and ft wages
 generic object: ALItemizedJob
 question: |
   Details about ${ j } compensation for your ${ jobs[i].source } job
@@ -645,7 +641,7 @@ fields:
       variable: jobs[i].to_add[j].is_hourly
       is: True
   - label: |
-      What do you get for wages during each pay period (x.times_per_year)?
+      What do you get for wages during each pay period?
     field: jobs[i].to_add[j].value
     datatype: currency
     show if: 
@@ -668,7 +664,7 @@ fields:
     datatype: yesnoradio
 ---
 if: j not in ["full time","part time"]
-id: itemized job period
+id: itemized job period non-pt-or-ft wages
 generic object: ALItemizedJob
 question: |
   Details about ${ j } compensation for your ${ jobs[i].source } job
@@ -677,12 +673,12 @@ fields:
       Amount
     field: jobs[i].to_add[j].value
     datatype: currency
-  - How often  are you paid?: jobs[i].to_add[j].times_per_year
+  - How often  are you paid this?: jobs[i].to_add[j].times_per_year
     input type: radio
     code: |
       times_per_year_list
     datatype: integer
-  - Does the job have other incomes, like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
+  - Does the job have any more incomes like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
 code: |
@@ -704,7 +700,7 @@ question: |
 subquestion: |
   You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
 fields:
-  - What kind of additional income do you get from this job? (Examples -- Tips, commissions, bonuses): x.to_add.new_item_name
+  - What kind of additional income do you get from this job?: x.to_add.new_item_name
     datatype: radio
     choices:
       - Tips
@@ -777,7 +773,7 @@ field: review_jobs
 table: jobs.table
 rows: jobs
 columns:
-  - Job title: |
+  - Job: |
       row_item.source
   - Employer: |
       row_item.employer.name.first if defined("row_item.employer.name.first") else ""
@@ -789,8 +785,9 @@ edit:
 
 confirm: True
 ---
+id: review job
 generic object: ALItemizedJob
-question: Review
+question: Review ${ x.source } job
 fields:
   - Job: x.source
   - I am self-employed: x.is_self_employed
@@ -837,11 +834,13 @@ generic object: ALItemizedValueDict
 table: x.table
 rows: x
 columns:
-  - Type: |
+  - Type of pay: |
       str(row_index).replace("_", " ").lower().capitalize()
+  - Notes : |
+      "Hourly rate" if defined("row_item.is_hourly") and row_item.is_hourly == True else ""
   - Amount: |
       currency(row_item.value)
-  - Period: |
+  - How often paid: |
       times_per_year(times_per_year_list, row_item.times_per_year)
       
   
@@ -853,7 +852,7 @@ edit:
   - value
 
 ---
-###############################INTRO SCREENS###############################
+############################### INTRO SCREENS ###############################
 ---
 id: basic questions intro screen
 decoration: form-lineal
@@ -888,16 +887,17 @@ continue button field: al_intro_screen
 id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
 question: |
-  Do you need the fee waiver form?
+  Is this interview right for you?
 subquestion: |
-
+  <h4>Do you need this fee waiver form?</h4>
+  
   Before you begin, check to be sure you actually need to pay a court filing fee.
   
-  * When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee.
-  * If you are submitting an Answer to a court action, you usually don't have a court filing fee.
-  * Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  * When you ask the court for a Relief from Abuse (RFA) order, there are no court fees. It is free.
+  * If you are just submitting an Answer to a court action, you don't have a court filing fee. (If you have counterclaims you probably will have a filing fee.)
+  * Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
-  **What you will need to complete this form**
+  <h4>What you will need to complete this form</h4>
   
   For this guided interview, you will need to know:
   
@@ -918,14 +918,14 @@ id: important_notes_to_user
 question: |
   Important
 subquestion: |  
-  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to do this yourself. We will give you instructions when you finish the form.
+  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to get it to the court yourself such as by email, mail or in person. We will give you instructions when you finish the form.
   
   This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
     
     Let's get started. Tap the Next button.
 continue button field: important_notes_to_user
 ---
-###############################ABOUT COURT CASE###############################
+############################### ABOUT COURT CASE ###############################
 ---
 id: choose a court
 question: |
@@ -944,18 +944,18 @@ fields:
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
 ---
-id: Court case information
+id: court case information
 question: |
-  Court case information
-subquestion: |
   What is the name of the court case you are involved in?
+subquestion: |
+  Example: Kramer vs. Kramer
 fields:
-  - "Case name, as seen on your court papers (example: Kramer vs. Kramer)": case_name
+  - "Case name, as seen on your court papers": case_name
     maxlength: 80
   - note: |
       If you are starting a case, type in your name (the plaintiff's name) "vs." the other party (the defendant's name).
 ---
-###############################USERS INFO###############################
+############################### USERS INFO ###############################
 ---
 id: Gather users street address
 sets:
@@ -1054,7 +1054,7 @@ edit:
   - signature
 confirm: True
 ---
-###############################EXPENSES#############################
+############################# EXPENSES #############################
 ---
 id: expenses intro
 mandatory: True
@@ -1132,10 +1132,6 @@ subquestion: |
 fields:
   - Amount: x[i].value
     datatype: currency
-#  - Other (explain): x[i].source_other
-#    show if:
-#      variable: x[i].source
-#      is: other
   - How often do you pay this amount?: x[i].times_per_year
     input type: radio
     default: 12
@@ -1146,7 +1142,7 @@ generic object: ALExpenseList
 id: expense information
 reconsider: expenses[i].display_name
 question: |
-  Tell us about your ${ expenses[i].display_name }.
+  Tell us about your ${ expenses[i].display_name }
 subquestion: |
   **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
 fields: 
@@ -1375,7 +1371,7 @@ id: real_estate other display
 comment: |
   This keeps the text that may be changed near the top of the public benefits section.
   Used in:
-  Tell us about your ______.
+  Tell us about your ______
 code: |
   real_estate_other_display = "other real estate"
 ---
@@ -1411,7 +1407,7 @@ code: |
 id: info for each real estate
 reconsider: real_estate[i].display_name
 question: |
-  Tell us about your ${ real_estate[i].display_name }.
+  Tell us about your ${ real_estate[i].display_name }
 subquestion: |
   Make your best guess for the market value.
 
@@ -1432,8 +1428,6 @@ fields:
     datatype: currency
   - If you have a mortgage, lien or owe money on the real estate, how much do you owe? Enter 0 if you own it outright.: real_estate[i].balance
     datatype: currency
-  #- Town/city where the real estate is located. Example -- Rutland: real_estate[i].description
-    #maxlength: 76
 validation code: |
   if real_estate[i].source != "other":
     real_estate[i].display_name = real_estate.terms_ordered.get(real_estate[i].source, real_estate[i].source)
@@ -1481,6 +1475,78 @@ edit:
   - market_value
   - balance
 ---
+############### BANK ASSETS ####################
+---
+id: bank_assets terms_ordered
+variable name: bank_assets.terms_ordered
+data: !!omap
+  - checking account: "Checking accounts"
+  - savings account: "Savings accounts"
+  - cash on hand: "Cash on hand"
+---
+id: bank_assets object
+objects:
+  - bank_assets: ALAssetList.using(complete_attribute='market_value')
+---
+id: bank_assets ordered object for checkboxes
+objects:
+  - bank_assets_ordered: DAOrderedDict.using(elements=bank_assets.terms_ordered, auto_gather=False, gathered=True)
+---
+id: are there bank assets
+#bank_assets
+question: |
+  Do you have money on hand or in the bank?
+subquestion: |
+   Check any that apply to you.
+fields:
+  - no label: bank_assets.selected_types
+    datatype: checkboxes
+    code: |
+      bank_assets_ordered
+---
+id: info for each bank asset
+question: |
+  About your cash and bank assets
+fields:
+  - Source: bank_assets[i].source
+    input type: dropdown
+    code: |
+      bank_assets_ordered
+  - Current value: bank_assets[i].market_value
+    datatype: currency
+    required: False
+---
+id: bank assets display names
+code: |
+  bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
+---
+id: bank_assets there is another
+question: Do you want to add any more cash or bank assets?
+yesno: bank_assets.there_is_another
+subquestion: |
+  ${ bank_assets_table }
+---
+id: bank_assets revisit
+continue button field: bank_assets.revisit
+question: |
+  Edit bank accounts and cash
+subquestion: |
+  ${ bank_assets_table }
+
+  ${ bank_assets.add_action() }
+---
+id: bank_assets table
+table: bank_assets_table
+rows: bank_assets.complete_elements()
+columns:
+  - Source: |
+      row_item.display_name if defined("row_item.source") else ""
+  - Value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+edit:
+  - source
+  - market_value
+---
 ################ OTHER ASSETS ################
 ---
 id: other_assets terms_ordered
@@ -1497,9 +1563,9 @@ data: !!omap
 ---
 id: other_assets other display
 comment: |
-  This keeps the text that may be changed near the top of the public benefits section.
+  This keeps the text that may be changed near the top of the section.
   Used in:
-  Tell us about your ______.
+  Tell us about your ______
 code: |
   other_assets_other_display = "other asset"
 ---
@@ -1519,6 +1585,8 @@ question: |
   Other large assets that you have not entered already
 subquestion: |   
   Check any that apply to you.
+  
+  Do not include retirement accounts???
 fields:
   - no label: other_assets.selected_types
     datatype: checkboxes
@@ -1533,7 +1601,7 @@ code: |
 id: describe other asset
 reconsider: other_assets[i].display_name
 question: |
-  Tell us about your ${ other_assets[i].display_name }.
+  Tell us about your ${ other_assets[i].display_name }
 subquestion: |
 
   Make your best guess for the market value.
@@ -1554,8 +1622,6 @@ fields:
   - What is its market value? How much would you get if you sold it?: other_assets[i].market_value
     maxlength: 76
     datatype: currency
-  - note: |
-      Other assets may be things like tools, equipment, electronics, computers, stocks, bonds, etc.
 validation code: |
   if other_assets[i].source != "other":
     other_assets[i].display_name = other_assets.terms_ordered.get(other_assets[i].source, other_assets[i].source)
@@ -1679,7 +1745,7 @@ id: more information
 question: |
   More information
 subquestion: |
-  Tell us about other reasons why you cannot afford the court fees. (optional)
+  Tell us about other reasons why you cannot afford the court fees (optional question).
 fields:
   - "Reason(s)": other_reasons_why_cannot_afford
     input type: area
@@ -1690,7 +1756,7 @@ fields:
 
 #${ after_last_question_we_will_generate_your_forms }
 ---
-#############################SIGNATURE#############################
+############################# SIGNATURE #############################
 ---
 id: User signature
 question: |
@@ -1722,7 +1788,7 @@ fields:
 continue button field: saw_signature_choice    
 ---
 
-#####################PREVIEW SCREEN#######################
+##################### PREVIEW SCREEN #######################
 ---
 id: preview VT_fee_waiver
 question: |
@@ -1753,7 +1819,7 @@ code: |
   
   
 
-#####################REVIEW SCREEN#######################
+##################### REVIEW SCREEN #######################
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
@@ -1778,7 +1844,7 @@ review:
 
   - Edit: docket_number
     button: |
-      **Docket number**:
+      **Case number**:
       ${ docket_number }      
   - Edit: case_name
     button: |
@@ -1789,10 +1855,24 @@ review:
       ###About you
   - Edit: users.revisit
     button: |
-      **Your name and contact information**
+      **Your name, contact information and signature**
 
       % for item in users:
-        * ${ item }
+      * ${ item }
+      
+      ${ item.address.on_one_line() }
+      
+      % if defined("item.mailing_address"):
+      ${ item.mailing_address.on_one_line() }
+      % endif
+      
+      % if defined("item.email"):
+      ${ item.email }
+      % endif
+      
+      % if defined("item.daytime_phone_number"):
+      ${ item.daytime_phone_number }
+      % endif
       % endfor
   - Edit: household_size
     button: |
@@ -1864,10 +1944,8 @@ review:
       % if not expenses.selected_types.any_true():
       - None
       % endif
-      
       % for item in expenses:
       - ${ item.display_name.lower() }
-      
       % endfor
 
  
@@ -1892,7 +1970,7 @@ review:
       **Real estate**
 
       % for item in real_estate.complete_elements():
-      * ${ item.display_name }       
+      * ${ item.display_name.lower() }       
       % endfor
       % if not real_estate.there_are_any:
       - None
@@ -1918,7 +1996,7 @@ review:
       **Other assets**
 
       % for item in other_assets.complete_elements():
-        - ${ item.display_name }
+        - ${ item.display_name.lower() }
       % endfor
 
       % if not other_assets.there_are_any:
@@ -1930,18 +2008,20 @@ review:
       **Other reason(s) you cannot afford the fees (optional question)**:
       
       % if defined("other_reasons_why_cannot_afford"):
+      % if other_reasons_why_cannot_afford == "":
+      - None
+      % else:
       ${ other_reasons_why_cannot_afford }
       % endif
-      % if not defined("other_reasons_why_cannot_afford"):
-      - None
       % endif
+
   - Edit: signature_date
     button: |
       **Date of signature for these forms**:
       ${ signature_date }
 
 ---
-#####################DOWNLOAD SCREEN#####################
+##################### DOWNLOAD SCREEN #####################
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
@@ -1967,8 +2047,7 @@ subquestion: |
 
 progress: 100
 ---
----
-#####################OVERFLOW + ADDENDUM#####################
+##################### OVERFLOW + ADDENDUM #####################
 ---
 attachment:
   variable name: VT_fee_waiver_attachment.addendum
@@ -2018,7 +2097,7 @@ code: |
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
   VT_fee_waiver_attachment.overflow_fields.gathered = True
 ---
-#####################ATTACHMENTS#####################
+##################### ATTACHMENTS #####################
 ---
 objects:
   - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Next Steps document", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
@@ -2121,7 +2200,7 @@ attachments:
       
       - "users1_income_employment_monthly_amount": |
           % if not employed:
-          0.00
+          
           % else:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
           % endif
@@ -2136,7 +2215,7 @@ attachments:
           % if defined("users1_income_self_employment_monthly_amount"):
           ${ currency(users1_income_self_employment_monthly_amount,symbol="") }
           % else:
-          0.00
+          
           % endif
 
       - "users1_income_monthly_total": |
@@ -2188,14 +2267,14 @@ attachments:
           % endif
       - "assets_no": |
           % if not vehicles.selected_types.any_true():
-          ${ "True" }
-          % elif not real_estate.selected_types.any_true():
-          ${ "True" }
-          % elif not bank_assets.selected_types.any_true():
-          ${ "True" }
-          % elif not other_assets.selected_types.any_true():
-          ${ "True" }
-          % endif
+            % if not real_estate.selected_types.any_true():
+              % if not bank_assets.selected_types.any_true():
+                % if not other_assets.selected_types.any_true():
+                  ${ "True" }
+                % endif
+                % endif
+                % endif
+                % endif
       - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].balance) }
       - "users1_assets_vehicle_0_description": |
            ${ vehicles[0].make } ${ vehicles[0].model } ${ vehicles[0].year } 
@@ -2218,12 +2297,21 @@ attachments:
       - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[3].balance) }
       
       - "users1_assets_real_estate_0_description": |
+          % if real_estate[0].source == "primary residence":
+          Primary residence
+          % else:
           ${ real_estate[0].display_name }
+          % endif
       - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
       - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance) }
       - "users1_assets_real_estate_0_net_value": ${ currency((real_estate[0].market_value) - (real_estate[0].balance)) }
 
-      - "users1_assets_real_estate_1_description": ${ real_estate[1].display_name }
+      - "users1_assets_real_estate_1_description": |
+          % if real_estate[1].source == "primary residence":
+          Primary residence
+          % else:
+          ${ real_estate[1].display_name }
+          % endif
       - "users1_assets_real_estate_1_market_value": ${ currency(real_estate[1].market_value) }
       - "users1_assets_real_estate_1_amount_owed": ${ currency(real_estate[1].balance) }
       - "users1_assets_real_estate_1_net_value": ${ currency((real_estate[1].market_value) - (real_estate[1].balance)) }
@@ -2234,19 +2322,9 @@ attachments:
       - "users1_assets_cash_total": ${ currency(bank_assets.market_value()) }
       
       - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value) }
-      - "users1_assets_other_0_description": |
-          % if other_assets[0].source == "other":
-          ${ other_assets[0].source_other }
-          % else:
-          ${ other_assets[0].source }
-          % endif
+      - "users1_assets_other_0_description": ${ other_assets[0].display_name }
       - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value) }
-      - "users1_assets_other_1_description": |
-          % if other_assets[1].source == "other":
-          ${ other_assets[1].source_other }
-          % else:
-          ${ other_assets[1].source }
-          % endif
+      - "users1_assets_other_1_description": ${ other_assets[1].display_name }
       
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
       - "signature_date": ${ signature_date }
