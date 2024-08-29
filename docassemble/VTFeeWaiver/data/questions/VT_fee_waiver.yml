@@ -99,19 +99,19 @@ code: |
   # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
 
-  #VT_fee_waiver_intro
-  #set_progress(10)
-  #important_notes_to_user
-  #user_ask_role
-  #
-  #set_progress(10)
-  #nav.set_section('about_you')
-  #users.gather()
-  #users[0].address.address
-  #users[0].daytime_phone_number
-  #users[0].email
-  #household_size
-  #
+  VT_fee_waiver_intro
+  set_progress(10)
+  important_notes_to_user
+  user_ask_role
+  
+  set_progress(10)
+  nav.set_section('about_you')
+  users.gather()
+  users[0].address.address
+  users[0].daytime_phone_number
+  users[0].email
+  household_size
+  
   nav.set_section('case_info')
   case_name
   docket_number
@@ -119,7 +119,6 @@ code: |
   #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
   trial_court_division
   user_selected_county
-  #trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
   trial_court.address.county
   
   nav.set_section('your_income')
@@ -202,7 +201,7 @@ code: |
 ---
 #################################PUBLIC BENEFITS##############################
 comment: |
-  Notes on how a list is gathered
+  --Notes on how a list is gathered, using public_benefits as an example--
   
   Interview calls public_benefits.gather
 
@@ -246,7 +245,7 @@ id: public_benefits other display
 comment: |
   This keeps the text that may be changed near the top of the public benefits section.
   Used in:
-  Tell us about ______.
+  Tell us about ______
 code: |
   public_benefits_other_display = "another benefit that provides you income"
 ---
@@ -293,7 +292,7 @@ id: public benefits info for list
 #generic object: ALIncomeList
 reconsider: public_benefits[i].display_name
 question: |
-  Tell us about ${ public_benefits[i].display_name }.
+  Tell us about ${ public_benefits[i].display_name }
 subquestion: |
   % if i > 1:
   You have already told us about your benefits from ${ comma_and_list(public_benefit.display_name for public_benefit in public_benefits.complete_elements()) }.
@@ -332,7 +331,7 @@ code: |
     public_benefits[i].display_name = public_benefits_other_display
 ---
 id: public_benefits there is another
-question: Do you want to add any more public benefits?
+question: Do you want to add any more public assistance?
 subquestion: |
   ${ public_benefits_table }
 yesno: public_benefits.there_is_another
@@ -352,7 +351,7 @@ rows: public_benefits.complete_elements()
 columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
-  - Public benefits per month: |
+  - Public assistance per month: |
       currency(row_item.total(times_per_year=12))
 edit:
   - source
@@ -418,7 +417,7 @@ id: other income info for list
 #generic object: ALIncomeList
 reconsider: other_incomes[i].display_name
 question: |
-  Tell us about your ${ other_incomes[i].display_name }.
+  Tell us about your ${ other_incomes[i].display_name }
 subquestion: |
   % if i > 1:
   You have already told us about your incomes from ${ comma_and_list(public_benefit.display_name for public_benefit in other_incomes.complete_elements()) }.
@@ -520,6 +519,7 @@ code: |
     x.employer.name.first
   x.wages_added
   x.to_add.gather()
+  # for fee waiver form we are not collecting items to subtract from wages
   # x.to_subtract.gather()
   x.complete = True
 ---
@@ -581,10 +581,6 @@ code: |
     x.to_add.new_item_name = "full time"
   x.wages_added = True
 ---
-#generic object: ALItemizedJob
-#code: |
-#  jobs[x]to_subtract.there_are_any = False
----
 id: other itemized job income value
 generic object: ALItemizedJob
 question: |
@@ -617,7 +613,7 @@ fields:
     #datatype: yesnoradio
 ---
 if: j in ["full time","part time"]
-id: itemized job period
+id: itemized job period pt and ft wages
 generic object: ALItemizedJob
 question: |
   Details about ${ j } compensation for your ${ jobs[i].source } job
@@ -635,7 +631,7 @@ fields:
       variable: jobs[i].to_add[j].is_hourly
       is: True
   - label: |
-      What do you get for wages during each pay period (x.times_per_year)?
+      What do you get for wages during each pay period?
     field: jobs[i].to_add[j].value
     datatype: currency
     show if: 
@@ -658,7 +654,7 @@ fields:
     datatype: yesnoradio
 ---
 if: j not in ["full time","part time"]
-id: itemized job period
+id: itemized job period non-pt-or-ft wages
 generic object: ALItemizedJob
 question: |
   Details about ${ j } compensation for your ${ jobs[i].source } job
@@ -667,12 +663,12 @@ fields:
       Amount
     field: jobs[i].to_add[j].value
     datatype: currency
-  - How often  are you paid?: jobs[i].to_add[j].times_per_year
+  - How often  are you paid this?: jobs[i].to_add[j].times_per_year
     input type: radio
     code: |
       times_per_year_list
     datatype: integer
-  - Does the job have other incomes, like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
+  - Does the job have any more incomes like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
 code: |
@@ -694,7 +690,7 @@ question: |
 subquestion: |
   You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
 fields:
-  - What kind of additional income do you get from this job? (Examples -- Tips, commissions, bonuses): x.to_add.new_item_name
+  - What kind of additional income do you get from this job?: x.to_add.new_item_name
     datatype: radio
     choices:
       - Tips
@@ -767,7 +763,7 @@ field: review_jobs
 table: jobs.table
 rows: jobs
 columns:
-  - Job title: |
+  - Job: |
       row_item.source
   - Employer: |
       row_item.employer.name.first if defined("row_item.employer.name.first") else ""
@@ -779,8 +775,9 @@ edit:
 
 confirm: True
 ---
+id: review job
 generic object: ALItemizedJob
-question: Review
+question: Review ${ x.source } job
 fields:
   - Job: x.source
   - I am self-employed: x.is_self_employed
@@ -827,11 +824,13 @@ generic object: ALItemizedValueDict
 table: x.table
 rows: x
 columns:
-  - Type: |
+  - Type of pay: |
       str(row_index).replace("_", " ").lower().capitalize()
+  - Notes : |
+      "Hourly rate" if defined("row_item.is_hourly") and row_item.is_hourly == True else ""
   - Amount: |
       currency(row_item.value)
-  - Period: |
+  - How often paid: |
       times_per_year(times_per_year_list, row_item.times_per_year)
       
   
@@ -878,16 +877,17 @@ continue button field: al_intro_screen
 id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
 question: |
-  Do you need the fee waiver form?
+  Is this interview right for you?
 subquestion: |
-
+  <h4>Do you need this fee waiver form?</h4>
+  
   Before you begin, check to be sure you actually need to pay a court filing fee.
   
-  * When you ask the court for a Relief from Abuse (RFA) order, there is no court filing fee.
-  * If you are submitting an Answer to a court action, you usually don't have a court filing fee.
-  * Visit the Vermont Judiciary website to learn more about [filing fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  * When you ask the court for a Relief from Abuse (RFA) order, there are no court fees. It is free.
+  * If you are just submitting an Answer to a court action, you don't have a court filing fee. (If you have counterclaims you probably will have a filing fee.)
+  * Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
-  **What you will need to complete this form**
+  <h4>What you will need to complete this form</h4>
   
   For this guided interview, you will need to know:
   
@@ -908,7 +908,7 @@ id: important_notes_to_user
 question: |
   Important
 subquestion: |  
-  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to do this yourself. We will give you instructions when you finish the form.
+  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to get it to the court yourself such as by email, mail or in person. We will give you instructions when you finish the form.
   
   This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
     
@@ -934,13 +934,13 @@ fields:
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
 ---
-id: Court case information
+id: court case information
 question: |
-  Court case information
-subquestion: |
   What is the name of the court case you are involved in?
+subquestion: |
+  Example: Kramer vs. Kramer
 fields:
-  - "Case name, as seen on your court papers (example: Kramer vs. Kramer)": case_name
+  - "Case name, as seen on your court papers": case_name
     maxlength: 80
   - note: |
       If you are starting a case, type in your name (the plaintiff's name) "vs." the other party (the defendant's name).
@@ -1122,10 +1122,6 @@ subquestion: |
 fields:
   - Amount: x[i].value
     datatype: currency
-#  - Other (explain): x[i].source_other
-#    show if:
-#      variable: x[i].source
-#      is: other
   - How often do you pay this amount?: x[i].times_per_year
     input type: radio
     default: 12
@@ -1136,7 +1132,7 @@ generic object: ALExpenseList
 id: expense information
 reconsider: expenses[i].display_name
 question: |
-  Tell us about your ${ expenses[i].display_name }.
+  Tell us about your ${ expenses[i].display_name }
 subquestion: |
   **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
 fields: 
@@ -1361,7 +1357,7 @@ id: real_estate other display
 comment: |
   This keeps the text that may be changed near the top of the public benefits section.
   Used in:
-  Tell us about your ______.
+  Tell us about your ______
 code: |
   real_estate_other_display = "other real estate"
 ---
@@ -1397,7 +1393,7 @@ code: |
 id: info for each real estate
 reconsider: real_estate[i].display_name
 question: |
-  Tell us about your ${ real_estate[i].display_name }.
+  Tell us about your ${ real_estate[i].display_name }
 subquestion: |
   Make your best guess for the market value.
 
@@ -1483,7 +1479,7 @@ id: other_assets other display
 comment: |
   This keeps the text that may be changed near the top of the public benefits section.
   Used in:
-  Tell us about your ______.
+  Tell us about your ______
 code: |
   other_assets_other_display = "other asset"
 ---
@@ -1517,7 +1513,7 @@ code: |
 id: describe other asset
 reconsider: other_assets[i].display_name
 question: |
-  Tell us about your ${ other_assets[i].display_name }.
+  Tell us about your ${ other_assets[i].display_name }
 subquestion: |
 
   Make your best guess for the market value.
@@ -1659,7 +1655,7 @@ id: more information
 question: |
   More information
 subquestion: |
-  Tell us about other reasons why you cannot afford the court fees. (optional)
+  Tell us about other reasons why you cannot afford the court fees (optional question)
 fields:
   - "Reason(s)": other_reasons_why_cannot_afford
     input type: area
@@ -1946,7 +1942,6 @@ subquestion: |
   ${ collapse_template(log_out_when_done) }
 
 progress: 100
----
 ---
 #####################OVERFLOW + ADDENDUM#####################
 ---
