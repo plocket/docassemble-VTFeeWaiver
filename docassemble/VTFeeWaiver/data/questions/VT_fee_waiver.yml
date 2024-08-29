@@ -122,8 +122,8 @@ code: |
   trial_court.address.county
   
   nav.set_section('your_income')
-  public_benefits.gather()
   if public_benefits.there_are_any:
+    public_benefits.review_items
     user_qualifies_interstitial   
     if employed:
       jobs.gather()
@@ -134,25 +134,31 @@ code: |
       review_jobs
     set_progress(40)
     
-    other_incomes.gather()
+    if other_incomes.there_are_any:
+      other_incomes.review_items
 
     set_progress(50)
     nav.set_section('your_expenses')
     expenses_intro
-    expenses.gather()
+    if expenses.there_are_any:
+      expenses.review_items
 
     set_progress(60)
     nav.set_section('your_assets')
     assets_intro
   
-    vehicles.gather()
+    if vehicles.there_are_any:
+      vehicles.review_items
   
-    real_estate.gather()
+    if real_estate.there_are_any:
+      real_estate.review_items
         
     set_progress(70)
-    bank_assets.gather()
-        
-    other_assets.gather()
+    if bank_assets.there_are_any:
+      bank_assets.review_items    
+    
+    if other_assets.there_are_any:
+      other_assets.review_items        
       
     nav.set_section('reasons')
     other_reasons_why_cannot_afford
@@ -251,7 +257,7 @@ code: |
 ---
 id: public_benefits object
 objects:
-  - public_benefits: ALIncomeList.using(complete_attribute='complete')
+  - public_benefits: ALIncomeList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: public_benefits ordered object for checkboxes
 objects:
@@ -334,7 +340,9 @@ id: public_benefits there is another
 question: Do you want to add any more public assistance?
 subquestion: |
   ${ public_benefits_table }
-yesno: public_benefits.there_is_another
+  
+  ${ public_benefits.add_action() }
+continue button field: public_benefits.review_items
 ---
 id: public_benefits revisit
 continue button field: public_benefits.revisit
@@ -347,7 +355,7 @@ subquestion: |
 ---
 id: public_benefits table
 table: public_benefits_table
-rows: public_benefits.complete_elements()
+rows: public_benefits
 columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
@@ -386,7 +394,7 @@ code: |
   other_incomes_other_display = "other source of income"
 ---
 objects:
-  - other_incomes: ALIncomeList.using(complete_attribute='complete')
+  - other_incomes: ALIncomeList.using(complete_attribute='complete',there_is_another=False)
 ---
 objects:
   - other_incomes_ordered: DAOrderedDict.using(elements=other_incomes.terms_ordered, auto_gather=False, gathered=True)
@@ -461,9 +469,11 @@ code: |
     other_incomes[i].display_name = other_incomes_other_display
 ---
 question: Do you want to add any more incomes?
-yesno: other_incomes.there_is_another
 subquestion: |
   ${ other_incomes_table }
+  
+  ${ other_incomes.add_action() }
+continue button field: other_incomes.review_items
 ---
 continue button field: other_incomes.revisit
 question: |
@@ -474,7 +484,7 @@ subquestion: |
   ${ other_incomes.add_action() }
 ---
 table: other_incomes_table
-rows: other_incomes.complete_elements()
+rows: other_incomes
 columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
@@ -1080,7 +1090,7 @@ code: |
   expenses_other_display = "another expense"
 ---
 objects:
-  - expenses: ALExpenseList.using(complete_attribute='complete')
+  - expenses: ALExpenseList.using(complete_attribute='complete',there_is_another=False)
 ---
 objects:
   - expenses_ordered: DAOrderedDict.using(elements=expenses.terms_ordered, auto_gather=False, gathered=True)
@@ -1170,9 +1180,11 @@ code: |
     expenses[i].display_name = expenses_other_display
 ---
 question: Do you want to add any more expenses?
-yesno: expenses.there_is_another
 subquestion: |
   ${ expenses_table }
+  
+  ${ expenses.add_action() }
+continue button field: expenses.review_items
 ---
 continue button field: expenses.revisit
 question: |
@@ -1199,7 +1211,7 @@ edit:
 
 ---
 table: expenses_table
-rows: expenses.complete_elements()
+rows: expenses
 columns:
   - Type: |
       row_item.display_name.lower()
@@ -1241,7 +1253,7 @@ code: |
   vehicles_other_display = "other vehicle"
 ---
 objects:
-  - vehicles: ALVehicleList.using(complete_attribute='complete')
+  - vehicles: ALVehicleList.using(complete_attribute='complete',there_is_another=False)
 ---
 objects:
   - vehicles_ordered: DAOrderedDict.using(elements=vehicles.terms_ordered, auto_gather=False, gathered=True)
@@ -1310,9 +1322,11 @@ code: |
     vehicles[i].display_name = vehicles_other_display
 ---
 question: Do you want to add any more vehicles?
-yesno: vehicles.there_is_another
 subquestion: |
   ${ vehicles_table }
+  
+  ${ vehicles.add_action() }
+continue button field: vehicles.review_items
 ---
 continue button field: vehicles.revisit
 question: |
@@ -1323,7 +1337,7 @@ subquestion: |
   ${ vehicles.add_action() }
 ---
 table: vehicles_table
-rows: vehicles.complete_elements()
+rows: vehicles
 columns:
   - Description: |
       row_item.year_make_model() if defined("row_item.year_make_model()") else ""
@@ -1363,7 +1377,7 @@ code: |
 ---
 id: real_estate object
 objects:
-  - real_estate: ALAssetList.using(complete_attribute='complete')
+  - real_estate: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: real_estate ordered object for checkboxes
 objects:
@@ -1431,9 +1445,11 @@ code: |
 ---
 id: real_estate there is another
 question: Do you want to add any more real estate?
-yesno: real_estate.there_is_another
 subquestion: |
   ${ real_estate_table }
+  
+  ${ real_estate.add_action() }
+continue button field: real_estate.review_items
 ---
 id: real_estate revisit
 continue button field: real_estate.revisit
@@ -1446,7 +1462,7 @@ subquestion: |
 ---
 id: real_estate table
 table: real_estate_table
-rows: real_estate.complete_elements()
+rows: real_estate
 columns:
   - Description: |
       row_item.display_name if defined("row_item.source") else ""
@@ -1555,7 +1571,7 @@ code: |
 ---
 id: other_assets object
 objects:
-  - other_assets: ALAssetList.using(complete_attribute='complete')
+  - other_assets: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: other_assets ordered object for checkboxes
 objects:
@@ -1622,9 +1638,11 @@ code: |
     other_assets[i].display_name = other_assets_other_display
 ---
 question: Do you want to add any more other assets?
-yesno: other_assets.there_is_another
 subquestion: |
   ${ other_assets_table }
+  
+  ${ other_assets.add_action() }
+continue button field: other_assets.review_items
 ---
 continue button field: other_assets.revisit
 question: |
@@ -1635,7 +1653,7 @@ subquestion: |
   ${ other_assets.add_action() }
 ---
 table: other_assets_table
-rows: other_assets.complete_elements()
+rows: other_assets
 columns:
   - Description: |
       row_item.display_name if defined("row_item.source") else ""
@@ -1647,7 +1665,81 @@ edit:
   - balance
 
 ---
-############################# OTHER REASONS #############################
+###############BANK ASSETS####################
+---
+id: bank_assets terms_ordered
+variable name: bank_assets.terms_ordered
+data: !!omap
+  - checking account: "Checking accounts"
+  - savings account: "Savings accounts"
+  - cash on hand: "Cash on hand"
+---
+id: bank_assets object
+objects:
+  - bank_assets: ALAssetList.using(complete_attribute='market_value',there_is_another=False)
+---
+id: bank_assets ordered object for checkboxes
+objects:
+  - bank_assets_ordered: DAOrderedDict.using(elements=bank_assets.terms_ordered, auto_gather=False, gathered=True)
+---
+id: are there bank assets
+#bank_assets
+question: |
+  Do you have money on hand or in the bank?
+subquestion: |
+   Check any that apply to you.
+fields:
+  - no label: bank_assets.selected_types
+    datatype: checkboxes
+    code: |
+      bank_assets_ordered
+---
+id: info for each bank asset
+question: |
+  About your cash and bank assets
+fields:
+  - Source: bank_assets[i].source
+    input type: dropdown
+    code: |
+      bank_assets_ordered
+  - Current value: bank_assets[i].market_value
+    datatype: currency
+    required: False
+---
+id: bank assets display names
+code: |
+  bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
+---
+id: bank_assets there is another
+question: Do you want to add any more bank assets?
+subquestion: |
+  ${ bank_assets_table }
+  
+  ${ bank_assets.add_action() }
+continue button field: bank_assets.review_items
+---
+id: bank_assets revisit
+continue button field: bank_assets.revisit
+question: |
+  Edit bank accounts and cash
+subquestion: |
+  ${ bank_assets_table }
+
+  ${ bank_assets.add_action() }
+---
+id: bank_assets table
+table: bank_assets_table
+rows: bank_assets
+columns:
+  - Source: |
+      row_item.display_name if defined("row_item.source") else ""
+  - Value: |
+      currency(row_item.market_value) if defined("row_item.market_value") else ""
+edit:
+  - source
+  - market_value
+---
+#############################OTHER REASONS#############################
 ---
 id: more information
 question: |
