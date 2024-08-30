@@ -336,9 +336,11 @@ code: |
   else:
     public_benefits[i].display_name = public_benefits_other_display
 ---
-id: public_benefits there is another
-question: Do you want to add any more public assistance?
+id: want to add more public benefits
+question: Do you want to list any more public assistance?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ public_benefits_table }
   
   ${ public_benefits.add_action() }
@@ -425,7 +427,7 @@ id: other income info for list
 #generic object: ALIncomeList
 reconsider: other_incomes[i].display_name
 question: |
-  Tell us about your ${ other_incomes[i].display_name }
+  Tell us about your ${ other_incomes[i].display_name.lower() }
 subquestion: |
   % if i > 1:
   You have already told us about your incomes from ${ comma_and_list(public_benefit.display_name for public_benefit in other_incomes.complete_elements()) }.
@@ -468,8 +470,11 @@ code: |
   else:
     other_incomes[i].display_name = other_incomes_other_display
 ---
+id: want to add more other incomes
 question: Do you want to add any more incomes?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ other_incomes_table }
   
   ${ other_incomes.add_action() }
@@ -667,7 +672,7 @@ if: j not in ["full time","part time"]
 id: itemized job period non-pt-or-ft wages
 generic object: ALItemizedJob
 question: |
-  Details about ${ j } compensation for your ${ jobs[i].source } job
+  Details about ${ j.lower() } compensation for your ${ jobs[i].source } job
 fields:
   - label: |
       Amount
@@ -893,19 +898,28 @@ subquestion: |
   
   Before you begin, check to be sure you actually need to pay a court filing fee.
   
-  * When you ask the court for a Relief from Abuse (RFA) order, there are no court fees. It is free.
-  * If you are just submitting an Answer to a court action, you don't have a court filing fee. (If you have counterclaims you probably will have a filing fee.)
-  * Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+  When you ask the court for a Relief from Abuse (RFA) order, there are no court fees. It is free. Here is the full list of forms that have no filing fee:
+  
+  - Request for Relief from Abuse
+  - Request for Abuse Prevention for a Vulnerable Adult
+  - Request for Order Against Stalking
+  - Request for Order Against Sexual Assault
+  - Request for Extreme Risk Protection Order
+  - Abusive Litigation
+  
+  If you are just submitting an Answer to a court action, you don't have a court filing fee. (If you have counterclaims you probably will have a filing fee.)
+  
+  Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
   <h4>What you will need to complete this form</h4>
   
   For this guided interview, you will need to know:
   
   * the name and address of any employer you might have
-  * any public benefits that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.), and
+  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.), and
   * information about the court case for which you want a fee waiver. (You can find this information on other court papers you have about this case. If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
   
-  If you get public benefits, that's all you need. **If you don't get public benefits**, you will also need to know:
+  If you get public assistance, that's all you need. **If you don't get public assistance**, you will also need to know:
   
   * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or have your income and business expenses from the last 12 months.
   * your expenses (like rent, utilities, insurance payments, child care, etc.) -- looking back over the last 12 months
@@ -1142,7 +1156,7 @@ generic object: ALExpenseList
 id: expense information
 reconsider: expenses[i].display_name
 question: |
-  Tell us about your ${ expenses[i].display_name }
+  Tell us about your ${ expenses[i].display_name.lower() }
 subquestion: |
   **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
 fields: 
@@ -1179,8 +1193,11 @@ code: |
   else:
     expenses[i].display_name = expenses_other_display
 ---
-question: Do you want to add any more expenses?
+id: want to add more expenses
+question: Do you want to list any more expenses?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ expenses_table }
   
   ${ expenses.add_action() }
@@ -1288,7 +1305,7 @@ code: |
 id: info for each vehicle
 reconsider: vehicles[i].display_name
 question: |
-  About your ${ vehicles[i].display_name }
+  About your ${ vehicles[i].display_name.lower() }
 subquestion: |
   Make your best guess when answering these questions.
 fields:
@@ -1321,8 +1338,11 @@ code: |
   else:
     vehicles[i].display_name = vehicles_other_display
 ---
-question: Do you want to add any more vehicles?
+id: want to add more vehicles
+question: Do you want to list any more vehicles?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ vehicles_table }
   
   ${ vehicles.add_action() }
@@ -1407,7 +1427,7 @@ code: |
 id: info for each real estate
 reconsider: real_estate[i].display_name
 question: |
-  Tell us about your ${ real_estate[i].display_name }
+  Tell us about your ${ real_estate[i].display_name.lower() }
 subquestion: |
   Make your best guess for the market value.
 
@@ -1443,9 +1463,11 @@ code: |
   else:
     real_estate[i].display_name = real_estate_other_display
 ---
-id: real_estate there is another
-question: Do you want to add any more real estate?
+id: want to add more real estate
+question: Do you want to list any more real estate?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ real_estate_table }
   
   ${ real_estate.add_action() }
@@ -1519,12 +1541,6 @@ fields:
 id: bank assets display names
 code: |
   bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
----
-id: bank_assets there is another
-question: Do you want to add any more cash or bank assets?
-yesno: bank_assets.there_is_another
-subquestion: |
-  ${ bank_assets_table }
 ---
 id: bank_assets revisit
 continue button field: bank_assets.revisit
@@ -1637,8 +1653,11 @@ code: |
   else:
     other_assets[i].display_name = other_assets_other_display
 ---
-question: Do you want to add any more other assets?
+id: want to add more other assets
+question: Do you want to list any more other assets?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ other_assets_table }
   
   ${ other_assets.add_action() }
@@ -1710,9 +1729,11 @@ id: bank assets display names
 code: |
   bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
 ---
-id: bank_assets there is another
-question: Do you want to add any more bank assets?
+id: want to add more bank assets
+question: Do you want to list any more cash or bank assets?
 subquestion: |
+  Tap Next if you don't have more to add.
+  
   ${ bank_assets_table }
   
   ${ bank_assets.add_action() }
@@ -1804,7 +1825,7 @@ subquestion: |
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
-  Remember to come back to this window to continue and sign your form.
+  **Remember to come back to this window to continue and sign your form.**
 continue button field: VT_fee_waiver_preview_question    
 ---
 code: |
@@ -1859,21 +1880,9 @@ review:
 
       % for item in users:
       * ${ item }
-      
-      ${ item.address.on_one_line() }
-      
-      % if defined("item.mailing_address"):
-      ${ item.mailing_address.on_one_line() }
-      % endif
-      
-      % if defined("item.email"):
-      ${ item.email }
-      % endif
-      
-      % if defined("item.daytime_phone_number"):
-      ${ item.daytime_phone_number }
-      % endif
       % endfor
+
+
   - Edit: household_size
     button: |
       **Number of people in your household**:
@@ -1892,7 +1901,11 @@ review:
       **Public assistance**
       
       % for benefit in public_benefits.complete_elements():
+      % if benefit.source == "3squaresvt":
+      * 3SquaresVT
+      % else:
       * ${ benefit.display_name }
+      % endif
       % endfor
 
       % if not public_benefits.there_are_any:
@@ -1970,7 +1983,11 @@ review:
       **Real estate**
 
       % for item in real_estate.complete_elements():
-      * ${ item.display_name.lower() }       
+      % if item.source == "primary residence":
+      * primary residence
+      % else:
+      * ${ item.display_name.lower() }
+      % endif
       % endfor
       % if not real_estate.there_are_any:
       - None
@@ -2020,16 +2037,18 @@ review:
       **Date of signature for these forms**:
       ${ signature_date }
 
+  - note: |
+      **Select Resume, below, when you are done. It will take a moment to generate your form again.**
 ---
 ##################### DOWNLOAD SCREEN #####################
 ---
 id: download VT_fee_waiver
 event: VT_fee_waiver_download
 question: |
-  Review your forms and download and/or print them
+  ${ download_screen_instructions_headline_one_form }
 subquestion: |
   
-  ${ download_screen_instructions }
+  ${ download_screen_instructions_one_form }
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
   
@@ -2100,7 +2119,7 @@ code: |
 ##################### ATTACHMENTS #####################
 ---
 objects:
-  - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="Next Steps document", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_fee_waiver_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
   - VT_fee_waiver_attachment: ALDocument.using(title="Vermont fee waiver form 600-00228", filename="VT_fee_waiver.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 objects:
@@ -2186,9 +2205,17 @@ attachments:
    
       - "users1_benefits": |
           % if defined("public_benefits[1]"):
-          ${ public_benefits[0].display_name } ...
+            % if public_benefits[0].source == "3squaresvt":
+            3SquaresVT ...
+            % else:
+            ${ public_benefits[0].display_name } ...
+            % endif
           % else:
-          ${ public_benefits[0].display_name }
+            % if public_benefits[0].source == "3squaresvt":
+            3SquaresVT
+            % else:
+            ${ public_benefits[0].display_name } ...
+            % endif
           % endif
           
       - "users1_benefits_monthly_amount": |
