@@ -427,7 +427,7 @@ id: other income info for list
 #generic object: ALIncomeList
 reconsider: other_incomes[i].display_name
 question: |
-  Tell us about your ${ other_incomes[i].display_name }
+  Tell us about your ${ other_incomes[i].display_name.lower() }
 subquestion: |
   % if i > 1:
   You have already told us about your incomes from ${ comma_and_list(public_benefit.display_name for public_benefit in other_incomes.complete_elements()) }.
@@ -1156,7 +1156,7 @@ generic object: ALExpenseList
 id: expense information
 reconsider: expenses[i].display_name
 question: |
-  Tell us about your ${ expenses[i].display_name }
+  Tell us about your ${ expenses[i].display_name.lower() }
 subquestion: |
   **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
 fields: 
@@ -1305,7 +1305,7 @@ code: |
 id: info for each vehicle
 reconsider: vehicles[i].display_name
 question: |
-  About your ${ vehicles[i].display_name }
+  About your ${ vehicles[i].display_name.lower() }
 subquestion: |
   Make your best guess when answering these questions.
 fields:
@@ -1427,7 +1427,7 @@ code: |
 id: info for each real estate
 reconsider: real_estate[i].display_name
 question: |
-  Tell us about your ${ real_estate[i].display_name }
+  Tell us about your ${ real_estate[i].display_name.lower() }
 subquestion: |
   Make your best guess for the market value.
 
@@ -1880,21 +1880,9 @@ review:
 
       % for item in users:
       * ${ item }
-      
-      ${ item.address.on_one_line() }
-      
-      % if defined("item.mailing_address"):
-      ${ item.mailing_address.on_one_line() }
-      % endif
-      
-      % if defined("item.email"):
-      ${ item.email }
-      % endif
-      
-      % if defined("item.daytime_phone_number"):
-      ${ item.daytime_phone_number }
-      % endif
       % endfor
+
+
   - Edit: household_size
     button: |
       **Number of people in your household**:
@@ -1913,7 +1901,11 @@ review:
       **Public assistance**
       
       % for benefit in public_benefits.complete_elements():
+      % if benefit.source == "3squaresvt":
+      * 3SquaresVT
+      % else:
       * ${ benefit.display_name }
+      % endif
       % endfor
 
       % if not public_benefits.there_are_any:
@@ -1991,7 +1983,11 @@ review:
       **Real estate**
 
       % for item in real_estate.complete_elements():
-      * ${ item.display_name.lower() }       
+      % if item.source == "primary residence":
+      * primary residence
+      % else:
+      * ${ item.display_name.lower() }
+      % endif
       % endfor
       % if not real_estate.there_are_any:
       - None
@@ -2209,9 +2205,17 @@ attachments:
    
       - "users1_benefits": |
           % if defined("public_benefits[1]"):
-          ${ public_benefits[0].display_name } ...
+            % if public_benefits[0].source == "3squaresvt":
+            3SquaresVT ...
+            % else:
+            ${ public_benefits[0].display_name } ...
+            % endif
           % else:
-          ${ public_benefits[0].display_name }
+            % if public_benefits[0].source == "3squaresvt":
+            3SquaresVT
+            % else:
+            ${ public_benefits[0].display_name } ...
+            % endif
           % endif
           
       - "users1_benefits_monthly_amount": |
