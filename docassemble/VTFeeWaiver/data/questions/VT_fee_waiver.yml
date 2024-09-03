@@ -31,13 +31,13 @@ metadata:
   short title: >-
     Fee waiver
   description: |-
-    Fee waiver for Vermont Courts. Based on Vermont Judiciary paper form 600-00228 (11/2023).
+    Fee waiver for Vermont courts. Based on Vermont Judiciary paper form 600-00228 (7/2024).
   original_form: >-
     https://www.vermontjudiciary.org/media/47
   help_page_url: >-
     https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs
   help_page_title: >-
-    Application to Waive Filing Fees and Service Costs on the Vermont Judiciary website.
+    Application to Waive Filing Fees and Service Costs on the Vermont Judiciary website
   authors:
     - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
     - Authored by Legal Services Vermont
@@ -237,14 +237,14 @@ comment: |
 id: public_benefits terms_ordered
 variable name: public_benefits.terms_ordered
 data: !!omap
-  - reach up: "Reach Up"
-  - 3squaresvt: "3SquaresVT (food)"
-  - housing assistance: "Housing subsidy/voucher/Section 8"   
-  - fuel assistance: "Fuel Assistance"
-  - general assistance: "General Assistance (GA)"
-  - ssi: "Supplemental Security Income (SSI)"
-  - dr dynasaur: "Dr. Dynasaur"
-  - medicaid: "Medicaid"
+  - Reach Up: "Reach Up"
+  - 3SquaresVT: "3SquaresVT (food)"
+  - GA: "General Assistance (GA)"
+  - SSI: "SSI (Supplemental Security Income)" 
+  - Fuel Assist.: "Fuel Assistance"
+  - Housing Assist.: "Housing Assistance (subsidy/voucher/Section 8)"  
+  - Dr Dynasaur: "Dr. Dynasaur"
+  - Medicaid: "Medicaid"
   - other: "Other"
 ---
 id: public_benefits other display
@@ -311,6 +311,7 @@ fields:
     code: |
       public_benefits_ordered
   - What type of income?: public_benefits[i].source_other
+    maxlength: 10
     show if:
       variable: public_benefits[i].source
       is: other
@@ -430,9 +431,9 @@ question: |
   Tell us about your ${ other_incomes[i].display_name.lower() }
 subquestion: |
   % if i > 1:
-  You have already told us about your incomes from ${ comma_and_list(public_benefit.display_name for public_benefit in other_incomes.complete_elements()) }.
+  You have already told us about your incomes from ${ comma_and_list(other_income.display_name for other_income in other_incomes.complete_elements()) }.
   % elif i > 0:
-  You have already told us about your income from ${ comma_and_list(public_benefit.display_name for public_benefit in other_incomes.complete_elements()) }.
+  You have already told us about your income from ${ comma_and_list(other_income.display_name for other_income in other_incomes.complete_elements()) }.
   % endif
 fields:
   - Source of income: other_incomes[i].source
@@ -1122,7 +1123,7 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, property taxes, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
@@ -1175,7 +1176,7 @@ fields:
     code: |
       times_per_year_for_expenses
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, school lunches, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, property taxes, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 
@@ -1432,9 +1433,9 @@ subquestion: |
   Make your best guess for the market value.
 
   % if i > 1:
-  You have already told us about your ${ comma_and_list(public_benefit.display_name for public_benefit in real_estate.complete_elements()) }.
+  You have already told us about your ${ comma_and_list(item.display_name for item in real_estate.complete_elements()) }.
   % elif i > 0:
-  You have already told us about your ${ comma_and_list(public_benefit.display_name for public_benefit in real_estate.complete_elements()) }.
+  You have already told us about your ${ comma_and_list(item.display_name for item in real_estate.complete_elements()) }.
   % endif
 fields:
   - Type of real estate: real_estate[i].source
@@ -1497,7 +1498,7 @@ edit:
   - market_value
   - balance
 ---
-############### BANK ASSETS ####################
+###############BANK ASSETS####################
 ---
 id: bank_assets terms_ordered
 variable name: bank_assets.terms_ordered
@@ -1508,7 +1509,7 @@ data: !!omap
 ---
 id: bank_assets object
 objects:
-  - bank_assets: ALAssetList.using(complete_attribute='market_value')
+  - bank_assets: ALAssetList.using(complete_attribute='market_value',there_is_another=False)
 ---
 id: bank_assets ordered object for checkboxes
 objects:
@@ -1542,6 +1543,16 @@ id: bank assets display names
 code: |
   bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
 ---
+id: want to add more bank assets
+question: Do you want to list any more cash or bank assets?
+subquestion: |
+  Tap Next if you don't have more to add.
+  
+  ${ bank_assets_table }
+  
+  ${ bank_assets.add_action() }
+continue button field: bank_assets.review_items
+---
 id: bank_assets revisit
 continue button field: bank_assets.revisit
 question: |
@@ -1553,7 +1564,7 @@ subquestion: |
 ---
 id: bank_assets table
 table: bank_assets_table
-rows: bank_assets.complete_elements()
+rows: bank_assets
 columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
@@ -1563,6 +1574,8 @@ edit:
   - source
   - market_value
 ---
+
+
 ################ OTHER ASSETS ################
 ---
 id: other_assets terms_ordered
@@ -1663,6 +1676,7 @@ subquestion: |
   ${ other_assets.add_action() }
 continue button field: other_assets.review_items
 ---
+id: other assets revisit
 continue button field: other_assets.revisit
 question: |
   Edit other assets
@@ -1684,82 +1698,7 @@ edit:
   - balance
 
 ---
-###############BANK ASSETS####################
----
-id: bank_assets terms_ordered
-variable name: bank_assets.terms_ordered
-data: !!omap
-  - checking account: "Checking accounts"
-  - savings account: "Savings accounts"
-  - cash on hand: "Cash on hand"
----
-id: bank_assets object
-objects:
-  - bank_assets: ALAssetList.using(complete_attribute='market_value',there_is_another=False)
----
-id: bank_assets ordered object for checkboxes
-objects:
-  - bank_assets_ordered: DAOrderedDict.using(elements=bank_assets.terms_ordered, auto_gather=False, gathered=True)
----
-id: are there bank assets
-#bank_assets
-question: |
-  Do you have money on hand or in the bank?
-subquestion: |
-   Check any that apply to you.
-fields:
-  - no label: bank_assets.selected_types
-    datatype: checkboxes
-    code: |
-      bank_assets_ordered
----
-id: info for each bank asset
-question: |
-  About your cash and bank assets
-fields:
-  - Source: bank_assets[i].source
-    input type: dropdown
-    code: |
-      bank_assets_ordered
-  - Current value: bank_assets[i].market_value
-    datatype: currency
-    required: False
----
-id: bank assets display names
-code: |
-  bank_assets[i].display_name = bank_assets.terms_ordered.get(bank_assets[i].source, bank_assets[i].source)
----
-id: want to add more bank assets
-question: Do you want to list any more cash or bank assets?
-subquestion: |
-  Tap Next if you don't have more to add.
-  
-  ${ bank_assets_table }
-  
-  ${ bank_assets.add_action() }
-continue button field: bank_assets.review_items
----
-id: bank_assets revisit
-continue button field: bank_assets.revisit
-question: |
-  Edit bank accounts and cash
-subquestion: |
-  ${ bank_assets_table }
 
-  ${ bank_assets.add_action() }
----
-id: bank_assets table
-table: bank_assets_table
-rows: bank_assets
-columns:
-  - Source: |
-      row_item.display_name if defined("row_item.source") else ""
-  - Value: |
-      currency(row_item.market_value) if defined("row_item.market_value") else ""
-edit:
-  - source
-  - market_value
----
 #############################OTHER REASONS#############################
 ---
 id: more information
@@ -1768,7 +1707,7 @@ question: |
 subquestion: |
   Tell us about other reasons why you cannot afford the court fees (optional question).
 fields:
-  - "Reason(s)": other_reasons_why_cannot_afford
+  - "Reason(s):": other_reasons_why_cannot_afford
     input type: area
     maxlength: 1000
     required: False
@@ -1901,28 +1840,28 @@ review:
       **Public assistance**
       
       % for benefit in public_benefits.complete_elements():
-      % if benefit.source == "3squaresvt":
-      * 3SquaresVT
-      % else:
       * ${ benefit.display_name }
-      % endif
       % endfor
 
       % if not public_benefits.there_are_any:
       - None
       % endif
 
+  - Edit: employed
+    button: |
+      **Employed**
+      
+      - ${ word(yesno(employed)) }
+      
   - Edit: jobs.revisit
     button: |
       **Jobs**
-
-      % if not employed:
-      - None
-      % endif
       
       % for item in jobs:
       - ${ item.source } / ${ item.employer.name.first if not item.is_self_employed else "Self-employed"}
-      % endfor     
+      % endfor
+
+
   - Edit: users1_income_self_employment_monthly_amount
     button: |
       **Self employed income**
@@ -1993,17 +1932,13 @@ review:
       - None
       % endif
 
-  - Edit: 
-      - bank_assets.revisit
-      - recompute:
-        - bank_assets.gathered   
+  - Edit: bank_assets.revisit
     button: |
       **Bank accounts and cash**
       
       % for item in bank_assets.complete_elements():
-      * ${ item.display_name.lower() }
+      - ${ item.display_name.lower() }
       % endfor
-
       % if not bank_assets.there_are_any:
       - None
       % endif   
@@ -2073,10 +2008,10 @@ attachment:
   docx template file: VT_fee_waiver_addendum.docx
 ---
 code: |
-  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Other public benefits that are part of the reported monthly amount"
-  VT_fee_waiver_attachment.overflow_fields["public_benefits"].overflow_trigger = 1
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Other public assistance that are part of the reported monthly amount"
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].overflow_trigger = 3
   VT_fee_waiver_attachment.overflow_fields["public_benefits"].headers = [
-    {'display_name': "Benefit"},
+    {'display_name': "Public assistance"},
   ]  
 
   VT_fee_waiver_attachment.overflow_fields["jobs"].label = "Additional jobs"
@@ -2204,18 +2139,16 @@ attachments:
           % endif
    
       - "users1_benefits": |
-          % if defined("public_benefits[1]"):
-            % if public_benefits[0].source == "3squaresvt":
-            3SquaresVT ...
-            % else:
-            ${ public_benefits[0].display_name } ...
-            % endif
+          % if defined("public_benefits[3].source"):
+          ${ public_benefits[0].source }, ${ public_benefits[1].source }, ${ public_benefits[2].source } ...
+          % elif defined("public_benefits[2].source"):
+          ${ public_benefits[0].source }, ${ public_benefits[1].source }, ${ public_benefits[2].source }
+          % elif defined("public_benefits[1].source"):
+          ${ public_benefits[0].source }, ${ public_benefits[1].source }
+          % elif defined("public_benefits[0].source"):
+          ${ public_benefits[0].source }
           % else:
-            % if public_benefits[0].source == "3squaresvt":
-            3SquaresVT
-            % else:
-            ${ public_benefits[0].display_name } ...
-            % endif
+           
           % endif
           
       - "users1_benefits_monthly_amount": |
@@ -2232,11 +2165,26 @@ attachments:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
           % endif
       
-      - "users1_income_unemployment_monthly_amount": ${ currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="") }
+      - "users1_income_unemployment_monthly_amount": |
+          % if other_incomes.total(source=["unemployment income"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="") }
+          % endif      
+
+      - "users1_income_child_support_monthly_amount": |
+          % if other_incomes.total(source=["child support income"],times_per_year=12) == 0:
+            
+          % else:
+          ${ currency(other_incomes.total(source=["child support income"],times_per_year=12),symbol="") }
+          % endif           
       
-      - "users1_income_child_support_monthly_amount": ${ currency(other_incomes.total(source=["child support income"],times_per_year=12),symbol="") }
-      
-      - "users1_income_other_monthly_amount": ${ currency(other_incomes.total(exclude_source=["unemployment income","child support income"],times_per_year=12),symbol="") }
+      - "users1_income_other_monthly_amount": |
+          % if other_incomes.total(exclude_source=["unemployment income","child support income"],times_per_year=12) == 0:
+            
+          % else:
+          ${ currency(other_incomes.total(exclude_source=["unemployment income","child support income"],times_per_year=12),symbol="") }
+          % endif   
       
       - "users1_income_self_employment_monthly_amount": |
           % if defined("users1_income_self_employment_monthly_amount"):
@@ -2268,19 +2216,81 @@ attachments:
 
   
       
-      - "users1_expenses_rent_mortgage_monthly_amount": ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12),symbol="") }   
-      - "users1_expenses_electric_monthly_amount": ${ currency(expenses.total(source=["electric"],times_per_year=12),symbol="") }    
-      - "users1_expenses_phone_monthly_amount": ${ currency(expenses.total(source=["phone"],times_per_year=12),symbol="") }
-      - "users1_expenses_fuel_monthly_amount": ${ currency(expenses.total(source=["fuel"],times_per_year=12)) }
-      - "users1_expenses_food_monthly_amount": ${ currency(expenses.total(source=["food"],times_per_year=12)) }
-      - "users1_expenses_clothes_monthly_amount": ${ currency(expenses.total(source=["clothing"],times_per_year=12)) }
-      - "users1_expenses_medical_monthly_amount": ${ currency(expenses.total(source=["medical"],times_per_year=12)) }
-      - "users1_expenses_child_support_monthly_amount": ${ currency(expenses.total(source=["child support"],times_per_year=12)) }
-      - "users1_expenses_auto_loan_monthly_amount": ${ currency(expenses.total(source=["auto loan"],times_per_year=12)) }
-      - "users1_expenses_property_tax_monthly_amount": ${ currency(expenses.total(source=["property tax"],times_per_year=12)) }
-      - "users1_expenses_all_insurance_monthly_amount": ${ currency(expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12)) }
-      - "users1_expenses_other_monthly_amount": ${ currency(expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12)) }
-      - "users1_expenses_monthly_total": ${ currency(expenses.total(times_per_year=12)) }
+      - "users1_expenses_rent_mortgage_monthly_amount": |
+          % if expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12),symbol="") }  
+          % endif      
+       
+      - "users1_expenses_electric_monthly_amount": |
+          % if expenses.total(source=["electric"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["electric"],times_per_year=12),symbol="") }   
+          % endif  
+         
+      - "users1_expenses_phone_monthly_amount": |
+          % if expenses.total(source=["phone"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["phone"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_fuel_monthly_amount": |
+          % if expenses.total(source=["fuel"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["fuel"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_food_monthly_amount": |
+          % if expenses.total(source=["food"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["food"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_clothes_monthly_amount": |
+          % if expenses.total(source=["clothing"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["clothing"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_medical_monthly_amount": |
+          % if expenses.total(source=["medical"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["medical"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_child_support_monthly_amount": |
+          % if expenses.total(source=["child support"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["child support"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_auto_loan_monthly_amount": |
+          % if expenses.total(source=["auto loan"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["auto loan"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_property_tax_monthly_amount": |
+          % if expenses.total(source=["property tax"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["property tax"],times_per_year=12),symbol="") }   
+          % endif  
+      - "users1_expenses_all_insurance_monthly_amount": |
+          % if expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12),symbol="") }  
+          % endif  
+      - "users1_expenses_other_monthly_amount": |
+          % if expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12) == 0:
+           
+          % else:
+          ${ currency(expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12),symbol="") } 
+          % endif  
+      - "users1_expenses_monthly_total": ${ currency(expenses.total(times_per_year=12),symbol="") }
       
       - "assets_yes": |
           % if vehicles.selected_types.any_true():
@@ -2293,64 +2303,86 @@ attachments:
           ${ "True" }
           % endif
       - "assets_no": |
-          % if not vehicles.selected_types.any_true():
-            % if not real_estate.selected_types.any_true():
-              % if not bank_assets.selected_types.any_true():
-                % if not other_assets.selected_types.any_true():
-                  ${ "True" }
-                % endif
-                % endif
-                % endif
-                % endif
-      - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].balance) }
+          % if not vehicles.selected_types.any_true() and not real_estate.selected_types.any_true() and not bank_assets.selected_types.any_true() and not other_assets.selected_types.any_true():
+          ${ "True" }
+          % endif
+
+      - "users1_assets_vehicle_0_amount_owed": ${ currency(vehicles[0].balance,symbol="") }
       - "users1_assets_vehicle_0_description": |
            ${ vehicles[0].make } ${ vehicles[0].model } ${ vehicles[0].year } 
-      - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].market_value - vehicles[0].balance) }
-      - "users1_assets_vehicle_0_market_value": ${ currency(vehicles[0].market_value) }
+      - "users1_assets_vehicle_0_net_value": ${ currency(vehicles[0].market_value - vehicles[0].balance,symbol="") }
+      - "users1_assets_vehicle_0_market_value": ${ currency(vehicles[0].market_value,symbol="") }
       - "users1_assets_vehicle_1_description": |
            ${ vehicles[1].make } ${ vehicles[1].model } ${ vehicles[1].year } 
-      - "users1_assets_vehicle_1_market_value": ${ currency(vehicles[1].market_value) }
-      - "users1_assets_vehicle_1_amount_owed": ${ currency(vehicles[1].balance) }
-      - "users1_assets_vehicle_1_net_value": ${ currency(vehicles[1].market_value - vehicles[1].balance) }
+      - "users1_assets_vehicle_1_market_value": ${ currency(vehicles[1].market_value,symbol="") }
+      - "users1_assets_vehicle_1_amount_owed": ${ currency(vehicles[1].balance,symbol="") }
+      - "users1_assets_vehicle_1_net_value": ${ currency(vehicles[1].market_value - vehicles[1].balance,symbol="") }
       - "users1_assets_vehicle_2_description": |
            ${ vehicles[2].make } ${ vehicles[2].model } ${ vehicles[2].year } 
-      - "users1_assets_vehicle_2_amount_owed": ${ currency(vehicles[2].balance) }
-      - "users1_assets_vehicle_2_net_value": ${ currency(vehicles[2].market_value - vehicles[2].balance) }
-      - "users1_assets_vehicle_2_market_value": ${ currency(vehicles[2].market_value) }
+      - "users1_assets_vehicle_2_amount_owed": ${ currency(vehicles[2].balance,symbol="") }
+      - "users1_assets_vehicle_2_net_value": ${ currency(vehicles[2].market_value - vehicles[2].balance,symbol="") }
+      - "users1_assets_vehicle_2_market_value": ${ currency(vehicles[2].market_value,symbol="") }
       - "users1_assets_vehicle_3_description": |
            ${ vehicles[3].make } ${ vehicles[3].model } ${ vehicles[3].year } 
-      - "users1_assets_vehicle_3_market_value": ${ currency(vehicles[3].market_value) }
-      - "users1_assets_vehicle_3_amount_owed": ${ currency(vehicles[3].balance) }
-      - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[3].balance) }
+      - "users1_assets_vehicle_3_market_value": ${ currency(vehicles[3].market_value,symbol="") }
+      - "users1_assets_vehicle_3_amount_owed": ${ currency(vehicles[3].balance,symbol="") }
+      - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[3].balance,symbol="") }
       
       - "users1_assets_real_estate_0_description": |
+          % if defined("real_estate[0].market_value"):
           % if real_estate[0].source == "primary residence":
           Primary residence
+          % elif real_estate[0].source == "rental":
+          Residential rental
           % else:
           ${ real_estate[0].display_name }
           % endif
-      - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value) }
-      - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance) }
-      - "users1_assets_real_estate_0_net_value": ${ currency((real_estate[0].market_value) - (real_estate[0].balance)) }
+          % endif
+      - "users1_assets_real_estate_0_market_value": |
+          % if defined("real_estate[0].market_value"):
+          ${ currency(real_estate[0].market_value,symbol="") }
+          % endif
+      - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance,symbol="") }
+      - "users1_assets_real_estate_0_net_value": ${ currency(real_estate[0].market_value - real_estate[0].balance,symbol="") }
 
       - "users1_assets_real_estate_1_description": |
+          % if defined("real_estate[1].market_value"):
           % if real_estate[1].source == "primary residence":
           Primary residence
+          % elif real_estate[1].source == "rental":
+          Residential rental
           % else:
           ${ real_estate[1].display_name }
           % endif
-      - "users1_assets_real_estate_1_market_value": ${ currency(real_estate[1].market_value) }
-      - "users1_assets_real_estate_1_amount_owed": ${ currency(real_estate[1].balance) }
-      - "users1_assets_real_estate_1_net_value": ${ currency((real_estate[1].market_value) - (real_estate[1].balance)) }
+          % endif
+      - "users1_assets_real_estate_1_market_value": ${ currency(real_estate[1].market_value,symbol="") }
+      - "users1_assets_real_estate_1_amount_owed": ${ currency(real_estate[1].balance,symbol="") }
+      - "users1_assets_real_estate_1_net_value": ${ currency(real_estate[1].market_value - real_estate[1].balance,symbol="") }
       
-      - "users1_assets_checking_accounts": ${ currency(bank_assets.market_value(source=["checking account"])) }
-      - "users1_assets_cash_on_hand": ${ currency(bank_assets.market_value(source=["cash on hand"])) }
-      - "users1_assets_savings_accounts": ${ currency(bank_assets.market_value(source=["savings account"])) }
-      - "users1_assets_cash_total": ${ currency(bank_assets.market_value()) }
+      - "users1_assets_checking_accounts": |
+          % if bank_assets.market_value(source=["checking account"]) == 0:
+           
+          % else:
+          ${ currency(bank_assets.market_value(source=["checking account"]),symbol="") }
+          % endif            
+     
+      - "users1_assets_cash_on_hand": |
+          % if bank_assets.market_value(source=["cash on hand"]) == 0:
+           
+          % else:
+          ${ currency(bank_assets.market_value(source=["cash on hand"]),symbol="") }
+          % endif      
+      - "users1_assets_savings_accounts": |
+          % if bank_assets.market_value(source=["savings account"]) == 0:
+           
+          % else:
+          ${ currency(bank_assets.market_value(source=["savings account"]),symbol="") }
+          % endif      
+      - "users1_assets_cash_total": ${ currency(bank_assets.market_value(),symbol="") }
       
-      - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value) }
+      - "users1_assets_other_0_market_value": ${ currency(other_assets[0].market_value,symbol="") }
       - "users1_assets_other_0_description": ${ other_assets[0].display_name }
-      - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value) }
+      - "users1_assets_other_1_market_value": ${ currency(other_assets[1].market_value,symbol="") }
       - "users1_assets_other_1_description": ${ other_assets[1].display_name }
       
       - "other_reasons_why_cannot_afford": ${VT_fee_waiver_attachment.safe_value("other_reasons_why_cannot_afford")}
