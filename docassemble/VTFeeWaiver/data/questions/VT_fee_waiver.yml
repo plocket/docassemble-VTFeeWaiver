@@ -1266,9 +1266,7 @@ data: !!omap
   - boat: "Boat or jetski"
   - snowmobile: "Snowmobile"
   - ATV: "ATV"
-  - camper: "Camper"
-  - RV: "RV"
-  - plane: "Plane"
+  - RV: "RV/Camper"
   - other: "Other"
 ---
 comment: |
@@ -1812,7 +1810,12 @@ review:
   - Edit: docket_number
     button: |
       **Case number**:
-      ${ docket_number }      
+      % if dont_know_docket_number:
+      Unknown
+      % else:
+      ${ showifdef("docket_number") }
+      % endif
+      
   - Edit: case_name
     button: |
       **Case name**:
