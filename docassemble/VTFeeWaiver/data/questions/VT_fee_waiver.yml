@@ -125,9 +125,16 @@ code: |
   if public_benefits.there_are_any:
     public_benefits.review_items
     user_qualifies_interstitial   
+    #if user gets public benefits and they work, they only need to give us their employer name and address, and there's space for two jobs on the form
     if employed:
-      jobs.gather()
-      review_jobs    
+      jobs.target_number
+      if jobs.target_number == 1:
+        jobs[0].employer.address.address
+      if jobs.target_number == 2:
+        jobs[0].employer.address.address
+        jobs[1].employer.address.address
+      #jobs.gather()
+      #review_jobs    
   else:
     if employed:
       jobs.gather()
@@ -1258,7 +1265,7 @@ data: !!omap
   - motorcycle: "Motorcycle"
   - boat: "Boat or jetski"
   - snowmobile: "Snowmobile"
-  - atv: "ATV"
+  - ATV: "ATV"
   - camper: "Camper"
   - RV: "RV"
   - plane: "Plane"
