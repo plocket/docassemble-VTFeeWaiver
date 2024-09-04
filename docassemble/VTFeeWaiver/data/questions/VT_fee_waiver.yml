@@ -130,7 +130,7 @@ code: |
       jobs.target_number
       if jobs.target_number == 1:
         jobs[0].employer.address.address
-      if jobs.target_number == 2:
+      if jobs.target_number >= 2:
         jobs[0].employer.address.address
         jobs[1].employer.address.address
       #jobs.gather()
@@ -318,7 +318,7 @@ fields:
     code: |
       public_benefits_ordered
   - What type of income?: public_benefits[i].source_other
-    maxlength: 10
+    maxlength: 14
     show if:
       variable: public_benefits[i].source
       is: other
@@ -2018,7 +2018,7 @@ attachment:
   docx template file: VT_fee_waiver_addendum.docx
 ---
 code: |
-  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Other public assistance that are part of the reported monthly amount"
+  VT_fee_waiver_attachment.overflow_fields["public_benefits"].label = "Other public assistance that is part of the reported monthly amount"
   VT_fee_waiver_attachment.overflow_fields["public_benefits"].overflow_trigger = 3
   VT_fee_waiver_attachment.overflow_fields["public_benefits"].headers = [
     {'display_name': "Public assistance"},
@@ -2033,29 +2033,28 @@ code: |
   
   VT_fee_waiver_attachment.overflow_fields["vehicles"].label = "Additional vehicles"
   VT_fee_waiver_attachment.overflow_fields["vehicles"].overflow_trigger = 4
-  VT_fee_waiver_attachment.overflow_fields["vehicles"].headers = [
-    {'make': "Make"},
-    {'model': "Model"},
-    {'year': "Year"},
-    {'market_value': "Fair market value"},
-    {'balance': "Amount owed"},
-  ]  
+  #VT_fee_waiver_attachment.overflow_fields["vehicles"].headers = [
+    #{'make': "Make"},
+    #{'model': "Model"},
+    #{'year': "Year"},
+    #{'market_value': "Fair market value"},
+    #{'balance': "Amount owed"},
+  #]  
   
   VT_fee_waiver_attachment.overflow_fields["real_estate"].label = "Additional real estate"
   VT_fee_waiver_attachment.overflow_fields["real_estate"].overflow_trigger = 2
-  VT_fee_waiver_attachment.overflow_fields["real_estate"].headers = [
-    {'source': "Description"},
-    {'market_value': "Fair market value"},
-    {'balance': "Amount owed"},
-  ]  
+  #VT_fee_waiver_attachment.overflow_fields["real_estate"].headers = [
+    #{'display_name': "Description"},
+    #{'market_value': "Fair market value"},
+    #{'balance': "Amount owed"},
+  #]  
 
   VT_fee_waiver_attachment.overflow_fields["other_assets"].label = "Additional assets"
   VT_fee_waiver_attachment.overflow_fields["other_assets"].overflow_trigger = 2
-  
-  VT_fee_waiver_attachment.overflow_fields["other_assets"].headers = [
-    {'source': "Description"},
-    {'market_value': "Fair market value"},
-  ]  
+  #VT_fee_waiver_attachment.overflow_fields["other_assets"].headers = [
+    #{'display_name': "Description"},
+    #{'market_value': "Fair market value"},
+  #]  
   
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 620
   VT_fee_waiver_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
@@ -2149,17 +2148,24 @@ attachments:
           % endif
    
       - "users1_benefits": |
-          % if defined("public_benefits[3].source"):
-          ${ public_benefits[0].source }, ${ public_benefits[1].source }, ${ public_benefits[2].source } ...
-          % elif defined("public_benefits[2].source"):
-          ${ public_benefits[0].source }, ${ public_benefits[1].source }, ${ public_benefits[2].source }
-          % elif defined("public_benefits[1].source"):
-          ${ public_benefits[0].source }, ${ public_benefits[1].source }
-          % elif defined("public_benefits[0].source"):
-          ${ public_benefits[0].source }
+          % if public_benefits.selected_types.any_true():
+
+          % if public_benefits[0].source == "other":
+          ${ showifdef("public_benefits[0].display_name") }  ${ showifdef("public_benefits[1].source") }  ${ showifdef("public_benefits[2].source") }
+
+          % elif public_benefits[1].source == "other":
+          ${ showifdef("public_benefits[0].source") }  ${ showifdef("public_benefits[1].display_name") }  ${ showifdef("public_benefits[2].source") }
+
+          % elif public_benefits[2].source == "other":
+          ${ public_benefits[0].source }  ${ public_benefits[1].source }  ${ public_benefits[2].display_name }
+     
+
           % else:
+          ${ showifdef("public_benefits[0].source") }  ${ showifdef("public_benefits[1].source") }  ${ showifdef("public_benefits[2].source") }
            
           % endif
+          % endif
+
           
       - "users1_benefits_monthly_amount": |
           % if not public_benefits.selected_types.any_true():
