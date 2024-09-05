@@ -789,7 +789,7 @@ columns:
   - Employer: |
       row_item.employer.name.first if defined("row_item.employer.name.first") else ""
   - Monthly gross income: |
-      currency(row_item.gross_total(times_per_year=12))
+      currency(row_item.gross_total(times_per_year=12)) if len(public_benefits) == 0 else "Not needed"
 
 edit:
   - revisit
@@ -1861,11 +1861,14 @@ review:
       
       - ${ word(yesno(employed)) }
       
+
+      % if len(jobs) > 0:
       **Jobs**
       
       % for item in jobs:
       - ${ item.source } / ${ item.employer.name.first if not item.is_self_employed else "Self-employed"}
       % endfor
+      % endif
 
 
   - Edit: users1_income_self_employment_monthly_amount
@@ -2174,6 +2177,8 @@ attachments:
       
       - "users1_income_employment_monthly_amount": |
           % if not employed:
+          
+          % elif len(public_benefits) > 0:
           
           % else:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
