@@ -122,49 +122,42 @@ code: |
   trial_court.address.county
   
   nav.set_section('your_income')
-  if public_benefits.there_are_any:
+  if len(public_benefits) > 0:
     public_benefits.review_items
     user_qualifies_interstitial   
     #if user gets public benefits and they work, they only need to give us their employer name and address, and there's space for two jobs on the form
-    if employed:
-      jobs.target_number
-      if jobs.target_number == 1:
-        jobs[0].employer.address.address
-      if jobs.target_number >= 2:
-        jobs[0].employer.address.address
-        jobs[1].employer.address.address
-      #jobs.gather()
-      #review_jobs    
+    for job in jobs:
+      job.employer.address.address
   else:
-    if employed:
-      jobs.gather()
+    jobs.gather()
+    if len(jobs) > 0:
       review_jobs
     set_progress(40)
     
-    if other_incomes.there_are_any:
+    if len(other_incomes) > 0:
       other_incomes.review_items
 
     set_progress(50)
     nav.set_section('your_expenses')
     expenses_intro
-    if expenses.there_are_any:
+    if len(expenses) > 0:
       expenses.review_items
 
     set_progress(60)
     nav.set_section('your_assets')
     assets_intro
   
-    if vehicles.there_are_any:
+    if len(vehicles) > 0:
       vehicles.review_items
   
-    if real_estate.there_are_any:
+    if len(real_estate) > 0:
       real_estate.review_items
         
     set_progress(70)
     if len(bank_assets) > 0:
       bank_assets.review_items    
     
-    if other_assets.there_are_any:
+    if len(other_assets) > 0:
       other_assets.review_items        
       
     nav.set_section('reasons')
@@ -173,7 +166,6 @@ code: |
     
   set_progress(90)
   interview_order_VT_fee_waiver = True
-
 
 ---
 ###################### MAIN INTERVIEW ORDER ######################
@@ -515,6 +507,10 @@ question: |
 fields:
   - "Do you get income from working?": employed
     datatype: yesnoradio
+---
+code: |
+  if not employed:
+    jobs.target_number = 0
 ---
 id: self employed income
 question: |
@@ -1857,14 +1853,14 @@ review:
       - None
       % endif
 
-  - Edit: employed
+  - Edit: 
+      - employed
+      - jobs.revisit
     button: |
       **Employed**
       
       - ${ word(yesno(employed)) }
       
-  - Edit: jobs.revisit
-    button: |
       **Jobs**
       
       % for item in jobs:
@@ -1903,7 +1899,7 @@ review:
     button: |
       **Expenses**:
 
-      % if not expenses.selected_types.any_true():
+      % if len(expenses) == 0:
       - None
       % endif
       % for item in expenses:
@@ -2117,10 +2113,12 @@ attachments:
       - "employed_no": ${ not employed }
       
       - "users1_employer_0_name": |
-          % if jobs[0].is_self_employed:
+          % if len(jobs) > 0 and jobs[0].is_self_employed:
             Self-employed
-          % else:
+          % elif len(jobs) > 0:
             ${ jobs[0].employer }
+          % else:
+            None
           % endif
       - "users1_employer_0_address_one_line": |
           % if defined("jobs[0].employer.address"):
@@ -2128,10 +2126,12 @@ attachments:
           % endif
 
       - "users1_employer_1_name": |
-          % if jobs[1].is_self_employed:
+          % if len(jobs) > 1 and jobs[1].is_self_employed:
             Self-employed
-          % else:
+          % elif len(jobs) > 1:
             ${ jobs[1].employer }
+          % else:
+            None
           % endif
       - "users1_employer_1_address_one_line": |
           % if defined("jobs[1].employer.address"):
@@ -2185,7 +2185,7 @@ attachments:
           % if other_incomes.total(source=["unemployment income"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="") }
+          ${ 'currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="")' }
           % endif      
 
       - "users1_income_child_support_monthly_amount": |
