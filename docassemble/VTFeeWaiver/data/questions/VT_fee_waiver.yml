@@ -161,7 +161,7 @@ code: |
       real_estate.review_items
         
     set_progress(70)
-    if bank_assets.there_are_any:
+    if len(bank_assets) > 0:
       bank_assets.review_items    
     
     if other_assets.there_are_any:
@@ -1946,7 +1946,7 @@ review:
     button: |
       **Bank accounts and cash**
       
-      % for item in bank_assets.complete_elements():
+      % for item in bank_assets:
       - ${ item.display_name.lower() }
       % endfor
       % if not bank_assets.there_are_any:
