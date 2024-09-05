@@ -126,8 +126,7 @@ code: |
     public_benefits.review_items
     user_qualifies_interstitial   
     #if user gets public benefits and they work, they only need to give us their employer name and address, and there's space for two jobs on the form
-    for job in jobs:
-      job.employer.address.address
+    jobs.gather()
   else:
     jobs.gather()
     if len(jobs) > 0:
@@ -533,13 +532,16 @@ fields:
 ---
 generic object: ALItemizedJob
 code: |
-  x.source
-  if not x.is_self_employed:
-    x.employer.name.first
-  x.wages_added
-  x.to_add.gather()
-  # for fee waiver form we are not collecting items to subtract from wages
-  # x.to_subtract.gather()
+  if len(public_benefits) == 0:
+    x.source
+    if not x.is_self_employed:
+      x.employer.name.first
+    x.wages_added
+    x.to_add.gather()
+    # for fee waiver form we are not collecting items to subtract from wages
+    # x.to_subtract.gather()
+  else:
+    x.employer.name.first    
   x.complete = True
 ---
 generic object: ALItemizedValueDict
@@ -1840,8 +1842,6 @@ review:
       
   - Edit: 
       - public_benefits.revisit
-      - recompute:
-        - public_benefits.gathered   
     button: |
       **Public assistance**
       
@@ -1922,8 +1922,6 @@ review:
       % endif
   - Edit: 
       - real_estate.revisit
-      - recompute:
-        - real_estate.gathered
     button: |
       **Real estate**
 
@@ -2118,7 +2116,7 @@ attachments:
           % elif len(jobs) > 0:
             ${ jobs[0].employer }
           % else:
-            None
+            
           % endif
       - "users1_employer_0_address_one_line": |
           % if defined("jobs[0].employer.address"):
@@ -2131,7 +2129,7 @@ attachments:
           % elif len(jobs) > 1:
             ${ jobs[1].employer }
           % else:
-            None
+            
           % endif
       - "users1_employer_1_address_one_line": |
           % if defined("jobs[1].employer.address"):
@@ -2185,7 +2183,7 @@ attachments:
           % if other_incomes.total(source=["unemployment income"],times_per_year=12) == 0:
            
           % else:
-          ${ 'currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="")' }
+          ${ currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="") }
           % endif      
 
       - "users1_income_child_support_monthly_amount": |
