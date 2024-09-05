@@ -536,12 +536,15 @@ code: |
     x.source
     if not x.is_self_employed:
       x.employer.name.first
-    x.wages_added
-    x.to_add.gather()
+      x.wages_added
+      x.to_add.gather()
+    else:
+      users1_income_self_employment_monthly_amount
     # for fee waiver form we are not collecting items to subtract from wages
     # x.to_subtract.gather()
   else:
-    x.employer.name.first    
+    if not x.is_self_employed:
+      x.employer.name.first    
   x.complete = True
 ---
 generic object: ALItemizedValueDict
