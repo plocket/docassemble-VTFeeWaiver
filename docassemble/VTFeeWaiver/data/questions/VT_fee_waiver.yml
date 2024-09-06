@@ -2209,7 +2209,7 @@ attachments:
           % endif   
       
       - "users1_income_self_employment_monthly_amount": |
-          % if defined("users1_income_self_employment_monthly_amount"):
+          % if users1_income_self_employment_monthly_amount > 0:
           ${ currency(users1_income_self_employment_monthly_amount,symbol="") }
           % else:
           
@@ -2218,7 +2218,7 @@ attachments:
       - "users1_income_monthly_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
           ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount,symbol="") }
-          % elif employed:
+          % elif jobs.total(source=["full time","part time"],times_per_year=12) > 0:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
           % elif other_incomes.number_gathered() > 0:
           ${ currency(other_incomes.total(times_per_year=12),symbol="") }
