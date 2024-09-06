@@ -1909,7 +1909,7 @@ review:
     button: |
       **Expenses**:
 
-      % if len(expenses) == 0:
+      % if expenses.number_gathered() == 0:
       - None
       % endif
       % for item in expenses:
@@ -2312,17 +2312,17 @@ attachments:
       - "users1_expenses_monthly_total": ${ currency(expenses.total(times_per_year=12),symbol="") }
       
       - "assets_yes": |
-          % if vehicles.selected_types.any_true():
+          % if vehicles.number_gathered() > 0:
           ${ "True" }
-          % elif real_estate.selected_types.any_true():
+          % elif real_estate.number_gathered() > 0:
           ${ "True" }
-          % elif bank_assets.selected_types.any_true():
+          % elif bank_assets.number_gathered() > 0:
           ${ "True" }
-          % elif other_assets.selected_types.any_true():
+          % elif other_assets.number_gathered() > 0:
           ${ "True" }
           % endif
       - "assets_no": |
-          % if not vehicles.selected_types.any_true() and not real_estate.selected_types.any_true() and not bank_assets.selected_types.any_true() and not other_assets.selected_types.any_true():
+          % if vehicles.number_gathered() == 0 and real_estate.number_gathered() == 0 and  bank_assets.number_gathered() == 0 and other_assets.number_gathered() == 0:
           ${ "True" }
           % endif
 
