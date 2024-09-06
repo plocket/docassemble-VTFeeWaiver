@@ -1786,6 +1786,9 @@ code: |
   
 
 ##################### REVIEW SCREEN #######################
+
+#In review screen and attachment code, do not use .there_are_any for conditional logic or if defined. Instead, use something like % if public_benefits.number_gathered() > 0   or  % if public_benefits.number_gathered() == 0 
+
 ---
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
@@ -1953,7 +1956,7 @@ review:
       % for item in bank_assets:
       - ${ item.display_name.lower() }
       % endfor
-      % if not bank_assets.there_are_any:
+      % if bank_assets.number_gathered() == 0:
       - None
       % endif   
       
@@ -1965,7 +1968,7 @@ review:
         - ${ item.display_name.lower() }
       % endfor
 
-      % if not other_assets.there_are_any:
+      % if other_assets.number_gathered() == 0:
       - None
       % endif      
       
