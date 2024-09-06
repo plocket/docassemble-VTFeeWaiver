@@ -513,7 +513,7 @@ code: |
 ---
 id: self employed income
 question: |
-  What do you make in self-employed income each month?
+  What do you make in self-employed income each month as a ${ jobs[i].source }?
 subquestion: |
   
   Most people report their net income from self-employment. To figure your monthly net income:
@@ -527,7 +527,7 @@ subquestion: |
   - Look at your most recent IRS Schedule C form from your federal taxes.
   - Divide the net income by 12.
 fields:
-  - Your monthly net income: users1_income_self_employment_monthly_amount
+  - Your monthly net income: jobs[i].income_self_employment_monthly_amount
     datatype: currency
 ---
 generic object: ALItemizedJob
@@ -539,7 +539,7 @@ code: |
       x.wages_added
       x.to_add.gather()
     else:
-      users1_income_self_employment_monthly_amount
+      x.income_self_employment_monthly_amount
     # for fee waiver form we are not collecting items to subtract from wages
     # x.to_subtract.gather()
   else:
@@ -771,6 +771,9 @@ edit:
   - times_per_year
   - value
 ---
+reconsider:
+  - employer_jobs
+  - self_employed_jobs
 id: job review
 question: |
   Review your jobs
@@ -778,14 +781,27 @@ subquestion: |
   Here is what you've told us about your jobs. You can add more or continue
   to the next question.
 
-  ${ jobs.table }
+  **Jobs**
+  ${ employer_jobs_table }
   
-
+  **Self-employed jobs**
+  ${ self_employed_jobs_table }
+  
   ${ jobs.add_action() }
+
+
 field: review_jobs
 ---
-table: jobs.table
-rows: jobs
+depends on: jobs
+code: |
+  employer_jobs = jobs.filter(is_self_employed=False)
+---
+depends on: jobs
+code: |
+  self_employed_jobs = jobs.filter(is_self_employed=True)
+---
+table: employer_jobs_table
+rows: employer_jobs
 columns:
   - Job: |
       row_item.source
@@ -796,6 +812,19 @@ columns:
 
 edit:
   - revisit
+
+confirm: True
+---
+table: self_employed_jobs_table
+rows: self_employed_jobs
+columns:
+  - Job: |
+      row_item.source
+  - Monthly gross income: |
+      currency(row_item.income_self_employment_monthly_amount) if len(public_benefits) == 0 else "Not needed"
+
+edit:
+  - income_self_employment_monthly_amount
 
 confirm: True
 ---
@@ -1860,29 +1889,15 @@ review:
       - employed
       - jobs.revisit
     button: |
-      **Employed**
-      
-      - ${ word(yesno(employed)) }
-      
-
-      % if len(jobs) > 0:
       **Jobs**
+      ${ employer_jobs_table }
       
-      % for item in jobs:
-      - ${ item.source } / ${ item.employer.name.first if not item.is_self_employed else "Self-employed"}
-      % endfor
-      % endif
+      **Self-employed jobs**
+      ${ self_employed_jobs_table }
+      
+      ${ jobs.add_action() }
 
 
-  - Edit: users1_income_self_employment_monthly_amount
-    button: |
-      **Self employed income**
-      
-      % if defined("users1_income_self_employment_monthly_amount"):
-        - Yes     
-      % else:
-        - No
-      % endif         
   - Edit: 
       - other_incomes.revisit
       - recompute:
