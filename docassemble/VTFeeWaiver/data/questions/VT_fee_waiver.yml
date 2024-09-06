@@ -309,7 +309,7 @@ fields:
     code: |
       public_benefits_ordered
   - What type of income?: public_benefits[i].source_other
-    maxlength: 14
+    maxlength: 13
     show if:
       variable: public_benefits[i].source
       is: other
@@ -2152,23 +2152,18 @@ attachments:
           % endif
    
       - "users1_benefits": |
-          % if public_benefits.selected_types.any_true():
-
-          % if public_benefits[0].source == "other":
-          ${ showifdef("public_benefits[0].display_name") }  ${ showifdef("public_benefits[1].source") }  ${ showifdef("public_benefits[2].source") }
-
-          % elif public_benefits[1].source == "other":
-          ${ showifdef("public_benefits[0].source") }  ${ showifdef("public_benefits[1].display_name") }  ${ showifdef("public_benefits[2].source") }
-
-          % elif public_benefits[2].source == "other":
-          ${ public_benefits[0].source }  ${ public_benefits[1].source }  ${ public_benefits[2].display_name }
-     
-
+          % if public_benefits.number_gathered() > 0:
+          % for benefit in public_benefits:
+          % if benefit.source == "other":
+          ${ benefit.display_name }
+            
           % else:
-          ${ showifdef("public_benefits[0].source") }  ${ showifdef("public_benefits[1].source") }  ${ showifdef("public_benefits[2].source") }
-           
+          ${ benefit.source }
+            
           % endif
+          % endfor
           % endif
+
 
           
       - "users1_benefits_monthly_amount": |
