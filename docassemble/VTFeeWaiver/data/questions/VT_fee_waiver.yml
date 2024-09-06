@@ -1848,14 +1848,18 @@ review:
     button: |
       **Public assistance**
       
-      % for benefit in public_benefits.complete_elements():
+      % if public_benefits.number_gathered() > 0:
+      % for benefit in public_benefits:
+      % if benefit.source == "other":
       * ${ benefit.display_name }
+      % else:
+      * ${ benefit.source }
+      % endif
       % endfor
-
-      % if not public_benefits.there_are_any:
+      
+      % else:
       - None
       % endif
-
   - Edit: 
       - employed
       - jobs.revisit
@@ -2143,11 +2147,11 @@ attachments:
           % endif
       
       - "users1_receives_benefits_yes": |
-          % if public_benefits.selected_types.any_true():
+          % if public_benefits.number_gathered() > 0:
           ${ True }
           % endif
       - "users1_receives_benefits_no": |
-          % if not public_benefits.selected_types.any_true():
+          % if not public_benefits.number_gathered() > 0:
           ${ True }
           % endif
    
@@ -2167,7 +2171,7 @@ attachments:
 
           
       - "users1_benefits_monthly_amount": |
-          % if not public_benefits.selected_types.any_true():
+          % if not public_benefits.number_gathered() > 0:
            
           % else:
           ${ currency(public_benefits.total(times_per_year=12),symbol="") }
