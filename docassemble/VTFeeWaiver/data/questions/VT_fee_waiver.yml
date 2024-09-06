@@ -2348,7 +2348,7 @@ attachments:
       - "users1_assets_vehicle_3_net_value": ${ currency(vehicles[3].market_value - vehicles[3].balance,symbol="") }
       
       - "users1_assets_real_estate_0_description": |
-          % if defined("real_estate[0].market_value"):
+          % if real_estate.number_gathered() > 0:
           % if real_estate[0].source == "primary residence":
           Primary residence
           % elif real_estate[0].source == "rental":
@@ -2357,15 +2357,12 @@ attachments:
           ${ real_estate[0].display_name }
           % endif
           % endif
-      - "users1_assets_real_estate_0_market_value": |
-          % if defined("real_estate[0].market_value"):
-          ${ currency(real_estate[0].market_value,symbol="") }
-          % endif
+      - "users1_assets_real_estate_0_market_value": ${ currency(real_estate[0].market_value,symbol="") }
       - "users1_assets_real_estate_0_amount_owed": ${ currency(real_estate[0].balance,symbol="") }
       - "users1_assets_real_estate_0_net_value": ${ currency(real_estate[0].market_value - real_estate[0].balance,symbol="") }
 
       - "users1_assets_real_estate_1_description": |
-          % if defined("real_estate[1].market_value"):
+          % if real_estate.number_gathered() > 1:
           % if real_estate[1].source == "primary residence":
           Primary residence
           % elif real_estate[1].source == "rental":
