@@ -1898,7 +1898,7 @@ review:
       * ${ income.display_name.lower() }
       % endfor
 
-      % if not other_incomes.there_are_any:
+      % if other_incomes.number_gathered() == 0:
       - None
       % endif
           
@@ -2178,9 +2178,7 @@ attachments:
           % endif
       
       - "users1_income_employment_monthly_amount": |
-          % if not employed:
-          
-          % elif len(public_benefits) > 0:
+          % if jobs.total(source=["full time","part time"],times_per_year=12) == 0:
           
           % else:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
@@ -2219,7 +2217,7 @@ attachments:
           ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount,symbol="") }
           % elif employed:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
-          % elif other_incomes.selected_types.any_true():
+          % elif other_incomes.number_gathered() > 0:
           ${ currency(other_incomes.total(times_per_year=12),symbol="") }
           % else:
           0.00      
@@ -2229,7 +2227,7 @@ attachments:
           ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12),symbol="") }
           % elif employed:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
-          % elif other_incomes.selected_types.any_true():
+          % elif other_incomes.number_gathered() > 0:
           ${ currency(other_incomes.total(times_per_year=1),symbol="") }
           % else:
           0.00      
