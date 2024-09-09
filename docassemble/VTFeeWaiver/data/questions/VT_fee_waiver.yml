@@ -515,6 +515,7 @@ code: |
   if not employed:
     jobs.target_number = 0
 ---
+if: j in ["self employed"]
 id: self employed income
 question: |
   What do you make in self-employed income each month as a ${ jobs[i].source }?
@@ -531,19 +532,23 @@ subquestion: |
   - Look at your most recent IRS Schedule C form from your federal taxes.
   - Divide the net income by 12.
 fields:
-  - Your monthly net income: jobs[i].income_self_employment_monthly_amount
+  - Your monthly net income: jobs[i].to_add[j].value
     datatype: currency
+---
+if: j in ["self employed"]
+code: |
+  jobs[i].to_add[j].times_per_year = 12
+---
+if: jobs[i].is_self_employed
+code: |
+  jobs[i].times_per_year = 12
 ---
 generic object: ALItemizedJob
 code: |
   if len(public_benefits) == 0:
     x.source
-    if not x.is_self_employed:
-      x.employer.name.first
-      x.wages_added
-      x.to_add.gather()
-    else:
-      x.income_self_employment_monthly_amount
+    x.wages_added
+    x.to_add.gather()
     # for fee waiver form we are not collecting items to subtract from wages
     # x.to_subtract.gather()
   else:
@@ -601,7 +606,11 @@ fields:
 ---
 generic object: ALItemizedJob
 code: |
-  if x.is_part_time:
+  if x.is_self_employed:
+    x.to_add.there_are_any = True
+    x.to_add.new_item_name = "self employed"
+    x.to_add.there_is_another = False
+  elif x.is_part_time:
     x.to_add.there_are_any = True
     x.to_add.new_item_name = "part time"
   else:
@@ -681,7 +690,7 @@ fields:
   - Does the job have other incomes, like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
-if: j not in ["full time","part time"]
+if: j not in ["full time","part time","self employed"]
 id: itemized job period non-pt-or-ft wages
 generic object: ALItemizedJob
 question: |
@@ -838,10 +847,10 @@ columns:
   - Job: |
       row_item.source
   - Monthly gross income: |
-      currency(row_item.income_self_employment_monthly_amount) if len(public_benefits) == 0 else "Not needed"
+      currency(row_item.gross_total(times_per_year=12)) if len(public_benefits) == 0 else "Not needed"
 
 edit:
-  - income_self_employment_monthly_amount
+  - value
 
 confirm: True
 ---
@@ -853,10 +862,11 @@ columns:
       row_item.source
 
 edit:
-  - income_self_employment_monthly_amount
+  - value
 
 confirm: True
 ---
+only sets: x.revisit
 id: review job
 generic object: ALItemizedJob
 question: Review ${ x.source } job
@@ -2258,15 +2268,15 @@ attachments:
           % endif   
       
       - "users1_income_self_employment_monthly_amount": |
-          % if defined("users1_income_self_employment_monthly_amount"):
-          ${ currency(users1_income_self_employment_monthly_amount,symbol="") }
+          % if defined("self_employed_jobs"):
+          ${ currency(float(self_employed_jobs.total(times_per_year=12))) }
           % else:
           
           % endif
 
       - "users1_income_monthly_total": |
-          % if defined("users1_income_self_employment_monthly_amount"):
-          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount,symbol="") }
+          % if defined("self_employed_jobs"):
+          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + self_employed_jobs.total(times_per_year=12),symbol="") }
           % elif employed:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
           % elif other_incomes.selected_types.any_true():
@@ -2275,8 +2285,8 @@ attachments:
           0.00      
           % endif
       - "users1_income_annual_total": |
-          % if defined("users1_income_self_employment_monthly_amount"):
-          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + (users1_income_self_employment_monthly_amount * 12),symbol="") }
+          % if defined("self_employed_jobs"):
+          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + self_employed_jobs.total(times_per_year=12),symbol="") }
           % elif employed:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
           % elif other_incomes.selected_types.any_true():
