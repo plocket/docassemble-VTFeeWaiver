@@ -164,6 +164,10 @@ code: |
     set_progress(80)
     
   set_progress(90)
+  employer_jobs
+  self_employed_jobs
+  employer_jobs_review_table
+  self_employed_jobs_review_table
   interview_order_VT_fee_waiver = True
 
 ---
@@ -800,6 +804,7 @@ depends on: jobs
 code: |
   self_employed_jobs = jobs.filter(is_self_employed=True)
 ---
+reconsider: employer_jobs
 table: employer_jobs_table
 rows: employer_jobs
 columns:
@@ -815,6 +820,18 @@ edit:
 
 confirm: True
 ---
+reconsider: employer_jobs
+table: employer_jobs_review_table
+rows: employer_jobs
+columns:
+  - Job: |
+      row_item.source
+edit:
+  - revisit
+
+confirm: True
+---
+reconsider: self_employed_jobs
 table: self_employed_jobs_table
 rows: self_employed_jobs
 columns:
@@ -822,6 +839,18 @@ columns:
       row_item.source
   - Monthly gross income: |
       currency(row_item.income_self_employment_monthly_amount) if len(public_benefits) == 0 else "Not needed"
+
+edit:
+  - income_self_employment_monthly_amount
+
+confirm: True
+---
+reconsider: self_employed_jobs
+table: self_employed_jobs_review_table
+rows: self_employed_jobs
+columns:
+  - Self-employed job: |
+      row_item.source
 
 edit:
   - income_self_employment_monthly_amount
@@ -1890,13 +1919,18 @@ review:
       - jobs.revisit
     button: |
       **Jobs**
-      ${ employer_jobs_table }
       
-      **Self-employed jobs**
-      ${ self_employed_jobs_table }
+      % if not employed:
+      
+      I do not get income from working
+      % else:
+      
+      ${ employer_jobs_review_table }
+      
+      ${ self_employed_jobs_review_table }
       
       ${ jobs.add_action() }
-
+      % endif
 
   - Edit: 
       - other_incomes.revisit
