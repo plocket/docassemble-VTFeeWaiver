@@ -549,6 +549,8 @@ code: |
     x.source
     x.wages_added
     x.to_add.gather()
+  if x.is_self_employed:
+    x.times_per_year
     # for fee waiver form we are not collecting items to subtract from wages
     # x.to_subtract.gather()
   else:
@@ -558,6 +560,8 @@ code: |
 ---
 generic object: ALItemizedValueDict
 code: |
+  if len(public_benefits) == 0:
+    x.times_per_year
   x.complete = True
 ---
 sets:
@@ -2268,15 +2272,15 @@ attachments:
           % endif   
       
       - "users1_income_self_employment_monthly_amount": |
-          % if defined("self_employed_jobs"):
-          ${ currency(float(self_employed_jobs.total(times_per_year=12))) }
+          % if defined("jobs"):
+          ${ currency(jobs.total(source=["self employed"],times_per_year=12)) }
           % else:
           
           % endif
 
       - "users1_income_monthly_total": |
-          % if defined("self_employed_jobs"):
-          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + self_employed_jobs.total(times_per_year=12),symbol="") }
+          % if defined("jobs"):
+          ${ currency(float(jobs.total(source=["full time","part time","self employed"],times_per_year=12) + other_incomes.total(times_per_year=12)),symbol="") }
           % elif employed:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
           % elif other_incomes.selected_types.any_true():
@@ -2285,8 +2289,8 @@ attachments:
           0.00      
           % endif
       - "users1_income_annual_total": |
-          % if defined("self_employed_jobs"):
-          ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1)) + self_employed_jobs.total(times_per_year=12),symbol="") }
+          % if defined("jobs"):
+          ${ currency(float(jobs.total(source=["full time","part time","self employed"],times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
           % elif employed:
           ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
           % elif other_incomes.selected_types.any_true():
