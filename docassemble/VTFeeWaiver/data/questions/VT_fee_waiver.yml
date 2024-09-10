@@ -799,12 +799,14 @@ subquestion: |
   to the next question.
 
   **Jobs**
-  ${ employer_jobs_table }
+  ${ jobs_table }
   
-  **Self-employed jobs**
-  ${ self_employed_jobs_table }
+  ${ jobs.add_action() }  
   
-  ${ jobs.add_action() }
+  Monthly total for wages: **${ currency(jobs.total(source=["part time", "full time"],times_per_year=12)) }**
+  
+  Monthly total for self-employed work: **${ currency(jobs.total(source=["self employed"],times_per_year=12)) }**
+
 
 
 field: review_jobs
@@ -817,9 +819,8 @@ depends on: jobs
 code: |
   self_employed_jobs = jobs.filter(is_self_employed=True)
 ---
-reconsider: employer_jobs
-table: employer_jobs_table
-rows: employer_jobs
+table: jobs_table
+rows: jobs
 columns:
   - Job: |
       row_item.source
@@ -1929,8 +1930,7 @@ review:
       % endif
 
   - Edit: 
-      - employed
-      - jobs.revisit
+      - review_jobs
     button: |
       **Jobs**
       
@@ -1938,12 +1938,21 @@ review:
       
       I do not get income from working
       % else:
+
+      % for item in jobs:
+      % if not item.is_self_employed:
       
-      ${ employer_jobs_review_table }
+      - ${ item.source }
+      % endif
+      % endfor
       
-      ${ self_employed_jobs_review_table }
+      **Self employed jobs**
+      % for item in jobs:
+      % if item.is_self_employed:
       
-      ${ jobs.add_action() }
+      - ${ item.source }
+      % endif
+      % endfor
       % endif
 
   - Edit: 
