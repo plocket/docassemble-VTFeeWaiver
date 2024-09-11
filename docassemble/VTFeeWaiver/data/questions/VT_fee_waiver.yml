@@ -798,16 +798,13 @@ subquestion: |
   Here is what you've told us about your jobs. You can add more or continue
   to the next question.
 
-  **Jobs**
   ${ jobs_table }
   
   ${ jobs.add_action() }  
   
-  Monthly total for wages: **${ currency(jobs.total(source=["part time", "full time"],times_per_year=12)) }**
+#  #Monthly total for wages: **${ currency(jobs.total(source=["part time", "full time"],times_per_year=12)) }**
   
-  Monthly total for self-employed work: **${ currency(jobs.total(source=["self employed"],times_per_year=12)) }**
-
-
+#  #Monthly total for self-employed work: **${ currency(jobs.total(source=["self employed"],times_per_year=12)) }**
 
 field: review_jobs
 ---
@@ -825,7 +822,7 @@ columns:
   - Job: |
       row_item.source
   - Employer: |
-      row_item.employer.name.first if defined("row_item.employer.name.first") else ""
+      row_item.employer.name.first if defined("row_item.employer.name.first") else "Self"
   - Monthly gross income: |
       currency(row_item.gross_total(times_per_year=12)) if len(public_benefits) == 0 else "Not needed"
 
@@ -1204,7 +1201,7 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
@@ -1257,7 +1254,7 @@ fields:
     code: |
       times_per_year_for_expenses
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 
@@ -1953,7 +1950,7 @@ review:
       % endif
       % endfor
       
-      **Self employed jobs**
+      **Self-employed jobs**
       % for item in jobs:
       % if item.is_self_employed:
       
@@ -2254,7 +2251,7 @@ attachments:
           % if jobs.total(source=["full time","part time"],times_per_year=12) == 0:
           
           % else:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
+          ${ currency(jobs.gross_total(source=["full time","part time"],times_per_year=12),symbol="") }
           % endif
       
       - "users1_income_unemployment_monthly_amount": |
@@ -2281,7 +2278,7 @@ attachments:
       - "users1_income_self_employment_monthly_amount": |
 
           % if defined("jobs"):
-          ${ currency(jobs.total(source=["self employed"],times_per_year=12)) }
+          ${ currency(jobs.total(source=["self employed"],times_per_year=12),symbol="") }
 
           % else:
           
@@ -2289,9 +2286,9 @@ attachments:
 
       - "users1_income_monthly_total": |
           % if defined("jobs"):
-          ${ currency(float(jobs.total(source=["full time","part time","self employed"],times_per_year=12) + other_incomes.total(times_per_year=12)),symbol="") }
+          ${ currency(float(jobs.gross_total(source=["full time","part time","self employed"],times_per_year=12) + other_incomes.total(times_per_year=12)),symbol="") }
           % elif employed:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
+          ${ currency(jobs.gross_total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
           % elif other_incomes.selected_types.any_true():
 
           ${ currency(other_incomes.total(times_per_year=12),symbol="") }
@@ -2300,9 +2297,9 @@ attachments:
           % endif
       - "users1_income_annual_total": |
           % if defined("jobs"):
-          ${ currency(float(jobs.total(source=["full time","part time","self employed"],times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
+          ${ currency(float(jobs.gross_total(source=["full time","part time","self employed"],times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
           % elif employed:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
+          ${ currency(jobs.gross_total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
           % elif other_incomes.number_gathered() > 0:
           ${ currency(other_incomes.total(times_per_year=1),symbol="") }
           % else:
