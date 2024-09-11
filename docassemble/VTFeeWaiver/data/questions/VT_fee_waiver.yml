@@ -1201,7 +1201,7 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
@@ -1254,7 +1254,7 @@ fields:
     code: |
       times_per_year_for_expenses
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, tobacco, alcohol, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 
