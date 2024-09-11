@@ -2251,7 +2251,7 @@ attachments:
           % if jobs.total(source=["full time","part time"],times_per_year=12) == 0:
           
           % else:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12),symbol="") }
+          ${ currency(jobs.gross_total(source=["full time","part time"],times_per_year=12),symbol="") }
           % endif
       
       - "users1_income_unemployment_monthly_amount": |
@@ -2286,9 +2286,9 @@ attachments:
 
       - "users1_income_monthly_total": |
           % if defined("jobs"):
-          ${ currency(float(jobs.total(source=["full time","part time","self employed"],times_per_year=12) + other_incomes.total(times_per_year=12)),symbol="") }
+          ${ currency(float(jobs.gross_total(source=["full time","part time","self employed"],times_per_year=12) + other_incomes.total(times_per_year=12)),symbol="") }
           % elif employed:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
+          ${ currency(jobs.gross_total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
           % elif other_incomes.selected_types.any_true():
 
           ${ currency(other_incomes.total(times_per_year=12),symbol="") }
@@ -2297,9 +2297,9 @@ attachments:
           % endif
       - "users1_income_annual_total": |
           % if defined("jobs"):
-          ${ currency(float(jobs.total(source=["full time","part time","self employed"],times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
+          ${ currency(float(jobs.gross_total(source=["full time","part time","self employed"],times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
           % elif employed:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
+          ${ currency(jobs.gross_total(source=["full time","part time"],times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
           % elif other_incomes.number_gathered() > 0:
           ${ currency(other_incomes.total(times_per_year=1),symbol="") }
           % else:
