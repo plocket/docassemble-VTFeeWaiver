@@ -1892,8 +1892,6 @@ review:
       % endif         
   - Edit: 
       - other_incomes.revisit
-      - recompute:
-        - other_incomes.gathered
     button: |
       **Other incomes**
 
@@ -2218,8 +2216,8 @@ attachments:
       - "users1_income_monthly_total": |
           % if defined("users1_income_self_employment_monthly_amount"):
           ${ currency(float(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12)) + users1_income_self_employment_monthly_amount,symbol="") }
-          % elif jobs.total(source=["full time","part time"],times_per_year=12) > 0:
-          ${ currency(jobs.total(source=["full time","part time"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
+          % elif jobs.total(source=["full time","part time","self employed"],times_per_year=12) > 0:
+          ${ currency(jobs.total(source=["full time","part time","self employed"],times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
           % elif other_incomes.number_gathered() > 0:
           ${ currency(other_incomes.total(times_per_year=12),symbol="") }
           % else:
