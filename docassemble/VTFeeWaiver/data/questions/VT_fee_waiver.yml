@@ -801,10 +801,6 @@ subquestion: |
   ${ jobs_table }
   
   ${ jobs.add_action() }  
-  
-#  #Monthly total for wages: **${ currency(jobs.total(source=["part time", "full time"],times_per_year=12)) }**
-  
-#  #Monthly total for self-employed work: **${ currency(jobs.total(source=["self employed"],times_per_year=12)) }**
 
 field: review_jobs
 ---
@@ -1934,27 +1930,25 @@ review:
       - None
       % endif
   - Edit: 
+      - employed
+    button: |
+      **Employed**
+      
+      - ${ word(yesno(employed)) }
+
+  - Edit: 
       - review_jobs
     button: |
       **Jobs**
       
-      % if not employed:
-      
-      I do not get income from working
+      % if jobs.number_gathered() == 0:
+      - None
       % else:
-
       % for item in jobs:
       % if not item.is_self_employed:
-      
-      - ${ item.source }
-      % endif
-      % endfor
-      
-      **Self-employed jobs**
-      % for item in jobs:
-      % if item.is_self_employed:
-      
-      - ${ item.source }
+      - ${ item.source } / ${ item.employer.name.first }
+      % else:
+      - ${ item.source } / Self-employed
       % endif
       % endfor
       % endif
@@ -2279,18 +2273,18 @@ attachments:
           % if jobs.total(source=["self employed"],times_per_year=12) != 0:
           ${ currency(jobs.total(source=["self employed"],times_per_year=12),symbol="") }
           % else:
-          test
+          
           % endif
+          
       - "users1_income_monthly_total": |
           % if defined("jobs"):
           ${ currency(jobs.gross_total(times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
-
-          % elif other_incomes.selected_types.any_true():
-
+          % elif other_incomes.number_gathered() > 0:
           ${ currency(other_incomes.total(times_per_year=12),symbol="") }
           % else:
           0.00      
           % endif
+          
       - "users1_income_annual_total": |
           % if defined("jobs"):
           ${ currency(float(jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
@@ -2302,7 +2296,6 @@ attachments:
           0.00      
           % endif
 
-  
       
       - "users1_expenses_rent_mortgage_monthly_amount": |
           % if expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12) == 0:
