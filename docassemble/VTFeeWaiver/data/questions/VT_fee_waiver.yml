@@ -1013,7 +1013,7 @@ subquestion: |
   - Request for Extreme Risk Protection Order
   - Abusive Litigation
   
-  If you are just submitting an Answer to a court action, you don't have a court filing fee. (If you have counterclaims you probably will have a filing fee.)
+  You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).
   
   Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
@@ -1063,17 +1063,23 @@ fields:
     
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
+    
+  ${ collapse_template(types_of_cases_in_each_court_division) }
 ---
 id: court case information
 question: |
   What is the name of the court case you are involved in?
 subquestion: |
-  Example: Kramer vs. Kramer
+  Example: Joanna Kramer vs. Ted Kramer
+  
+  The plaintiff is listed first, then the defedant.
 fields:
   - "Case name, as seen on your court papers": case_name
     maxlength: 80
   - note: |
-      If you are starting a case, type in your name (the plaintiff's name) "vs." the other party (the defendant's name).
+      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
+      
+      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name.
 ---
 ############################### USERS INFO ###############################
 ---
@@ -1114,7 +1120,7 @@ id: About you
 question: |
   About you and your household
 subquestion: |
-  How many people live in your household? Include yourself, any spouse, partner, and dependants such as children.
+  How many people live in your household? Include yourself, any spouse, partner, and dependents such as children.
 fields:
   - "Household size": household_size
     datatype: integer
