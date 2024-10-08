@@ -406,11 +406,9 @@ continue button field: user_qualifies_interstitial
 question: |
   You should qualify
 subquestion: |
-  If you get public assistance at this time, you should qualify for a 100% waiver of fees for your case.
+  Because you get public assistance, we can skip many of the questions in the form.
   
-  We can skip some of the questions in the form. 
-  
-  Click Next to answer a few more questions.
+  Tap Next to answer a few more questions.
 ---
 ################################# OTHER INCOMES ##############################
 ---
