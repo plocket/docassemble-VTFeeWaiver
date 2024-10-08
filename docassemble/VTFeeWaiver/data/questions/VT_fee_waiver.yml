@@ -452,7 +452,7 @@ fields:
     code: |
       other_incomes_ordered
   - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
+      **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security retirement income, other retirement income or annuities.
 ---
 comment: |
   will use id: ALIncome complete to set other_incomes[i].complete
@@ -1718,7 +1718,7 @@ question: |
 subquestion: |   
   Check any that apply to you.
   
-  Do not include retirement accounts???
+  Note: Do **not** include retirement accounts.
 fields:
   - no label: other_assets.selected_types
     datatype: checkboxes
