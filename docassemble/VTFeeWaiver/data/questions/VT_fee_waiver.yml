@@ -1064,7 +1064,8 @@ fields:
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
     
-  ${ collapse_template(types_of_cases_in_each_court_division) }
+  - note: |
+      ${ collapse_template(types_of_cases_in_each_court_division) }
 ---
 id: court case information
 question: |
