@@ -1233,7 +1233,7 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, school and activity expenses; alimony payments / spousal support; car expenses and gas; and home expenses, water, internet and cable.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
@@ -1285,10 +1285,6 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
-  - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
-
-      **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 
 validation code: |
   if expenses[i].source != "other":
