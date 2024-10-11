@@ -338,8 +338,14 @@ fields:
     default: 12
     code: |
       times_per_year_list
+    hide if:
+      variable: public_benefits[i].source
+      is: Medicaid or Dr Dynasaur
   - Amount of income: public_benefits[i].value
     datatype: currency
+    hide if:
+      variable: public_benefits[i].source
+      is: Medicaid or Dr Dynasaur
 validation code: |
   if public_benefits[i].source != "other":
     public_benefits[i].display_name = public_benefits.terms_ordered.get(public_benefits[i].source, public_benefits[i].source)
@@ -354,6 +360,15 @@ code: |
     public_benefits[i].display_name = public_benefits[i].source_other
   else:
     public_benefits[i].display_name = public_benefits_other_display
+---
+id: public_benefits set Medicaid or Dr Dynasaur value to $0 because value varies
+code: |
+  if defined('public_benefits[i].source') and public_benefits[i].source == "Medicaid":
+    public_benefits[i].value = 0
+    public_benefits[i].times_per_year = 12
+  if defined('public_benefits[i].source') and public_benefits[i].source == "Dr Dynasaur":
+    public_benefits[i].value = 0
+    public_benefits[i].times_per_year = 12
 ---
 id: want to add more public benefits
 question: Do you want to list any more public assistance?
@@ -381,7 +396,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      currency(row_item.total(times_per_year=12))
+      currency(row_item.total(times_per_year=12)) if row_item.source == "Reach Up" or "3SquaresVT" or "GA" or "SSI" or "Fuel Assist." or "Housing Assist." or "other" else "Varies (automatically set to $0)"
 edit:
   - source
   - value
@@ -2253,6 +2268,14 @@ attachments:
       - "users1_benefits_monthly_amount": |
           % if not public_benefits.number_gathered() > 0:
            
+          % elif public_benefits.number_gathered() == 1 and public_benefits[0].source == "Medicaid":
+          Varies
+          % elif public_benefits.number_gathered() == 1 and public_benefits[0].source == "Dr Dynasaur":
+          Varies
+          % elif public_benefits.number_gathered() == 2 and public_benefits[0].source == "Medicaid" and public_benefits[1].source == "Dr Dynasaur":
+          Varies   
+          % elif public_benefits.number_gathered() == 2 and public_benefits[0].source == "Dr Dynasaur" and public_benefits[1].source == "Medicaid":
+          Varies        
           % else:
           ${ currency(public_benefits.total(times_per_year=12),symbol="") }
           % endif
