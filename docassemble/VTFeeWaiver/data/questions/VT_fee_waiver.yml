@@ -1129,9 +1129,9 @@ id: your contact information
 question: |
   What is your contact information?
 subquestion: |
-  Include **at least one** way to reach you other than by mail.
+  How can the court reach you other than by mail?
 
-  If you do not have a phone number or email, use a trusted friend's phone number. But the friend must be someone you can rely on to give you a message.
+  If you do not have a phone number or email, you can use a trusted friend's phone number. But the friend must be someone you can rely on to give you a message.
 
 fields:  
   - Daytime phone number: users[0].daytime_phone_number
@@ -1140,12 +1140,6 @@ fields:
   - Email address: users[0].email    
     datatype: email
     required: False
-
-validation code: |
-  if (not showifdef('users[0].daytime_phone_number') and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
 continue button field: users.revisit
 question: |
@@ -1173,7 +1167,6 @@ columns:
 edit:
   - name.first
   - address.address
-  - mailing_address.address
   - email
   - daytime_phone_number
   - signature
