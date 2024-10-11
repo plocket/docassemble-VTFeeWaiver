@@ -990,7 +990,7 @@ fields:
       - I accept the terms of use.
     validation messages:
       minlength: |
-        You cannot continue unless you agree to the terms of use.        
+        You cannot continue unless you agree to the terms of use.
 continue button field: al_intro_screen
 ---
 id: VT fee waiver intro
@@ -1044,6 +1044,29 @@ subquestion: |
 continue button field: important_notes_to_user
 ---
 ############################### ABOUT COURT CASE ###############################
+---
+id: users names
+sets:
+  - users[i].name.first
+  - users[i].name.last
+  - users[i].name.middle
+  - users[i].name.suffix    
+question: |
+  % if i == 0 and al_person_answering == "user":
+  What is your name?
+  % else:
+  % if al_form_type in ['starts_case','existing_case','appeal']:
+  Who is the ${ ordinal(i) } person on your side of the case?
+  % else:
+  What is the name of the ${ ordinal_number(i) } person who is adding their name to
+  this form with you?
+  % endif
+  % endif
+fields:
+  - code: |
+      users[i].name_fields()
+  - note: |
+      ${ collapse_template(asterisk) }
 ---
 id: choose a court
 question: |
