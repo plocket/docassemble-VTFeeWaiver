@@ -443,7 +443,7 @@ question: |
 subquestion: |
   Check any that apply to you.
   
-  Do not include employment income.
+  Do not include employment income here.
 fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
@@ -1205,14 +1205,14 @@ data: !!omap
   - clothing: "Clothing and shoes"
   - medical: "Medical costs"
   - health insurance: "Health insurance"
+  - child support: "Child support payment"
   - auto loan: "Auto loan payment"
   - auto insurance: "Auto insurance"
   - other insurance: "Other insurance"
-  - child support: "Child support payment"
   - other: "Other expenses"
 ---
 code: |
-  expenses_other_display = "another expense"
+  expenses_other_display = "additional expense"
 ---
 objects:
   - expenses: ALExpenseList.using(complete_attribute='complete',there_is_another=False)
@@ -1308,6 +1308,10 @@ subquestion: |
   ${ expenses_table }
   
   ${ expenses.add_action() }
+  
+  **"Other expenses" you might enter:** child care, school and activity expenses; alimony payments / spousal support; car expenses and gas; and home expenses, water, internet and cable.
+
+  **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 continue button field: expenses.review_items
 ---
 continue button field: expenses.revisit
