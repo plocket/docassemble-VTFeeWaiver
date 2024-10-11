@@ -2250,18 +2250,31 @@ attachments:
    
       - "users1_benefits": |
           % if public_benefits.number_gathered() > 0:
-          % for benefit in public_benefits:
-          % if benefit.source == "other":
-          ${ benefit.display_name }
-            
+          % if defined("public_benefits[0].source"):
+          % if public_benefits[0].source == "other":
+          ${ public_benefits[0].display_name }
           % else:
-          ${ benefit.source }
-            
+          ${ public_benefits[0].source }
           % endif
-          % endfor
           % endif
-
-
+          % if defined("public_benefits[1].source"):
+          % if public_benefits[1].source == "other":
+          , ${ public_benefits[1].display_name }
+          % else:
+          , ${ public_benefits[1].source }
+          % endif
+          % endif
+          % if defined("public_benefits[2].source"):
+          % if public_benefits[2].source == "other":
+          , ${ public_benefits[2].display_name }
+          % else:
+          , ${ public_benefits[2].source }
+          % endif
+          % endif
+          % if defined("public_benefits[3].source"):
+          .....
+          % endif
+          % endif
           
       - "users1_benefits_monthly_amount": |
           % if not public_benefits.number_gathered() > 0:
