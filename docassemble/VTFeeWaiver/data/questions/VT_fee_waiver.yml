@@ -396,7 +396,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      currency(row_item.total(times_per_year=12)) if row_item.source == "Reach Up" or row_item.source == "3SquaresVT" or row_item.source == "GA" or row_item.source == "SSI" or row_item.source == "Fuel Assist." or row_item.source == "Housing Assist." or row_item.source == "other" else "Varies (can set set to $0 for this form)"
+      currency(row_item.total(times_per_year=12)) if row_item.source == "Reach Up" or row_item.source == "3SquaresVT" or row_item.source == "GA" or row_item.source == "SSI" or row_item.source == "Fuel Assist." or row_item.source == "Housing Assist." or row_item.source == "other" else "Varies (can set to $0 for this form)"
 edit:
   - source
   - value
@@ -443,7 +443,7 @@ question: |
 subquestion: |
   Check any that apply to you.
   
-  Do not include employment income.
+  Do not include employment income here.
 fields:
   - no label: other_incomes.selected_types
     datatype: checkboxes
@@ -1020,7 +1020,7 @@ subquestion: |
   For this guided interview, you will need to know:
   
   * the name and address of any employer you might have
-  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.), and
+  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.) and the amount, and
   * information about the court case for which you want a fee waiver. (You can find this information on other court papers you have about this case. If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
   
   If you get public assistance, that's all you need. **If you don't get public assistance**, you will also need to know:
@@ -1129,9 +1129,9 @@ id: your contact information
 question: |
   What is your contact information?
 subquestion: |
-  Include **at least one** way to reach you other than by mail.
+  How can the court reach you other than by mail?
 
-  If you do not have a phone number or email, use a trusted friend's phone number. But the friend must be someone you can rely on to give you a message.
+  If you do not have a phone number or email, you can use a trusted friend's phone number. But the friend must be someone you can rely on to give you a message.
 
 fields:  
   - Daytime phone number: users[0].daytime_phone_number
@@ -1140,12 +1140,6 @@ fields:
   - Email address: users[0].email    
     datatype: email
     required: False
-
-validation code: |
-  if (not showifdef('users[0].daytime_phone_number') and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
 continue button field: users.revisit
 question: |
@@ -1173,7 +1167,6 @@ columns:
 edit:
   - name.first
   - address.address
-  - mailing_address.address
   - email
   - daytime_phone_number
   - signature
@@ -1205,14 +1198,14 @@ data: !!omap
   - clothing: "Clothing and shoes"
   - medical: "Medical costs"
   - health insurance: "Health insurance"
+  - child support: "Child support payment"
   - auto loan: "Auto loan payment"
   - auto insurance: "Auto insurance"
   - other insurance: "Other insurance"
-  - child support: "Child support payment"
   - other: "Other expenses"
 ---
 code: |
-  expenses_other_display = "another expense"
+  expenses_other_display = "additional expense"
 ---
 objects:
   - expenses: ALExpenseList.using(complete_attribute='complete',there_is_another=False)
@@ -1308,6 +1301,10 @@ subquestion: |
   ${ expenses_table }
   
   ${ expenses.add_action() }
+  
+  **"Other expenses" you might enter:** child care, school and activity expenses; alimony payments / spousal support; car expenses and gas; and home expenses, water, internet and cable.
+
+  **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 continue button field: expenses.review_items
 ---
 continue button field: expenses.revisit
