@@ -396,7 +396,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      currency(row_item.total(times_per_year=12)) if row_item.source == "Reach Up" or "3SquaresVT" or "GA" or "SSI" or "Fuel Assist." or "Housing Assist." or "other" else "Varies (automatically set to $0)"
+      currency(row_item.total(times_per_year=12)) if row_item.source == "Reach Up" or row_item.source == "3SquaresVT" or row_item.source == "GA" or row_item.source == "SSI" or row_item.source == "Fuel Assist." or row_item.source == "Housing Assist." or row_item.source == "other" else "Varies (can set set to $0 for this form)"
 edit:
   - source
   - value
@@ -406,11 +406,9 @@ continue button field: user_qualifies_interstitial
 question: |
   You should qualify
 subquestion: |
-  If you get public assistance at this time, you should qualify for a 100% waiver of fees for your case.
+  Because you get public assistance, we can skip many of the questions in the form.
   
-  We can skip some of the questions in the form. 
-  
-  Click Next to answer a few more questions.
+  Tap Next to answer a few more questions.
 ---
 ################################# OTHER INCOMES ##############################
 ---
@@ -452,7 +450,7 @@ fields:
     code: |
       other_incomes_ordered
   - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
+      **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security retirement income, other retirement income or annuities.
 ---
 comment: |
   will use id: ALIncome complete to set other_incomes[i].complete
@@ -1013,7 +1011,7 @@ subquestion: |
   - Request for Extreme Risk Protection Order
   - Abusive Litigation
   
-  If you are just submitting an Answer to a court action, you don't have a court filing fee. (If you have counterclaims you probably will have a filing fee.)
+  You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).
   
   Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
   
@@ -1063,17 +1061,24 @@ fields:
     
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
+    
+  - note: |
+      ${ collapse_template(types_of_cases_in_each_court_division) }
 ---
 id: court case information
 question: |
   What is the name of the court case you are involved in?
 subquestion: |
-  Example: Kramer vs. Kramer
+  Example: Joanna Kramer vs. Ted Kramer
+  
+  The plaintiff is listed first, then the defedant.
 fields:
   - "Case name, as seen on your court papers": case_name
     maxlength: 80
   - note: |
-      If you are starting a case, type in your name (the plaintiff's name) "vs." the other party (the defendant's name).
+      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
+      
+      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name.
 ---
 ############################### USERS INFO ###############################
 ---
@@ -1114,7 +1119,7 @@ id: About you
 question: |
   About you and your household
 subquestion: |
-  How many people live in your household? Include yourself, any spouse, partner, and dependants such as children.
+  How many people live in your household? Include yourself, any spouse, partner, and dependents such as children.
 fields:
   - "Household size": household_size
     datatype: integer
@@ -1228,7 +1233,7 @@ fields:
     code: |
       expenses_ordered
   - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
+      **"Other expenses" you might enter:** child care, school and activity expenses; alimony payments / spousal support; car expenses and gas; and home expenses, water, internet and cable.
 
       **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 ---
@@ -1280,10 +1285,6 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
-  - note: |
-      **"Other expenses" you might enter:** child care, kids activities, family activities, school lunches, supplies and tuition, sports equipment, meals eaten out, vacations, haircuts, toiletries, diapers, laundry, internet, cable, reading materials, gifts, donations, union dues, furniture, home repairs, mowing, trash, plowing, water/sewer bills, car maintenance and repairs, gasoline, pet expenses, and more.
-
-      **"Other insurance" you might enter:** dental, vision, home, rental, life insurance and more.
 
 validation code: |
   if expenses[i].source != "other":
@@ -1718,7 +1719,7 @@ question: |
 subquestion: |   
   Check any that apply to you.
   
-  Do not include retirement accounts???
+  Note: Do **not** include retirement accounts.
 fields:
   - no label: other_assets.selected_types
     datatype: checkboxes
