@@ -258,7 +258,8 @@ data: !!omap
   - Reach Up: "Reach Up"
   - 3SquaresVT: "3SquaresVT (food)"
   - GA: "General Assistance (GA)"
-  - SSI: "SSI (Supplemental Security Income)" 
+  - SSI: "SSI (Supplemental Security Income)"
+  - SSDI: "SSDI (Social Security Disability)"
   - Fuel Assist.: "Fuel Assistance"
   - Housing Assist.: "Housing Assistance (subsidy/voucher/Section 8)"  
   - Dr Dynasaur: "Dr. Dynasaur"
@@ -305,6 +306,8 @@ fields:
     datatype: checkboxes
     code: |
       public_benefits_ordered
+    none of the above: |
+      None — No public assistance
 ---
 id: ALIncome complete
 generic object: ALIncome
@@ -396,7 +399,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      currency(row_item.total(times_per_year=12)) if row_item.source == "Reach Up" or row_item.source == "3SquaresVT" or row_item.source == "GA" or row_item.source == "SSI" or row_item.source == "Fuel Assist." or row_item.source == "Housing Assist." or row_item.source == "other" else "Varies (can set to $0 for this form)"
+      currency(row_item.total(times_per_year=12)) if row_item.source == "Reach Up" or row_item.source == "3SquaresVT" or row_item.source == "GA" or row_item.source == "SSI" or row_item.source == "SSDI" or row_item.source == "Fuel Assist." or row_item.source == "Housing Assist." or row_item.source == "other" else "Varies (can set to $0 for this form)"
 edit:
   - source
   - value
@@ -486,8 +489,6 @@ fields:
     show if:
       variable: other_incomes[i].source
       is: unemployment income
-  - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 validation code: |
   if other_incomes[i].source != "other":
     other_incomes[i].display_name = other_incomes.terms_ordered.get(other_incomes[i].source, other_incomes[i].source)
@@ -510,6 +511,8 @@ subquestion: |
   ${ other_incomes_table }
   
   ${ other_incomes.add_action() }
+  
+  **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security retirement income, other retirement income or annuities.
 continue button field: other_incomes.review_items
 ---
 continue button field: other_incomes.revisit
