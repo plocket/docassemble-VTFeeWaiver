@@ -307,7 +307,7 @@ fields:
     code: |
       public_benefits_ordered
     none of the above: |
-      None
+      None — No public assistance
 ---
 id: ALIncome complete
 generic object: ALIncome
