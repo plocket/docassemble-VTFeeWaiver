@@ -487,8 +487,6 @@ fields:
     show if:
       variable: other_incomes[i].source
       is: unemployment income
-  - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 validation code: |
   if other_incomes[i].source != "other":
     other_incomes[i].display_name = other_incomes.terms_ordered.get(other_incomes[i].source, other_incomes[i].source)
@@ -511,6 +509,8 @@ subquestion: |
   ${ other_incomes_table }
   
   ${ other_incomes.add_action() }
+  
+  **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security retirement income, other retirement income or annuities.
 continue button field: other_incomes.review_items
 ---
 continue button field: other_incomes.revisit
