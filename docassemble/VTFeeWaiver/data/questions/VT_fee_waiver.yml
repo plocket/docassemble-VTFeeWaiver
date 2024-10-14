@@ -306,6 +306,8 @@ fields:
     datatype: checkboxes
     code: |
       public_benefits_ordered
+    none of the above: |
+      None
 ---
 id: ALIncome complete
 generic object: ALIncome
