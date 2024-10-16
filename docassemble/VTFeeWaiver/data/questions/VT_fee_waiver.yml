@@ -452,7 +452,7 @@ fields:
     code: |
       other_incomes_ordered
   - note: |
-      **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security retirement income, other retirement income or annuities.
+      **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security Disability, Social Security retirement, other retirement income or annuities.
 ---
 comment: |
   will use id: ALIncome complete to set other_incomes[i].complete
