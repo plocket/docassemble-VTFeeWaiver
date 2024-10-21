@@ -977,7 +977,7 @@ subquestion: |
   
     <i class="fas fa-clock fa-2x"></i>  It may take you between 10 and 40 minutes to complete this. If you want, you can create an account and save your work to return to later.
 
-  <i class="fas fa-circle-info fa-2x"></i> It is free to use this program. This site is not a lawyer.
+  <i class="fas fa-circle-info fa-2x"></i> It is free to use this tool. This site is not a lawyer.
   
   Visit the [VTLawHelp.org website](https://vtlawhelp.org) for information about civil legal issues.
 
@@ -1038,9 +1038,9 @@ id: important_notes_to_user
 question: |
   Important
 subquestion: |  
-  <i class="fa fa-exclamation-circle fa-2x"></i>  This program does **not** file your fee waiver form with the court. You will need to get it to the court yourself such as by email, mail or in person. We will give you instructions when you finish the form.
+  <i class="fa fa-exclamation-circle fa-2x"></i>  This tool does **not** file your fee waiver form with the court. You will need to get it to the court yourself such as by email, mail or in person. We will give you instructions when you finish the form.
   
-  This program **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
+  This tool **cannot** tell you if you qualify for sure. The court clerk will consider all of the information you provide.
     
     Let's get started. Tap the Next button.
 continue button field: important_notes_to_user
