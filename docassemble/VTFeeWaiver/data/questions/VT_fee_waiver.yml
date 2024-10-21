@@ -89,7 +89,7 @@ code: |
   al_form_type = "existing_case" 
 ---
 sections:
-  - intro: Is this interview right for you
+  - intro: Is this tool right for you
   - about_you: You and your household
   - case_info: Your court case
   - your_income: Your income
@@ -604,7 +604,7 @@ question: |
 fields:
   - I am self-employed: x.is_self_employed
     datatype: yesno
-  - Is this a part time job: x.is_part_time
+  - Is this a part time job?: x.is_part_time
     datatype: yesnoradio
   - Employer's name: x.employer.name.first
     show if:
@@ -973,9 +973,9 @@ subquestion: |
 
   <p>${ intro_vtcourtforms_3_steps }</p>
   
-  <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed Application to Waive Filing Fees and Service Costs for Vermont courts -- form 600-00228. If approved by the Vermont Judiciary, you will not have to pay the court to start a court action.
+  <i class="fas fa-file-text fa-2x"></i> This tool will produce a completed Application to Waive Filing Fees and Service Costs for Vermont courts -- form 600-00228. If approved by the Vermont Judiciary, you will not have to pay court fees.
   
-    <i class="fas fa-clock fa-2x"></i>  It may take you between 10 and 40 minutes to complete this interview. If you want, you can create an account and save your work to return to later.
+    <i class="fas fa-clock fa-2x"></i>  It may take you between 10 and 40 minutes to complete this. If you want, you can create an account and save your work to return to later.
 
   <i class="fas fa-circle-info fa-2x"></i> It is free to use this program. This site is not a lawyer.
   
@@ -998,7 +998,7 @@ continue button field: al_intro_screen
 id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
 question: |
-  Is this interview right for you?
+  Is this tool right for you?
 subquestion: |
   <h4>Do you need this fee waiver form?</h4>
   
@@ -1019,7 +1019,7 @@ subquestion: |
   
   <h4>What you will need to complete this form</h4>
   
-  For this guided interview, you will need to know:
+  You will need to know:
   
   * the name and address of any employer you might have
   * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, etc.) and the amount, and
