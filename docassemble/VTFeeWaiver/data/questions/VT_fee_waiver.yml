@@ -88,6 +88,62 @@ code: |
 code: |
   al_form_type = "existing_case" 
 ---
+############Code below to allow Edit my answers to be clicked in Menu or in side nav#########
+---
+reconsider: True
+code: |
+  al_menu_items_tmp = [
+    {"url": url_ask(['al_start_over_confirmation','al_start_over']),
+    "label": "Start over"
+    },
+    {
+      "url": url_ask(['al_exit_logout_confirmation', 'al_exit_logout']),
+      "label": "Exit and delete my answers"
+    },
+  ]
+  if al_enable_incomplete_downloads:
+    al_menu_items_tmp.append({
+        "url": url_action('al_error_action_download_screen'), 
+        "label": "Download current progress"
+    })
+  
+  # Answer set feature is behind a server-wide configuration option
+  if get_config('assembly line',{}).get('enable answer sets'):
+    al_menu_items_tmp.extend([
+    {"url": url_ask(["al_sessions_snapshot_label", {"recompute": ["al_sessions_save_session_snapshot"]}, "al_sessions_save_status"]),
+    "label": "Save answer set"
+    },
+    action_menu_item("Load answer set", "al_load_saved_session"),
+  ]
+  )
+  
+  if get_config('assembly line',{}).get('enable answer set imports'):
+    al_menu_items_tmp.append(
+      {"url": url_ask(["al_sessions_json_file", {"recompute": ["al_sessions_import_json"]}, "al_sessions_load_status"]),
+      "label": "Import answer set"
+      }
+    )
+  al_menu_items_tmp.append(
+    {
+      "url": url_action('edit_answers_screen'),
+      "label": "Edit my answers"
+      
+    }
+  )
+    
+  al_menu_items = al_menu_items_tmp
+  del al_menu_items_tmp
+---
+event: edit_answers_screen
+id: edit answers screen
+question: |
+  Edit your answers
+subquestion: |
+  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit answers', color='info') }
+  
+  Remember to come back to this screen to continue.
+continue button field: VT_fee_waiver_preview_question
+---
 sections:
   - intro: Is this tool right for you
   - about_you: You and your household
@@ -96,7 +152,7 @@ sections:
   - your_expenses: Your expenses
   - your_assets: Your property and assets
   - reasons: Other info
-  - review_VT_fee_waiver: Review your answers
+  - review_VT_fee_waiver: Edit your answers
   - sign: Sign your document
   - get_docs: Download your document
 ---
@@ -195,11 +251,9 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_fee_waiver
-  nav.set_section('review_VT_fee_waiver')
+  nav.set_section("review_VT_fee_waiver")
   trial_court.address.county
   VT_fee_waiver_preview_question
-  
-
   nav.set_section('sign')
   signature_date
   set_progress(95)
