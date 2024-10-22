@@ -399,7 +399,8 @@ fields:
       variable: public_benefits[i].source
       is: Medicaid or Dr Dynasaur
   - Amount of income: public_benefits[i].value
-    datatype: currency
+    datatype: 
+    
     hide if:
       variable: public_benefits[i].source
       is: Medicaid or Dr Dynasaur
@@ -2375,7 +2376,7 @@ attachments:
           % if jobs.total(times_per_year=12,exclude_source=["self employed"]) == 0:
           
           % else:
-          ${ currency(jobs.gross_total(exclude_source=["self employed"], times_per_year=12),symbol="") }
+          ${ jobs.gross_total(exclude_source=["self employed"],times_per_year=12) }
           % endif
       
       - "users1_income_unemployment_monthly_amount": |
@@ -2408,20 +2409,20 @@ attachments:
           
       - "users1_income_monthly_total": |
           % if defined("jobs"):
-          ${ currency(jobs.gross_total(times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
+          ${ jobs.gross_total(times_per_year=12) + other_incomes.total(times_per_year=12) }
           % elif other_incomes.number_gathered() > 0:
-          ${ currency(other_incomes.total(times_per_year=12),symbol="") }
+          ${ other_incomes.total(times_per_year=12) }
           % else:
           0.00      
           % endif
           
       - "users1_income_annual_total": |
           % if defined("jobs"):
-          ${ currency(float(jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
+          ${ jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1) }
           % elif employed:
-          ${ currency(jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
+          ${ jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1) }
           % elif other_incomes.number_gathered() > 0:
-          ${ currency(other_incomes.total(times_per_year=1),symbol="") }
+          ${ other_incomes.total(times_per_year=1) }
           % else:
           0.00      
           % endif
