@@ -155,6 +155,7 @@ sections:
   - review_VT_fee_waiver: Edit your answers
   - sign: Sign your document
   - get_docs: Download your document
+progressive: False
 ---
 ###This adds the signature feature to the interview###
 code: |
