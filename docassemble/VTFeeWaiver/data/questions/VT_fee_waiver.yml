@@ -399,7 +399,8 @@ fields:
       variable: public_benefits[i].source
       is: Medicaid or Dr Dynasaur
   - Amount of income: public_benefits[i].value
-    datatype: currency
+    datatype: 
+    
     hide if:
       variable: public_benefits[i].source
       is: Medicaid or Dr Dynasaur
@@ -2368,62 +2369,62 @@ attachments:
           % elif public_benefits.number_gathered() == 2 and public_benefits[0].source == "Dr Dynasaur" and public_benefits[1].source == "Medicaid":
           Varies        
           % else:
-          ${ currency(public_benefits.total(times_per_year=12),symbol="") }
+          ${ round(currency(public_benefits.total(times_per_year=12),symbol=""), 2) }
           % endif
       
       - "users1_income_employment_monthly_amount": |
           % if jobs.total(times_per_year=12,exclude_source=["self employed"]) == 0:
           
           % else:
-          ${ currency(jobs.gross_total(exclude_source=["self employed"], times_per_year=12),symbol="") }
+          ${ round(jobs.gross_total(exclude_source=["self employed"],times_per_year=12), 2) }
           % endif
       
       - "users1_income_unemployment_monthly_amount": |
           % if other_incomes.total(source=["unemployment income"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(other_incomes.total(source=["unemployment income"],times_per_year=12),symbol="") }
+          ${ round(other_incomes.total(source=["unemployment income"],times_per_year=12), 2) }
           % endif      
 
       - "users1_income_child_support_monthly_amount": |
           % if other_incomes.total(source=["child support income"],times_per_year=12) == 0:
             
           % else:
-          ${ currency(other_incomes.total(source=["child support income"],times_per_year=12),symbol="") }
+          ${ round(other_incomes.total(source=["child support income"],times_per_year=12), 2) }
           % endif           
       
       - "users1_income_other_monthly_amount": |
           % if other_incomes.total(exclude_source=["unemployment income","child support income"],times_per_year=12) == 0:
             
           % else:
-          ${ currency(other_incomes.total(exclude_source=["unemployment income","child support income"],times_per_year=12),symbol="") }
+          ${ round(other_incomes.total(exclude_source=["unemployment income","child support income"],times_per_year=12), 2) }
           % endif   
       
       - "users1_income_self_employment_monthly_amount": |
           % if jobs.total(source=["self employed"],times_per_year=12) != 0:
-          ${ currency(jobs.total(source=["self employed"],times_per_year=12),symbol="") }
+          ${ round(jobs.total(source=["self employed"],times_per_year=12), 2) }
           % else:
           
           % endif
           
       - "users1_income_monthly_total": |
           % if defined("jobs"):
-          ${ currency(jobs.gross_total(times_per_year=12) + other_incomes.total(times_per_year=12),symbol="") }
+          ${ round(jobs.gross_total(times_per_year=12) + other_incomes.total(times_per_year=12), 2) }
           % elif other_incomes.number_gathered() > 0:
-          ${ currency(other_incomes.total(times_per_year=12),symbol="") }
+          ${ round(other_incomes.total(times_per_year=12), 2) }
           % else:
-          0.00      
+          ${ round(0, 2) }   
           % endif
           
       - "users1_income_annual_total": |
           % if defined("jobs"):
-          ${ currency(float(jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1)),symbol="") }
+          ${ round(jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1), 2) }
           % elif employed:
-          ${ currency(jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1),symbol="") }
+          ${ round(jobs.gross_total(times_per_year=1) + other_incomes.total(times_per_year=1), 2) }
           % elif other_incomes.number_gathered() > 0:
-          ${ currency(other_incomes.total(times_per_year=1),symbol="") }
+          ${ round(other_incomes.total(times_per_year=1), 2) }
           % else:
-          0.00      
+          ${ round(0, 2) }     
           % endif
 
       
@@ -2431,77 +2432,77 @@ attachments:
           % if expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12),symbol="") }  
+          ${ round(expenses.total(source=["rent"],times_per_year=12) + expenses.total(source=["mortgage"],times_per_year=12), 2) }  
           % endif      
        
       - "users1_expenses_electric_monthly_amount": |
           % if expenses.total(source=["electric"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["electric"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["electric"],times_per_year=12) }   
           % endif  
          
       - "users1_expenses_phone_monthly_amount": |
           % if expenses.total(source=["phone"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["phone"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["phone"],times_per_year=12) }   
           % endif  
       - "users1_expenses_fuel_monthly_amount": |
           % if expenses.total(source=["fuel"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["fuel"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["fuel"],times_per_year=12) }   
           % endif  
       - "users1_expenses_food_monthly_amount": |
           % if expenses.total(source=["food"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["food"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["food"],times_per_year=12) }   
           % endif  
       - "users1_expenses_clothes_monthly_amount": |
           % if expenses.total(source=["clothing"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["clothing"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["clothing"],times_per_year=12) }   
           % endif  
       - "users1_expenses_medical_monthly_amount": |
           % if expenses.total(source=["medical"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["medical"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["medical"],times_per_year=12) }   
           % endif  
       - "users1_expenses_child_support_monthly_amount": |
           % if expenses.total(source=["child support"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["child support"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["child support"],times_per_year=12) }   
           % endif  
       - "users1_expenses_auto_loan_monthly_amount": |
           % if expenses.total(source=["auto loan"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["auto loan"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["auto loan"],times_per_year=12) }   
           % endif  
       - "users1_expenses_property_tax_monthly_amount": |
           % if expenses.total(source=["property tax"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["property tax"],times_per_year=12),symbol="") }   
+          ${ expenses.total(source=["property tax"],times_per_year=12) }   
           % endif  
       - "users1_expenses_all_insurance_monthly_amount": |
           % if expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12),symbol="") }  
+          ${ expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12) }  
           % endif  
       - "users1_expenses_other_monthly_amount": |
           % if expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12) == 0:
            
           % else:
-          ${ currency(expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12),symbol="") } 
+          ${ expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12) } 
           % endif  
-      - "users1_expenses_monthly_total": ${ currency(expenses.total(times_per_year=12),symbol="") }
+      - "users1_expenses_monthly_total": ${ round(expenses.total(times_per_year=12), 2) }
       
       - "assets_yes": |
           % if vehicles.number_gathered() > 0:
