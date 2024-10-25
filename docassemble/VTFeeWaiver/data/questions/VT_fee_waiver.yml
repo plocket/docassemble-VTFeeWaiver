@@ -1063,7 +1063,7 @@ id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
 question: |
   Is this tool right for you?
-subquestion: |
+subquestion: |    
   <h4>Do you need this fee waiver form?</h4>
   
   Before you begin, check to be sure you actually need to pay a court filing fee.
@@ -1078,8 +1078,6 @@ subquestion: |
   - Abusive Litigation
   
   You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).
-  
-  Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
 
   <h4>Who can get their fees waived</h4>
 
@@ -1105,6 +1103,7 @@ subquestion: |
   * the approximate value of your vehicle/car, real estate/home, and any other major things you might own, and
   * if filling out form on behalf of a minor or incompetent adult, you need that person’s information.
 
+  Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
 ---
 id: important_notes_to_user
 question: |
@@ -1956,17 +1955,17 @@ question: |
   Preview your form before you sign it
 subquestion: |
   
-  Here is a preview of the form you will sign on the next page. 
+  Here is a preview of the form you will sign on the next screen. 
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
-  Click the image to open it in a new tab.
+  Click the image to view it in a new tab. **Remember to come back to this screen to edit the form and/or finish the form.**
   
-  Click the "Edit your answers" button to edit your answers. **Remember to come back to this window to finish the form.**
+  Click the "Edit your answers" button to edit your answers.
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
 
-  Tap Next to choose how to sign your document.
+  **Tap Next to choose how to sign your form.**
   
 continue button field: VT_fee_waiver_preview_question    
 ---
