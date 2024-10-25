@@ -399,8 +399,7 @@ fields:
       variable: public_benefits[i].source
       is: Medicaid or Dr Dynasaur
   - Amount of income: public_benefits[i].value
-    datatype: 
-    
+    datatype: currency    
     hide if:
       variable: public_benefits[i].source
       is: Medicaid or Dr Dynasaur
