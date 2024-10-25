@@ -674,6 +674,7 @@ fields:
       variable: x.is_self_employed
       is: False
   - Street address: x.employer.address.address
+    address autocomplete: True
     show if:
       variable: x.is_self_employed
       is: False
@@ -687,6 +688,9 @@ fields:
       variable: x.is_self_employed
       is: False
   - State: x.employer.address.state
+    code: |
+      states_list()
+    default: VT
     show if:
       variable: x.is_self_employed
       is: False
@@ -971,6 +975,7 @@ fields:
       variable: x.is_self_employed
       is: False
   - Street address: x.employer.address.address
+    address autocomplete: True
     show if:
       variable: x.is_self_employed
       is: False
@@ -984,6 +989,9 @@ fields:
       variable: x.is_self_employed
       is: False
   - State: x.employer.address.state
+    code: |
+      states_list()
+    default: VT
     show if:
       variable: x.is_self_employed
       is: False
@@ -1072,8 +1080,16 @@ subquestion: |
   You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).
   
   Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+
+  <h4>Who can get their fees waived</h4>
+
+  The Vermont Judiciary says the court can waive your filing fee and service costs if:
   
-  <h4>What you will need</h4>
+  * you get any kind of public assistance, or
+  * your gross income is at or below [150% of the federal poverty guidelines](https://www.vtlawhelp.org/150-federal-poverty-level-fpl), or
+  * the court finds you can't pay the fee without expending resources needed to support you and your dependents.
+  
+  <h4>Information you will need</h4>
   
   You will need to know:
   
