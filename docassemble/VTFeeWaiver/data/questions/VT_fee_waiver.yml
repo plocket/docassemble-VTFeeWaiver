@@ -2392,7 +2392,7 @@ attachments:
           % elif public_benefits.number_gathered() == 2 and public_benefits[0].source == "Dr Dynasaur" and public_benefits[1].source == "Medicaid":
           Varies        
           % else:
-          ${ round(currency(public_benefits.total(times_per_year=12),symbol=""), 2) }
+          ${ round(public_benefits.total(times_per_year=12), 2) }
           % endif
       
       - "users1_income_employment_monthly_amount": |
