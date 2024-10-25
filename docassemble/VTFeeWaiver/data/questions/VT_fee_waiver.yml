@@ -674,6 +674,7 @@ fields:
       variable: x.is_self_employed
       is: False
   - Street address: x.employer.address.address
+    address autocomplete: True
     show if:
       variable: x.is_self_employed
       is: False
@@ -687,6 +688,9 @@ fields:
       variable: x.is_self_employed
       is: False
   - State: x.employer.address.state
+    code: |
+      states_list()
+    default: VT
     show if:
       variable: x.is_self_employed
       is: False
@@ -971,6 +975,7 @@ fields:
       variable: x.is_self_employed
       is: False
   - Street address: x.employer.address.address
+    address autocomplete: True
     show if:
       variable: x.is_self_employed
       is: False
@@ -984,6 +989,9 @@ fields:
       variable: x.is_self_employed
       is: False
   - State: x.employer.address.state
+    code: |
+      states_list()
+    default: VT
     show if:
       variable: x.is_self_employed
       is: False
@@ -1072,8 +1080,16 @@ subquestion: |
   You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).
   
   Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
+
+  <h4>Who can get their fees waived</h4>
+
+  The Vermont Judiciary says the court can waive your filing fee and service costs if:
   
-  <h4>What you will need</h4>
+  * you get any kind of public assistance, or
+  * your gross income is at or below [150% of the federal poverty guidelines](https://www.vtlawhelp.org/150-federal-poverty-level-fpl), or
+  * the court finds you can't pay the fee without expending resources needed to support you and your dependents.
+  
+  <h4>Information you will need</h4>
   
   You will need to know:
   
@@ -1086,7 +1102,7 @@ subquestion: |
   * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or have your income and business expenses from the last 12 months.
   * your expenses (like rent, utilities, insurance payments, child care, etc.) -- looking back over the last 12 months
   * the amount of money you have in the bank and on hand
-  * the value of your vehicle/car, real estate/home, and any other major things you might own, and
+  * the approximate value of your vehicle/car, real estate/home, and any other major things you might own, and
   * if filling out form on behalf of a minor or incompetent adult, you need that person’s information.
 
 ---
@@ -1144,6 +1160,7 @@ fields:
     code: sorted(all_courts.unique_column_values('branch'))
     
   - note: |
+      ${ collapse_template(which_county) }
       ${ collapse_template(types_of_cases_in_each_court_division) }
 ---
 id: court case information
@@ -1159,7 +1176,7 @@ fields:
   - note: |
       **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
       
-      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name.
+      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
 ---
 ############################### USERS INFO ###############################
 ---
@@ -1507,6 +1524,8 @@ fields:
     datatype: currency
   - If you have a loan or owe money on the ${ vehicles[i].source }, how much do you owe? Enter 0 if you own it outright.: vehicles[i].balance
     datatype: currency
+  - note: |
+      ${ collapse_template(vehicle_value) }
 validation code: |
   if vehicles[i].source != "other":
     vehicles[i].display_name = vehicles.terms_ordered.get(vehicles[i].source, vehicles[i].source)
@@ -1941,12 +1960,14 @@ subquestion: |
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
-  Click the image to open it in a new tab. Click the "Edit your answers" button
-  to edit your answers.
+  Click the image to open it in a new tab.
+  
+  Click the "Edit your answers" button to edit your answers. **Remember to come back to this window to finish the form.**
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
+
+  Tap Next to choose how to sign your document.
   
-  **Remember to come back to this window to continue and sign your form.**
 continue button field: VT_fee_waiver_preview_question    
 ---
 code: |
@@ -2174,13 +2195,16 @@ subquestion: |
   ${ download_screen_instructions_one_form }
 
   ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
+
+  <hr>
   
+  <h4 style="margin-bottom: 18px;">Documents to download</h4>
   
   ${ al_user_bundle.download_list_html() }
-  
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
+  <hr>  
   
   ${ download_screen_bottom_instructions }
   
