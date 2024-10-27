@@ -1048,13 +1048,10 @@ subquestion: |
 
 continue button field: al_intro_screen
 ---
-id: VT fee waiver intro
-continue button field: VT_fee_waiver_intro
-question: |
-  Is this tool right for you?
-subquestion: |    
-  <h4>Do you need this fee waiver form?</h4>
-  
+template: do_you_need_waiver
+subject: |
+  Do you need this fee waiver form?
+content: |
   Before you begin, check to be sure you actually need to pay a court filing fee.
   
   When you ask the court for a Relief from Abuse (RFA) order, there are no court fees. It is free. Here is the full list of forms that have no filing fee:
@@ -1067,17 +1064,21 @@ subquestion: |
   - Abusive Litigation
   
   You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).
-
-  <h4>Who can get their fees waived</h4>
-
+---
+template: who_qualifies_waiver
+subject: |
+  Who can get their fees waived?
+content: |
   The Vermont Judiciary says the court can waive your filing fee and service costs if:
   
   * you get any kind of public assistance, or
   * your gross income is at or below [150% of the federal poverty guidelines](https://www.vtlawhelp.org/150-federal-poverty-level-fpl), or
   * the court finds you can't pay the fee without expending resources needed to support you and your dependents.
-  
-  <h4>Information you will need</h4>
-  
+---
+template: info_need_for_waiver
+subject: |
+  Information you will need
+content: |  
   You will need to know:
   
   * the name and address of any employer you might have
@@ -1091,9 +1092,26 @@ subquestion: |
   * the amount of money you have in the bank and on hand
   * the approximate value of your vehicle/car, real estate/home, and any other major things you might own, and
   * if filling out form on behalf of a minor or incompetent adult, you need that person’s information.
-
+---
+template: learn_more_waiver
+subject: |
+  Where to learn more
+content: |  
   Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
 
+  Ask for general help with court forms or the court process by contacting the [Vermont Judiciary Access and Resource Center.](https://www.vermontjudiciary.org/self-help/ARC) Their services are free and they serve the whole state. They do NOT give legal advice.
+---
+id: VT fee waiver intro
+continue button field: VT_fee_waiver_intro
+question: |
+  Is this tool right for you?
+subquestion: |    
+  ${ collapse_template(do_you_need_waiver) }
+  ${ collapse_template(who_qualifies_waiver) }
+  ${ collapse_template(info_need_for_waiver) }
+  ${ collapse_template(learn_more_waiver) }
+
+  <h4>Our terms of use</h4>
 fields:
   - To continue, please accept our [terms of use](https://vtlawhelp.org/vtcourtforms/terms-of-use).: acknowledged_information_use
     datatype: checkboxes
