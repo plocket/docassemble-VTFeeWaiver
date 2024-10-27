@@ -5,6 +5,9 @@ include:
   - docassemble.ALToolbox:al_income.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
 ---
+features:
+  css: larger_collapse_template.css
+---
 objects:
   - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
 ---
@@ -152,7 +155,7 @@ sections:
   - your_expenses: Your expenses
   - your_assets: Your property and assets
   - reasons: Other info
-  - review_VT_fee_waiver: Edit your answers
+  - review_VT_fee_waiver: <i class="fa-solid fa-pencil"></i> <u>Edit your answers</u>
   - sign: Sign your document
   - get_docs: Download your document
 progressive: False
@@ -1103,9 +1106,10 @@ content: |
 ---
 id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
+css class: larger_collapse_template
 question: |
   Is this tool right for you?
-subquestion: |    
+subquestion: |
   ${ collapse_template(do_you_need_waiver) }
   ${ collapse_template(who_qualifies_waiver) }
   ${ collapse_template(info_need_for_waiver) }
@@ -1177,7 +1181,7 @@ fields:
     code: sorted(all_courts.unique_column_values('branch'))
     
   - note: |
-      ${ collapse_template(which_county) }
+      ${ collapse_template(which_county_to_choose) }
       ${ collapse_template(types_of_cases_in_each_court_division) }
 ---
 id: court case information
