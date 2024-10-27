@@ -1171,8 +1171,6 @@ fields:
       Choose the court division and the county court where you will file this form. 
       
       If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
-      
-      Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
   - Division: trial_court_division
     code: sorted(all_courts.unique_column_values('division_abbr'))
@@ -1181,8 +1179,9 @@ fields:
     code: sorted(all_courts.unique_column_values('branch'))
     
   - note: |
-      ${ collapse_template(which_county_to_choose) }
       ${ collapse_template(types_of_cases_in_each_court_division) }
+      ${ collapse_template(which_county_to_choose) }
+      ${ collapse_template(in_which_county) }
 ---
 id: court case information
 question: |
