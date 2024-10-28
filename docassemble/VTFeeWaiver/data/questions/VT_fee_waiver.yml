@@ -8,11 +8,11 @@ include:
 features:
   css: larger_collapse_template.css
 ---
-objects:
-  - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
----
 modules:
   - .al_income_move
+---
+objects:
+  - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
 ---
 code: |
   trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
@@ -1174,106 +1174,78 @@ fields:
 
   - Court Division: trial_court_division
     code: sorted(all_courts.unique_column_values('division_abbr'))
+
   - note: |
-      ---
+      ${ collapse_template(types_of_cases_in_each_court_division) }
+      
   - note: |
       Choose the county where you will file this form.
-    show if:
-      variable: trial_court_division
-      is: "Civil"
-  - note: |
-      Choose the county where you will file this form.
-    show if:
-      variable: trial_court_division
-      is: "Criminal"
-  - note: |
-      Choose the county where you will file this form.
-    show if:
-      variable: trial_court_division
-      is: "Family"
-  - note: |
-      Choose the county where you will file this form.
-    show if:
-      variable: trial_court_division
-      is: "Probate"
-  - note: |
-      This is a statewide court. Choose Statewide as the unit.
-    show if:
-      variable: trial_court_division
-      is: "Environmental"
-  - note: |
-      This is a statewide court. Choose Statewide as the unit.
-    show if:
-      variable: trial_court_division
-      is: "Judicial Bureau"
+    js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
+
+  
+#  - note: |
+#      Choose the county where you will file this form.
+#    show if:
+#      variable: trial_court_division
+#      is: "Probate"
+#  - County: user_selected_county
+#    code: sorted(all_courts.unique_column_values('branch'))
+#    show if:
+#      variable: trial_court_division
+#      is: "Civil"
+#  - County: user_selected_county
+#    code: sorted(all_courts.unique_column_values('branch'))
+#    show if:
+#      variable: trial_court_division
+#      is: "Criminal"
+
+
+
   - County: user_selected_county
-    code: sorted(all_courts.unique_column_values('branch'))
-    show if:
-      variable: trial_court_division
-      is: "Civil"
-  - County: user_selected_county
-    code: sorted(all_courts.unique_column_values('branch'))
-    show if:
-      variable: trial_court_division
-      is: "Criminal"
-  - Unit: user_selected_county
-    code: sorted(all_courts.unique_column_values('branch'))
-    show if:
-      variable: trial_court_division
-      is: "Environmental"
-  - County: user_selected_county
-    code: sorted(all_courts.unique_column_values('branch'))
-    show if:
-      variable: trial_court_division
-      is: "Family"
-  - County: user_selected_county
-    code: sorted(all_courts.unique_column_values('branch'))
-    show if:
-      variable: trial_court_division
-      is: "Probate"
-  - Unit: user_selected_county
-    code: sorted(all_courts.unique_column_values('branch'))
-    show if:
-      variable: trial_court_division
-      is: "Judicial Bureau"
+    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
+    js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
+
+  
   - note: |
-      ${ collapse_template(types_of_cases_in_each_court_division) }
       ${ collapse_template(which_county_to_choose) }
       ${ collapse_template(in_which_county) }
-    show if:
-      variable: trial_court_division
-      is: "Civil"
-  - note: |
-      ${ collapse_template(types_of_cases_in_each_court_division) }
-      ${ collapse_template(which_county_to_choose) }
-      ${ collapse_template(in_which_county) }
-    show if:
-      variable: trial_court_division
-      is: "Criminal"
-  - note: |
-      ${ collapse_template(types_of_cases_in_each_court_division) }
-    show if:
-      variable: trial_court_division
-      is: "Environmental"
-  - note: |
-      ${ collapse_template(types_of_cases_in_each_court_division) }
-      ${ collapse_template(which_county_to_choose) }
-      ${ collapse_template(in_which_county) }
-    show if:
-      variable: trial_court_division
-      is: "Family"
-  - note: |
-      ${ collapse_template(types_of_cases_in_each_court_division) }
-    show if:
-      variable: trial_court_division
-      is: "Judicial Bureau"
-  - note: |
-      ${ collapse_template(types_of_cases_in_each_court_division) }
-      ${ collapse_template(which_county_to_choose) }
-      ${ collapse_template(in_which_county) }
-    show if:
-      variable: trial_court_division
-      is: "Probate"
+    js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
+  
+#  - County: user_selected_county
+#    code: sorted(all_courts.unique_column_values('branch'))
+#    js show if: val("trial_court_division") === "Family" || val("trial_court_division") === "Criminal"
+#  - County: user_selected_county
+#    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
+#    show if:
+#      variable: trial_court_division
+#      is: "Probate"
+
+
+  
+#  - note: |
+#      This is a statewide court. Choose Statewide as the unit.
+#    show if:
+#      variable: trial_court_division
+#      is: "Judicial Bureau"
+#  - note: |
+#      This is a statewide court. Choose Statewide as the unit.
+#    show if:
+#      variable: trial_court_division
+#      is: "Environmental"
+      
+#  - Unit: user_selected_county
+#    code: sorted(all_courts.unique_column_values('branch'))
+#    show if:
+#      variable: trial_court_division
+#      is: "Environmental"
+#  - Unit: user_selected_county
+#    code: sorted(all_courts.unique_column_values('branch'))
+#    show if:
+#      variable: trial_court_division
+#      is: "Judicial Bureau"
+
+  
+
 ---
 id: court case information
 question: |
