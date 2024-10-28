@@ -12,7 +12,7 @@ modules:
   - .al_income_move
 ---
 objects:
-  - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
+  - all_courts: ALCourtLoader.using(file_name='docassemble.VTSharedYMLFile:data/sources/courts_list_full.xlsx')
 ---
 code: |
   trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string=trial_court_division)[0][0]
