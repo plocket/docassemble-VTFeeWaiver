@@ -194,7 +194,11 @@ code: |
   
   #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
   trial_court_division
-  user_selected_county
+
+  if trial_court_division == "Environmental":
+    user_selected_county = "Environmental"
+  if trial_court_division == "Judicial Bureau":
+    user_selected_county = "Judicial Bureau"
   trial_court.address.county
   
   nav.set_section('your_income')
@@ -1163,6 +1167,21 @@ fields:
   - note: |
       ${ collapse_template(asterisk) }
 ---
+id: court case information
+question: |
+  What is the name of the court case you are involved in?
+subquestion: |
+  Example: Joanna Kramer vs. Ted Kramer
+  
+  The plaintiff is listed first, then the defedant.
+fields:
+  - "Case name, as seen on your court papers": case_name
+    maxlength: 80
+  - note: |
+      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
+      
+      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+---
 id: choose a court
 question: |
   What court is your case in?
@@ -1182,85 +1201,14 @@ fields:
       Choose the county where you will file this form.
     js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
 
-  
-#  - note: |
-#      Choose the county where you will file this form.
-#    show if:
-#      variable: trial_court_division
-#      is: "Probate"
-#  - County: user_selected_county
-#    code: sorted(all_courts.unique_column_values('branch'))
-#    show if:
-#      variable: trial_court_division
-#      is: "Civil"
-#  - County: user_selected_county
-#    code: sorted(all_courts.unique_column_values('branch'))
-#    show if:
-#      variable: trial_court_division
-#      is: "Criminal"
-
-
-
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
     js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
-
   
   - note: |
       ${ collapse_template(which_county_to_choose) }
       ${ collapse_template(in_which_county) }
     js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
-  
-#  - County: user_selected_county
-#    code: sorted(all_courts.unique_column_values('branch'))
-#    js show if: val("trial_court_division") === "Family" || val("trial_court_division") === "Criminal"
-#  - County: user_selected_county
-#    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
-#    show if:
-#      variable: trial_court_division
-#      is: "Probate"
-
-
-  
-#  - note: |
-#      This is a statewide court. Choose Statewide as the unit.
-#    show if:
-#      variable: trial_court_division
-#      is: "Judicial Bureau"
-#  - note: |
-#      This is a statewide court. Choose Statewide as the unit.
-#    show if:
-#      variable: trial_court_division
-#      is: "Environmental"
-      
-#  - Unit: user_selected_county
-#    code: sorted(all_courts.unique_column_values('branch'))
-#    show if:
-#      variable: trial_court_division
-#      is: "Environmental"
-#  - Unit: user_selected_county
-#    code: sorted(all_courts.unique_column_values('branch'))
-#    show if:
-#      variable: trial_court_division
-#      is: "Judicial Bureau"
-
-  
-
----
-id: court case information
-question: |
-  What is the name of the court case you are involved in?
-subquestion: |
-  Example: Joanna Kramer vs. Ted Kramer
-  
-  The plaintiff is listed first, then the defedant.
-fields:
-  - "Case name, as seen on your court papers": case_name
-    maxlength: 80
-  - note: |
-      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
-      
-      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
 ---
 ############################### USERS INFO ###############################
 ---
