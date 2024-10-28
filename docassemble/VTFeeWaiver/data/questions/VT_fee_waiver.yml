@@ -1197,12 +1197,12 @@ fields:
       variable: trial_court_division
       is: "Probate"
   - note: |
-      This is a statewide court. Choose Vermont as the Unit.
+      This is a statewide court. Choose Statewide as the unit.
     show if:
       variable: trial_court_division
       is: "Environmental"
   - note: |
-      This is a statewide court. Choose Vermont as the Unit.
+      This is a statewide court. Choose Statewide as the unit.
     show if:
       variable: trial_court_division
       is: "Judicial Bureau"
@@ -1240,6 +1240,40 @@ fields:
       ${ collapse_template(types_of_cases_in_each_court_division) }
       ${ collapse_template(which_county_to_choose) }
       ${ collapse_template(in_which_county) }
+    show if:
+      variable: trial_court_division
+      is: "Civil"
+  - note: |
+      ${ collapse_template(types_of_cases_in_each_court_division) }
+      ${ collapse_template(which_county_to_choose) }
+      ${ collapse_template(in_which_county) }
+    show if:
+      variable: trial_court_division
+      is: "Criminal"
+  - note: |
+      ${ collapse_template(types_of_cases_in_each_court_division) }
+    show if:
+      variable: trial_court_division
+      is: "Environmental"
+  - note: |
+      ${ collapse_template(types_of_cases_in_each_court_division) }
+      ${ collapse_template(which_county_to_choose) }
+      ${ collapse_template(in_which_county) }
+    show if:
+      variable: trial_court_division
+      is: "Family"
+  - note: |
+      ${ collapse_template(types_of_cases_in_each_court_division) }
+    show if:
+      variable: trial_court_division
+      is: "Judicial Bureau"
+  - note: |
+      ${ collapse_template(types_of_cases_in_each_court_division) }
+      ${ collapse_template(which_county_to_choose) }
+      ${ collapse_template(in_which_county) }
+    show if:
+      variable: trial_court_division
+      is: "Probate"
 ---
 id: court case information
 question: |
@@ -2357,7 +2391,14 @@ attachments:
     skip undefined: True
     docx template file: VT_fee_waiver_next_steps.docx
     fields:
-        - "address_county": ${ trial_court.address.county }
+        - "address_county": |
+            % if trial_court_division == "Environmental":
+  
+            % elif trial_court_division == "Judicial Bureau":
+              
+            % else:
+            ${ trial_court.address.county }
+            % endif
         - "court_division": ${ trial_court.division_abbr }
         - "name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
@@ -2380,7 +2421,14 @@ attachments:
             ${ trial_court.division_abbr.upper()  }
           % endif
       - "docket_number": ${ docket_number }
-      - "trial_court_county": ${ trial_court.address.county }
+      - "trial_court_county": |
+          % if trial_court_division == "Environmental":
+
+          % elif trial_court_division == "Judicial Bureau":
+            
+          % else:
+          ${ trial_court.address.county }
+          % endif
       - "case_name": ${ case_name }
       - "users1_name_full": ${ users[0] }
       - "users1_name_full__1": ${ users[0] }
