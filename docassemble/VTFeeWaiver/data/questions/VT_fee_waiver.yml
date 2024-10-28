@@ -1168,16 +1168,74 @@ question: |
   What court is your case in?
 fields:
   - note: |
-      Choose the court division and the county court where you will file this form. 
+      Choose the court division.
       
-      If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
+      If there's an existing court case, choose the court that the case is in. Look at the papers from the court.
 
-  - Division: trial_court_division
+  - Court Division: trial_court_division
     code: sorted(all_courts.unique_column_values('division_abbr'))
-    
+  - note: |
+      ---
+  - note: |
+      Choose the county where you will file this form.
+    show if:
+      variable: trial_court_division
+      is: "Civil"
+  - note: |
+      Choose the county where you will file this form.
+    show if:
+      variable: trial_court_division
+      is: "Criminal"
+  - note: |
+      Choose the county where you will file this form.
+    show if:
+      variable: trial_court_division
+      is: "Family"
+  - note: |
+      Choose the county where you will file this form.
+    show if:
+      variable: trial_court_division
+      is: "Probate"
+  - note: |
+      This is a statewide court. Choose Vermont as the Unit.
+    show if:
+      variable: trial_court_division
+      is: "Environmental"
+  - note: |
+      This is a statewide court. Choose Vermont as the Unit.
+    show if:
+      variable: trial_court_division
+      is: "Judicial Bureau"
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
-    
+    show if:
+      variable: trial_court_division
+      is: "Civil"
+  - County: user_selected_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: trial_court_division
+      is: "Criminal"
+  - Unit: user_selected_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: trial_court_division
+      is: "Environmental"
+  - County: user_selected_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: trial_court_division
+      is: "Family"
+  - County: user_selected_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: trial_court_division
+      is: "Probate"
+  - Unit: user_selected_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: trial_court_division
+      is: "Judicial Bureau"
   - note: |
       ${ collapse_template(types_of_cases_in_each_court_division) }
       ${ collapse_template(which_county_to_choose) }
