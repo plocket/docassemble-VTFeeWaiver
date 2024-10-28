@@ -194,7 +194,6 @@ code: |
   
   #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
   trial_court_division
-
   if trial_court_division == "Environmental":
     user_selected_county = "Environmental"
   if trial_court_division == "Judicial Bureau":
@@ -2038,7 +2037,7 @@ review:
       
       **Is in this court division**: ${ trial_court.division_abbr }
       
-      % if trial_court_division == "Civil" or trial_court_division == "Criminal":
+      % if trial_court_division == "Civil" or trial_court_division == "Criminal" or trial_court_division == "Family" or trial_court_division == "Probate":
       **Is in this county**: ${( trial_court.address.county )} County
       % endif
 
