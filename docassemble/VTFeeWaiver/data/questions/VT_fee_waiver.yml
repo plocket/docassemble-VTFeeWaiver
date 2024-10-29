@@ -572,7 +572,7 @@ subquestion: |
   
   ${ other_incomes.add_action() }
   
-  **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security retirement income, other retirement income or annuities.
+  **Other kinds of income could include:** Workers compensation, rental income, interest income, spousal maintenance (alimony), veteran's income, Social Security Disability, Social Security retirement, other retirement income or annuities.
 continue button field: other_incomes.review_items
 ---
 continue button field: other_incomes.revisit
@@ -2490,68 +2490,68 @@ attachments:
           % if expenses.total(source=["electric"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["electric"],times_per_year=12) }   
+          ${ round(expenses.total(source=["electric"],times_per_year=12), 2) }   
           % endif  
          
       - "users1_expenses_phone_monthly_amount": |
           % if expenses.total(source=["phone"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["phone"],times_per_year=12) }   
+          ${ round(expenses.total(source=["phone"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_fuel_monthly_amount": |
           % if expenses.total(source=["fuel"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["fuel"],times_per_year=12) }   
+          ${ round(expenses.total(source=["fuel"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_food_monthly_amount": |
           % if expenses.total(source=["food"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["food"],times_per_year=12) }   
+          ${ round(expenses.total(source=["food"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_clothes_monthly_amount": |
           % if expenses.total(source=["clothing"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["clothing"],times_per_year=12) }   
+          ${ round(expenses.total(source=["clothing"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_medical_monthly_amount": |
           % if expenses.total(source=["medical"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["medical"],times_per_year=12) }   
+          ${ round(expenses.total(source=["medical"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_child_support_monthly_amount": |
           % if expenses.total(source=["child support"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["child support"],times_per_year=12) }   
+          ${ round(expenses.total(source=["child support"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_auto_loan_monthly_amount": |
           % if expenses.total(source=["auto loan"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["auto loan"],times_per_year=12) }   
+          ${ round(expenses.total(source=["auto loan"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_property_tax_monthly_amount": |
           % if expenses.total(source=["property tax"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["property tax"],times_per_year=12) }   
+          ${ round(expenses.total(source=["property tax"],times_per_year=12), 2) }   
           % endif  
       - "users1_expenses_all_insurance_monthly_amount": |
           % if expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12) }  
+          ${ round(expenses.total(source=["health insurance", "auto insurance", "other insurance"],times_per_year=12), 2) }  
           % endif  
       - "users1_expenses_other_monthly_amount": |
           % if expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12) == 0:
            
           % else:
-          ${ expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12) } 
+          ${ round(expenses.total(exclude_source=["rent", "mortgage", "electric", "phone", "fuel", "food", "clothing", "medical", "child support", "auto loan", "property tax", "health insurance", "auto insurance", "other insurance" ],times_per_year=12), 2) } 
           % endif  
       - "users1_expenses_monthly_total": ${ round(expenses.total(times_per_year=12), 2) }
       
