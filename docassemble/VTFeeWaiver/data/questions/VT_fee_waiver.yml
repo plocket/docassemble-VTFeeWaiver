@@ -1989,7 +1989,8 @@ code: |
   # for matching address to court. Edit if court venue is based on 
   # a different address than the user's
   addresses_to_search = [user.address for user in users]
-  
+---
+
   
   
 
@@ -2097,6 +2098,39 @@ review:
       % endfor
       % endif
 
+  - Edit: 
+      - jobs[0].source
+      - jobs[0].employer.name.first
+
+    button: |
+      % if jobs.number_gathered() > 0:
+      % if public_benefits.number_gathered() > 0:
+      - Edit info about your employer at ${ jobs[0].source } job
+      % endif
+      % endif
+      
+  - Edit: 
+      - jobs[1].source
+      - jobs[1].employer.name.first 
+
+    button: |
+      % if jobs.number_gathered() > 0:
+      % if public_benefits.number_gathered() > 0:
+      - Edit info about your employer at ${ jobs[1].source } job
+      % endif
+      % endif
+
+  - Edit: 
+      - jobs[2].source
+      - jobs[2].employer.name.first 
+
+    button: |
+      % if jobs.number_gathered() > 0:
+      % if public_benefits.number_gathered() > 0:
+      - Edit info about your employer at ${ jobs[2].source } job
+      % endif
+      % endif
+      
   - Edit: 
       - other_incomes.revisit
     button: |
