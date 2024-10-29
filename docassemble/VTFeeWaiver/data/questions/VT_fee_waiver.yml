@@ -1042,7 +1042,7 @@ subquestion: |
 
   <p>${ intro_vtcourtforms_3_steps }</p>
   
-  <i class="fas fa-file-text fa-2x"></i> This tool will produce a completed Application to Waive Filing Fees and Service Costs for Vermont courts -- form 600-00228. If approved by the Vermont Judiciary, you will not have to pay court fees.
+  <i class="fas fa-file-text fa-2x"></i> This tool will produce a completed Application to Waive Filing Fees and Service Costs for Vermont courts — form 600-00228. If approved by the Vermont Judiciary, you will not have to pay court fees.
   
     <i class="fas fa-clock fa-2x"></i>  It may take you between 10 and 40 minutes to complete this. If you want, you can create an account and save your work to return to later.
 
@@ -1054,69 +1054,49 @@ subquestion: |
 
 continue button field: al_intro_screen
 ---
-template: do_you_need_waiver
-subject: |
-  Do you need this fee waiver form?
-content: |
-  Before you begin, check to be sure you actually need to pay a court filing fee.
-  
-  When you ask the court for a Relief from Abuse (RFA) order, there are no court fees. It is free. Here is the full list of forms that have no filing fee:
-  
-  - Request for Relief from Abuse
-  - Request for Abuse Prevention for a Vulnerable Adult
-  - Request for Order Against Stalking
-  - Request for Order Against Sexual Assault
-  - Request for Extreme Risk Protection Order
-  - Abusive Litigation
-  
-  You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).
----
-template: who_qualifies_waiver
-subject: |
-  Who can get their fees waived?
-content: |
-  The Vermont Judiciary says the court can waive your filing fee and service costs if:
-  
-  * you get any kind of public assistance, or
-  * your gross income is at or below [150% of the federal poverty guidelines](https://www.vtlawhelp.org/150-federal-poverty-level-fpl), or
-  * the court finds you can't pay the fee without expending resources needed to support you and your dependents.
----
-template: info_need_for_waiver
-subject: |
-  Information you will need
-content: |  
-  You will need to know:
-  
-  * the name and address of any employer you might have
-  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, etc.) and the amount, and
-  * information about the court case for which you want a fee waiver. (You can find this information on other court papers you have about this case. If you are starting a court action -- like filing for divorce -- you won't have a case number or docket number yet.)
-  
-  If you get public assistance, that's all you need. **If you don't get public assistance**, you will also need to know:
-  
-  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or have your income and business expenses from the last 12 months.
-  * your expenses (like rent, utilities, insurance payments, child care, etc.) -- looking back over the last 12 months
-  * the amount of money you have in the bank and on hand
-  * the approximate value of your vehicle/car, real estate/home, and any other major things you might own, and
-  * if filling out form on behalf of a minor or incompetent adult, you need that person’s information.
----
-template: learn_more_waiver
-subject: |
-  Where to learn more
-content: |  
-  Visit the Vermont Judiciary website to learn more about [filing and service fees](https://www.vermontjudiciary.org/fees) and [asking to file court papers for free in Vermont](https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs).
-
-  Ask for general help with court forms or the court process by contacting the [Vermont Judiciary Access and Resource Center.](https://www.vermontjudiciary.org/self-help/ARC) Their services are free and they serve the whole state. They do NOT give legal advice.
----
 id: VT fee waiver intro
 continue button field: VT_fee_waiver_intro
-css class: larger_collapse_template
 question: |
   Is this tool right for you?
-subquestion: |
-  ${ collapse_template(do_you_need_waiver) }
-  ${ collapse_template(who_qualifies_waiver) }
-  ${ collapse_template(info_need_for_waiver) }
-  ${ collapse_template(learn_more_waiver) }
+subquestion: | 
+  ${ start_accordion('<h2 class="h5">Do you need this fee waiver form?</h2>') }
+  <p>Before you begin, check to be sure you actually need to pay a court filing fee.</p>
+  
+  <p>When you ask the court for a Relief from Abuse (RFA) order, there are no court fees. It is free. Here is the full list of forms that have no filing fee:</p>
+  
+  <ul><li>Request for Relief from Abuse</li>
+  <li>Request for Abuse Prevention for a Vulnerable Adult</li>
+  <li>Request for Order Against Stalking</li>
+  <li>Request for Order Against Sexual Assault</li>
+  <li>Request for Extreme Risk Protection Order</li>
+  <li>Abusive Litigation</li></ul>
+  <p>You do not pay a fee to file an "answer" in a court case. However, there is a fee to file a "counterclaim" in some cases (such as eviction or small claims), but not others (such as divorce or parentage).</p>
+
+  ${ next_accordion('<h2 class="h5">Who can get their fees waived?</h2>') }
+  The Vermont Judiciary says the court can waive your filing fee and service costs if:
+  
+  <ul><li>you get any kind of public assistance, or</li>
+  <li>your gross income is at or below <a href="https://www.vtlawhelp.org/150-federal-poverty-level-fpl">150% of the federal poverty guidelines,</a> or</li>
+  <li>the court finds you can't pay the fee without expending resources needed to support you and your dependents.</li></ul>
+
+  ${ next_accordion('<h2 class="h5">Information you will need</h2>') }
+  <ul><li>the name and address of any employer you might have</li>
+  <li>any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, etc.) and the amount, and</li>
+  <li>information about the court case for which you want a fee waiver. (You can find this information on other court papers you have about this case. If you are starting a court action — like filing for divorce — you won't have a case number or docket number yet.)</li></ul>
+  
+  <p>If you get public assistance, that's all you need. <strong>If you don't get public assistance</strong>, you will also need to know:</p>
+  
+  <ul><li>your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or have your income and business expenses from the last 12 months.
+  <li>your expenses (like rent, utilities, insurance payments, child care, etc.) — looking back over the last 12 months
+  <li>the amount of money you have in the bank and on hand
+  <li>the approximate value of your vehicle/car, real estate/home, and any other major things you might own, and
+  <li>if filling out form on behalf of a minor or incompetent adult, you need that person’s information.</ul>
+  ${ next_accordion('<h2 class="h5">Where to learn more</h2>') }
+  <p>Visit the Vermont Judiciary website to learn more about <a href="https://www.vermontjudiciary.org/fees">filing and service fees</a> and <a href="https://www.vermontjudiciary.org/fees"https://www.vermontjudiciary.org/self-help/application-waive-filing-fees-and-service-costs>asking to file court papers for free in Vermont.</a></p>
+
+  <p>Ask for general help with court forms or the court process by contacting the <a href="https://www.vermontjudiciary.org/self-help/ARC">Vermont Judiciary Access and Resource Center.</a> Their services are free and they serve the whole state. They do NOT give legal advice.</p>
+
+  ${ end_accordion() }
 
   <h4>Our terms of use</h4>
 fields:
