@@ -1152,7 +1152,7 @@ question: |
 subquestion: |
   Example: Joanna Kramer vs. Ted Kramer
   
-  The plaintiff is listed first, then the defedant.
+  The plaintiff is listed first, then the defendant.
 fields:
   - "Case name, as seen on your court papers": case_name
     maxlength: 80
