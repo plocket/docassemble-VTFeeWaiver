@@ -173,7 +173,7 @@ code: |
   nav.set_section('intro')
 
   VT_fee_waiver_intro
-  set_progress(10)
+  set_progress(5)
   important_notes_to_user
   #user_ask_role
   
@@ -181,13 +181,16 @@ code: |
   nav.set_section('about_you')
   users.gather()
   users[0].address.address
+  set_progress(15)
   users[0].daytime_phone_number
   users[0].email
   household_size
   
   nav.set_section('case_info')
+  set_progress(20)
   case_name
   docket_number
+  set_progress(25)
   
   #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
   trial_court_division
@@ -198,22 +201,24 @@ code: |
   trial_court.address.county
   
   nav.set_section('your_income')
+  set_progress(30)
   if len(public_benefits) > 0:
     public_benefits.review_items
     user_qualifies_interstitial   
     #if user gets public benefits and they work, they only need to give us their employer name and address, and there's space for two jobs on the form
     jobs.gather()
+    set_progress(40)
   else:
     jobs.gather()
     if len(jobs) > 0:
       review_jobs
-    set_progress(40)
+    set_progress(45)
     
     if len(other_incomes) > 0:
       other_incomes.review_items
 
-    set_progress(50)
     nav.set_section('your_expenses')
+    set_progress(50)
     expenses_intro
     if len(expenses) > 0:
       expenses.review_items
@@ -224,6 +229,7 @@ code: |
   
     if len(vehicles) > 0:
       vehicles.review_items
+    set_progress(65)
   
     if len(real_estate) > 0:
       real_estate.review_items
@@ -231,15 +237,16 @@ code: |
     set_progress(70)
     if len(bank_assets) > 0:
       bank_assets.review_items    
-    
+
+    set_progress(75)
     if len(other_assets) > 0:
       other_assets.review_items        
       
     nav.set_section('reasons')
-    other_reasons_why_cannot_afford
     set_progress(80)
+    other_reasons_why_cannot_afford
     
-  set_progress(90)
+  set_progress(85)
   employer_jobs
   self_employed_jobs
   employer_jobs_review_table
@@ -258,6 +265,7 @@ code: |
   nav.set_section("review_VT_fee_waiver")
   trial_court.address.county
   VT_fee_waiver_preview_question
+  set_progress(92)
   nav.set_section('sign')
   signature_date
   set_progress(95)
