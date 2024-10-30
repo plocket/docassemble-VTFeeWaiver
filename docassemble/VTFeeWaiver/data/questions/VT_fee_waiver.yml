@@ -1999,7 +1999,7 @@ code: |
 id: VT fee waiver review screen
 event: review_VT_fee_waiver
 question: |
-  Review your answers
+  Review and edit your answers
 subquestion: |  
   ${ review_screen_instructions }
 
@@ -2082,50 +2082,66 @@ review:
       - review_jobs
     button: |
       **Jobs**
-      
+
       % if jobs.number_gathered() == 0:
       - None
       % else:
-      % for item in jobs:
-      % if not item.is_self_employed:
-      - ${ item.source } / ${ item.employer.name.first }
-      % else:
-      - ${ item.source } / Self-employed
+      Edit all details about your 
+      % if jobs.number_gathered() == 1:
+      job. Or add or delete a job.:
+      
       % endif
+      % if jobs.number_gathered() > 1:
+      jobs. Or add or delete a job.:
+      
+      % endif
+      % for item in jobs:
+      - ${ item.source }
       % endfor
       % endif
 
   - Edit: 
       - jobs[0].source
-      - jobs[0].employer.name.first
+      - jobs[0].is_self_employed
 
     button: |
-      % if jobs.number_gathered() > 0:
-      % if public_benefits.number_gathered() > 0:
-      - Edit info about your employer at ${ jobs[0].source } job
-      % endif
+      % if jobs[0].is_self_employed:
+      - Edit employer name and address: Self employed
+      % else:
+      - Edit employer name and address: ${ jobs[0].employer.name.first }
       % endif
       
   - Edit: 
       - jobs[1].source
-      - jobs[1].employer.name.first 
+      - jobs[1].is_self_employed
 
     button: |
-      % if jobs.number_gathered() > 0:
-      % if public_benefits.number_gathered() > 0:
-      - Edit info about your employer at ${ jobs[1].source } job
-      % endif
+      % if jobs[1].is_self_employed:
+      - Edit employer name and address: Self employed
+      % else:
+      - Edit employer name and address: ${ jobs[1].employer.name.first }
       % endif
 
   - Edit: 
       - jobs[2].source
-      - jobs[2].employer.name.first 
+      - jobs[2].is_self_employed 
 
     button: |
-      % if jobs.number_gathered() > 0:
-      % if public_benefits.number_gathered() > 0:
-      - Edit info about your employer at ${ jobs[2].source } job
+      % if jobs[2].is_self_employed:
+      - Edit employer name and address: Self employed
+      % else:
+      - Edit employer name and address: ${ jobs[2].employer.name.first }
       % endif
+
+  - Edit: 
+      - jobs[3].source
+      - jobs[3].is_self_employed
+
+    button: |
+      % if jobs[3].is_self_employed:
+      - Edit employer name and address: Self employed
+      % else:
+      - Edit employer name and address: ${ jobs[3].employer.name.first }
       % endif
       
   - Edit: 
