@@ -25,13 +25,13 @@ objects:
 
 ############### REMOVE this code below when testing is done  ##########
 ---
-default screen parts:
-  pre: |
-    % if not url_args.get("hide_hud", "").lower() in ["1", "on", "true", "yes"]:
-    `id: ${ user_info().question_id }`[BR]
-    `Variable: ${ user_info().variable }`[BR]
-    `Version: ${ user_info().package.replace("docassemble.", "") + " " if not user_info().package.startswith("docassemble.playground") else "" }${ package_version_number }; ${ al_version }`
-    % endif
+#default screen parts:
+#  pre: |
+#    % if not url_args.get("hide_hud", "").lower() in ["1", "on", "true", "yes"]:
+#    `id: ${ user_info().question_id }`[BR]
+#    `Variable: ${ user_info().variable }`[BR]
+#    `Version: ${ user_info().package.replace("docassemble.", "") + " " if not user_info().package.startswith("docassemble.playground") else "" }${ package_version_number }; ${ al_version }`
+#    % endif
 ---
 ##########################################################################
 
@@ -43,7 +43,7 @@ metadata:
   al_weaver_version: "1.7.0"
   generated on: "2022-08-19"
   title: >-
-    Fee Waiver
+    Ask to waive court filing and service fees
   short title: >-
     Fee waiver
   description: |-
