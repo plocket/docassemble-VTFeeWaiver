@@ -5,9 +5,6 @@ include:
   - docassemble.ALToolbox:al_income.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
 ---
-features:
-  css: larger_collapse_template.css
----
 modules:
   - .al_income_move
 ---
