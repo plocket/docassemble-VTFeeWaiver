@@ -196,8 +196,13 @@ code: |
   trial_court_division
   if trial_court_division == "Environmental":
     user_selected_county = "Environmental"
-  if trial_court_division == "Judicial Bureau":
+  elif trial_court_division == "Judicial Bureau":
     user_selected_county = "Judicial Bureau"
+  elif do_not_know_court_division:
+    trial_court_division == "Unknown"
+    user_selected_county
+  else: 
+    user_selected_county
   trial_court.address.county
   
   nav.set_section('your_income')
@@ -1166,7 +1171,7 @@ fields:
       
       If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
 ---
-id: choose a court
+id: choose a court division
 question: |
   What court is your case in?
 fields:
@@ -1174,25 +1179,37 @@ fields:
       Choose the court division.
       
       If there's an existing court case, choose the court that the case is in. Look at the papers from the court.
-
+ 
   - Court Division: trial_court_division
     code: sorted(all_courts.unique_column_values('division_abbr'))
-
+    hide if: do_not_know_court_division
+  
   - note: |
       ${ collapse_template(types_of_cases_in_each_court_division) }
-      
+
+  - no label: do_not_know_court_division
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I don't know what division to choose.
+  - note: |
+      OK. We'll leave that blank on your form. You can fill it in later.
+    show if: do_not_know_court_division 
+---
+id: choose a court county
+question: |
+  What county is your case in?
+fields:
   - note: |
       Choose the county where you will file this form.
-    js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
 
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
-    js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
   
   - note: |
       ${ collapse_template(which_county_to_choose) }
       ${ collapse_template(in_which_county) }
-    js show if: val("trial_court_division") === "Civil" || val("trial_court_division") === "Criminal" || val("trial_court_division") === "Family" || val("trial_court_division") === "Probate"
 ---
 ############################### USERS INFO ###############################
 ---
