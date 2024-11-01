@@ -324,14 +324,14 @@ comment: |
 id: public_benefits terms_ordered
 variable name: public_benefits.terms_ordered
 data: !!omap
-  - Reach Up: "Reach Up"
   - 3SquaresVT: "3SquaresVT (food)"
-  - GA: "General Assistance (GA)"
-  - SSI: "SSI (Supplemental Security Income)"
-  - Fuel Assist.: "Fuel Assistance"
-  - Housing Assist.: "Housing Assistance (subsidy/voucher/Section 8)"  
   - Dr Dynasaur: "Dr. Dynasaur"
+  - Fuel Assist.: "Fuel Assistance"
+  - GA: "General Assistance (GA)"
+  - Housing Assist.: "Housing Assistance (subsidy/voucher/Section 8)"
   - Medicaid: "Medicaid"
+  - Reach Up: "Reach Up"
+  - SSI: "SSI (Supplemental Security Income)"
   - other: "Other"
 ---
 id: public_benefits other display
@@ -1180,26 +1180,16 @@ fields:
  
   - Court Division: trial_court_division
     code: sorted(all_courts.unique_column_values('division_abbr'))
-    hide if: do_not_know_court_division
   
   - note: |
       ${ collapse_template(types_of_cases_in_each_court_division) }
 
       ${ collapse_template(ask_the_ARC) }
 
-  - no label: do_not_know_court_division
-    datatype: checkboxes
-    none of the above: False
-    required: False
-    choices:
-      - I don't know what division to choose.
   - note: |
-      OK. We'll leave that blank on your form. You can fill it in later.
-    show if: do_not_know_court_division
----
-code: |
-  if do_not_know_court_division == True:
-    trial_court_division == "Unknown"
+      If you don't know what division to choose, you can fill it in later.
+    js show if: trial_court_division == "Unknown"
+
 ---
 id: choose a court county
 question: |
