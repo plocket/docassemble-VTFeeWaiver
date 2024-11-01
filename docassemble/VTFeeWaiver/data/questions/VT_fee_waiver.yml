@@ -198,8 +198,6 @@ code: |
     user_selected_county = "Environmental"
   if trial_court_division == "Judicial Bureau":
     user_selected_county = "Judicial Bureau"
-  if do_not_know_court_division == True:
-    trial_court_division == "Unknown"
   user_selected_county
   trial_court.address.county
   
@@ -2031,10 +2029,9 @@ review:
       - trial_court_index
       - trial_court
     button: |
-      
       **Is in this court division**: ${ trial_court.division_abbr }
       
-      % if trial_court_division == "Civil" or trial_court_division == "Criminal" or trial_court_division == "Family" or trial_court_division == "Probate":
+      % if trial_court_division == "Civil" or trial_court_division == "Criminal" or trial_court_division == "Family" or trial_court_division == "Probate" or trial_court_division == "Unknown":
       **Is in this county**: ${( trial_court.address.county )} County
       % endif
 
@@ -2366,7 +2363,12 @@ attachments:
             % else:
             ${ trial_court.address.county } County
             % endif
-        - "court_division": ${ trial_court.division_abbr }
+        - "court_division": |
+            % if trial_court_division == "Unknown":
+
+            % else:
+            ${ trial_court.division_abbr }
+            % endif          
         - "name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
         - "address_unit": ${ trial_court.address.unit }
@@ -2385,7 +2387,11 @@ attachments:
     fields:
       - "court_division": |
           % if defined("trial_court.division_abbr"):
+            % if trial_court_division == "Unknown":
+
+            % else:
             ${ trial_court.division_abbr.upper()  }
+            % endif         
           % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": |
