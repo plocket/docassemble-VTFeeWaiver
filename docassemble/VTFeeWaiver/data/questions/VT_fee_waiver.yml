@@ -1183,11 +1183,6 @@ fields:
       ${ collapse_template(types_of_cases_in_each_court_division) }
 
       ${ collapse_template(ask_the_ARC) }
-
-  - note: |
-      If you don't know what division to choose, you can fill it in later.
-    js show if: trial_court_division == "Unknown"
-
 ---
 id: choose a court county
 question: |
