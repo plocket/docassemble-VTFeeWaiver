@@ -192,17 +192,15 @@ code: |
   docket_number
   set_progress(25)
   
-  #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
+  #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined. We also allow the user to say they don't know.
   trial_court_division
   if trial_court_division == "Environmental":
     user_selected_county = "Environmental"
-  elif trial_court_division == "Judicial Bureau":
+  if trial_court_division == "Judicial Bureau":
     user_selected_county = "Judicial Bureau"
-  elif do_not_know_court_division:
+  if do_not_know_court_division == True:
     trial_court_division == "Unknown"
-    user_selected_county
-  else: 
-    user_selected_county
+  user_selected_county
   trial_court.address.county
   
   nav.set_section('your_income')
@@ -1181,16 +1179,18 @@ fields:
       If there's an existing court case, choose the court that the case is in. Look at the papers from the court.
  
   - Court Division: trial_court_division
-    code: sorted(all_courts.unique_column_values('division_abbr'))
+    code: sorted(all_courts.unique_column_values('division_abbr') - {"Unknown"})
     hide if: do_not_know_court_division
   
   - note: |
       ${ collapse_template(types_of_cases_in_each_court_division) }
 
+      ${ collapse_template(ask_the_ARC) }
+
   - no label: do_not_know_court_division
     datatype: checkboxes
-    none of the above: False    
-    minlength: 1
+    none of the above: False
+    required: False
     choices:
       - I don't know what division to choose.
   - note: |
