@@ -2020,7 +2020,7 @@ subquestion: |
 review:
   - Edit: 
     - trial_court_division
-    - trial_court.address.county
+    - user_selected_county
     - recompute:
       - trial_court_index
       - trial_court
