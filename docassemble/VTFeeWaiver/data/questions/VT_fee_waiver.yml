@@ -2363,7 +2363,7 @@ attachments:
             % if trial_court_division == "Unknown":
 
             % else:
-            ${ trial_court.division_abbr }
+            ${ trial_court.division }
             % endif          
         - "name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
