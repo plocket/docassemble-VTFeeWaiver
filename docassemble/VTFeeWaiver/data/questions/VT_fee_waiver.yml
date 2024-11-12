@@ -280,7 +280,7 @@ code: |
           "zip": showifdef("users[0].address.zip"),
           "county_where_filing": showifdef("trial_court.address.county"),
           "court_division_where_filing": showifdef("trial_court.division_abbr"),
-          "gets_public_benefits": showifdef("public_benefits.sources"),
+          "gets_public_benefits": public_benefits.number_gathered() > 0,
           "employed": showifdef("employed"),
           "reached_interview_end": True,
           "num_forms": len(al_user_bundle.enabled_documents()),
